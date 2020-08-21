@@ -9,6 +9,7 @@ pylint = "*"
 coverage = "~=5.2.1"
 pytest = "*"
 pytest-grpc = "~=0.8.0"
+mypy = "*"
 
 [packages]
 grpcio = "*"

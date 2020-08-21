@@ -1,7 +1,7 @@
 from typing import Callable, List, Dict
 
-from pyz.decorators import BaseZeebeDecorator
-from pyz.task import TaskContext
+from pyz.decorators.base_zeebe_decorator import BaseZeebeDecorator
+from pyz.task.task_context import TaskContext
 
 
 class Task(BaseZeebeDecorator):

@@ -3,8 +3,8 @@ import uuid
 import pytest
 
 from pyz.exceptions import TaskNotFoundException
-from pyz.task import Task
-from pyz.worker import ZeebeWorker
+from pyz.task.task import Task
+from pyz.worker.worker import ZeebeWorker
 
 
 @pytest.fixture(scope='module')

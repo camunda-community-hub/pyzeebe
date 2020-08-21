@@ -1,3 +1,5 @@
 from typing import Callable
 
-TaskDecorator = Callable[['TaskContext'], 'TaskContext']
+from pyz.task.task_context import TaskContext
+
+TaskDecorator = Callable[[TaskContext], TaskContext]

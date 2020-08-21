@@ -4,10 +4,12 @@ import os
 from typing import Tuple, List, Callable
 
 from pyz.base_types.base import ZeebeBase
-from pyz.decorators import BaseZeebeDecorator, TaskDecorator
+from pyz.decorators.base_zeebe_decorator import BaseZeebeDecorator
+from pyz.decorators.task_decorator import TaskDecorator
 from pyz.exceptions import TaskNotFoundException
 from pyz.grpc_internals.zeebe_pb2 import ActivateJobsRequest, ActivatedJob, CompleteJobRequest
-from pyz.task import Task, TaskContext
+from pyz.task.task import Task
+from pyz.task.task_context import TaskContext
 
 
 class ZeebeWorker(ZeebeBase, BaseZeebeDecorator):
