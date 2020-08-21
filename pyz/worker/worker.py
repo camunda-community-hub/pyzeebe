@@ -4,17 +4,17 @@ import os
 from typing import Tuple, List, Callable
 
 from pyz.base_types.base import ZeebeBase
-from pyz.base_types.base_decorator import BaseDecorator, TaskDecorator, TaskContext
+from pyz.decorators import BaseZeebeDecorator, TaskDecorator
 from pyz.exceptions import TaskNotFoundException
 from pyz.grpc_internals.zeebe_pb2 import ActivateJobsRequest, ActivatedJob, CompleteJobRequest
-from pyz.task import Task
+from pyz.task import Task, TaskContext
 
 
-class ZeebeWorker(ZeebeBase, BaseDecorator):
+class ZeebeWorker(ZeebeBase, BaseZeebeDecorator):
     def __init__(self, name: str = None, request_timeout: int = 0, hostname: str = None, port: int = None,
                  before: List[TaskDecorator] = None, after: List[TaskDecorator] = None):
         ZeebeBase.__init__(self, hostname=hostname, port=port)
-        BaseDecorator.__init__(self, before=before, after=after)
+        BaseZeebeDecorator.__init__(self, before=before, after=after)
         self.name = name or os.getenv('HOSTNAME')
         self.request_timeout = request_timeout
         self.tasks: List[Task] = []
@@ -80,7 +80,7 @@ class ZeebeWorker(ZeebeBase, BaseDecorator):
             before_output.variables = task_output
             after_output = after_decorators_runner(before_output)
             self.zeebe_client.CompleteJob(
-                CompleteJobRequest(jobKey=after_output.running_task_id, variables=after_output.variables))
+                CompleteJobRequest(jobKey=after_output.key, variables=json.dumps(after_output.variables)))
 
         return task_handler
 
@@ -93,12 +93,12 @@ class ZeebeWorker(ZeebeBase, BaseDecorator):
 
         return decorator_runner
 
-    def _merge_before_decorators(self, decorator_instance: BaseDecorator) -> List[TaskDecorator]:
+    def _merge_before_decorators(self, decorator_instance: Task) -> List[TaskDecorator]:
         decorators = decorator_instance._before.copy()
         decorators.extend(self._before)
         return decorators
 
-    def _merge_after_decorators(self, decorator_instance: BaseDecorator):
+    def _merge_after_decorators(self, decorator_instance: Task):
         decorators = decorator_instance._after.copy()
         decorators.extend(self._after)
         return decorators

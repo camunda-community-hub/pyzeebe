@@ -7,6 +7,24 @@ from pyz.task import Task
 from pyz.worker import ZeebeWorker
 
 
+@pytest.fixture(scope='module')
+def grpc_add_to_server():
+    from pyz.grpc_internals.zeebe_pb2_grpc import add_GatewayServicer_to_server
+    return add_GatewayServicer_to_server()
+
+
+@pytest.fixture(scope='module')
+def grpc_servicer():
+    from pyz.grpc_internals.zeebe_pb2_grpc import GatewayServicer
+    return GatewayServicer()
+
+
+@pytest.fixture(scope='module')
+def grpc_stub_cls(grpc_channel):
+    from pyz.grpc_internals.zeebe_pb2_grpc import GatewayStub
+    return GatewayStub
+
+
 def test_add_before():
     base_decorator = ZeebeWorker()
     base_decorator.before(lambda x: x)

@@ -1,13 +1,14 @@
 from typing import Callable, List, Dict
 
-from pyz.base_types.base_decorator import BaseDecorator, TaskDecorator, TaskContext
+from pyz.decorators import BaseZeebeDecorator
+from pyz.task import TaskContext
 
 
-class Task(BaseDecorator):
+class Task(BaseZeebeDecorator):
     def __init__(self, task_type: str, task_handler: Callable[..., Dict],
                  exception_handler: Callable[[TaskContext], None],
                  timeout: int = 0, max_jobs_to_activate: int = 5, variables_to_fetch: List[str] = None,
-                 before: List[TaskDecorator] = None, after: List[TaskDecorator] = None):
+                 before: List = None, after: List = None):
         super().__init__(before=before, after=after)
 
         self.type = task_type
