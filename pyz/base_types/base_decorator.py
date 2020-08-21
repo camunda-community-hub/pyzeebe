@@ -1,19 +1,23 @@
-from typing import List, Generic, TypeVar, Callable
-
-Variables = TypeVar('Variables')
-Headers = TypeVar('Headers')
+from typing import List, Callable, Dict
 
 
-class TaskContext(Generic[Variables, Headers]):
-    def __init__(self, instance_id: str, workflow_id: str, task_id: str, running_task_id: str, task_type: str,
-                 variables: Variables, headers: Headers):
-        self.instance_id = instance_id
-        self.workflow_id = workflow_id
-        self.task_id = task_id
-        self.running_task_id = running_task_id
-        self.task_type = task_type
+class TaskContext:
+    def __init__(self, key: str, _type: str, workflow_instance_key: str, bpmn_process_id: str,
+                 workflow_definition_version: int, workflow_key: str, element_id: str, element_instance_key: str,
+                 custom_headers: Dict, worker: str, retries: int, deadline: int, variables: Dict):
+        self.key = key
+        self.type = _type
+        self.wokflow_instance_key = workflow_instance_key
+        self.bpmn_process_id = bpmn_process_id
+        self.workflow_definition_version = workflow_definition_version
+        self.workflow_key = workflow_key
+        self.element_id = element_id
+        self.element_instance_key = element_instance_key
+        self.custom_headers = custom_headers
+        self.worker = worker
+        self.retries = retries
+        self.deadline = deadline
         self.variables = variables
-        self.headers = headers
 
 
 TaskDecorator = Callable[[TaskContext], TaskContext]
@@ -21,7 +25,6 @@ TaskDecorator = Callable[[TaskContext], TaskContext]
 
 class BaseDecorator(object):
     def __init__(self, before: List[TaskDecorator] = None, after: List[TaskDecorator] = None):
-        print('Called decorator')
         self._before: List[TaskDecorator] = before or []
         self._after: List[TaskDecorator] = after or []
 
