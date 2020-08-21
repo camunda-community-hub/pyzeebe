@@ -10,13 +10,13 @@ from pyz.worker import ZeebeWorker
 def test_add_before():
     base_decorator = ZeebeWorker()
     base_decorator.before(lambda x: x)
-    assert (len(base_decorator._before) == 1)
+    assert len(base_decorator._before) == 1
 
 
 def test_add_after():
     base_decorator = ZeebeWorker()
     base_decorator.after(lambda x: x)
-    assert (len(base_decorator._after) == 1)
+    assert len(base_decorator._after) == 1
 
 
 def test_add_before_plus_constructor():
@@ -25,8 +25,8 @@ def test_add_before_plus_constructor():
 
     base_decorator = ZeebeWorker(before=[constructor_decorator])
     base_decorator.before(function_decorator)
-    assert (len(base_decorator._before) == 2)
-    assert (base_decorator._before == [constructor_decorator, function_decorator])
+    assert len(base_decorator._before) == 2
+    assert base_decorator._before == [constructor_decorator, function_decorator]
 
 
 def test_add_after_plus_constructor():
@@ -35,8 +35,8 @@ def test_add_after_plus_constructor():
 
     base_decorator = ZeebeWorker(after=[constructor_decorator])
     base_decorator.after(function_decorator)
-    assert (len(base_decorator._after) == 2)
-    assert (base_decorator._after == [constructor_decorator, function_decorator])
+    assert len(base_decorator._after) == 2
+    assert base_decorator._after == [constructor_decorator, function_decorator]
 
 
 class TestZeebeWorker:
@@ -50,15 +50,14 @@ class TestZeebeWorker:
 
     def test_add_task(self):
         task_type = self._add_zeebe_task()
-        assert (self.zeebe_worker.get_task(task_type) is not None)
+        assert self.zeebe_worker.get_task(task_type) is not None
 
     def test_remove_task(self):
         task_type = self._add_zeebe_task()
-        assert (self.zeebe_worker.remove_task(task_type) is not None)
+        assert self.zeebe_worker.remove_task(task_type) is not None
         with pytest.raises(TaskNotFoundException):
             self.zeebe_worker.get_task(task_type)
 
     def test_add_decorator(self):
         self.zeebe_worker = ZeebeWorker(before=[lambda x: x])
-        print(self.zeebe_worker._before)
-        assert (len(self.zeebe_worker._before) == 1)
+        assert len(self.zeebe_worker._before) == 1
