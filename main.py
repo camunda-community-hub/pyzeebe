@@ -1,22 +1,22 @@
-from pyz.worker import ZeebeWorker
+from typing import Dict
+
+from pyz.task.task import Task
+from pyz.task.task_context import TaskContext
+from pyz.worker.worker import ZeebeWorker
 
 
-class EchoIn:
-    def __init__(self, input):
-        self.input = input
+def handler(input: str) -> Dict[str, str]:
+    print("handling", input)
+    return {"output": f"Hello World, {input}!"}
 
 
-class EchoOut:
-    def __init__(self, output):
-        self.output = output
-
-
-def handler(input):
-    print("handling")
-    return {"output": f"Hello World, {input['input']}!"}
+def on_error(e: Exception, context: TaskContext) -> None:
+    print(e)
+    print(context)
 
 
 if __name__ == '__main__':
-    worker = ZeebeWorker('localhost:26500')
-    worker.register_task("echo", handler)
-    worker.run()
+    worker = ZeebeWorker(hostname='localhost', port=26500, request_timeout=60000, name='test')
+    worker.add_task(
+        Task('echo', handler, on_error, variables_to_fetch=['input'], max_jobs_to_activate=32, timeout=1000))
+    worker.work()

@@ -1,13 +1,13 @@
 import concurrent.futures
 import json
-import os
+import socket
 from typing import Tuple, List, Callable
 
 from pyz.base_types.base import ZeebeBase
 from pyz.decorators.base_zeebe_decorator import BaseZeebeDecorator
 from pyz.decorators.task_decorator import TaskDecorator
 from pyz.exceptions import TaskNotFoundException
-from pyz.grpc_internals.zeebe_pb2 import ActivateJobsRequest, ActivatedJob, CompleteJobRequest
+from pyz.grpc_internals.zeebe_pb2 import ActivateJobsRequest, CompleteJobRequest, ActivateJobsResponse
 from pyz.task.task import Task
 from pyz.task.task_context import TaskContext
 
@@ -17,7 +17,7 @@ class ZeebeWorker(ZeebeBase, BaseZeebeDecorator):
                  before: List[TaskDecorator] = None, after: List[TaskDecorator] = None):
         ZeebeBase.__init__(self, hostname=hostname, port=port)
         BaseZeebeDecorator.__init__(self, before=before, after=after)
-        self.name = name or os.getenv('HOSTNAME')
+        self.name = name or socket.gethostname()
         self.request_timeout = request_timeout
         self.tasks: List[Task] = []
 
@@ -25,23 +25,25 @@ class ZeebeWorker(ZeebeBase, BaseZeebeDecorator):
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.tasks)) as executor:
             for task in self.tasks:
                 executor.submit(self.handle_task, task=task)
+            executor.shutdown(wait=True)
 
     def handle_task(self, task: Task) -> None:
-        while self.connected:
+        while self.connected or self.retrying_connection:
             if self.retrying_connection:
                 continue
-            jobs = self._get_active_jobs(task)
+            responses = self._get_active_jobs(task)
 
-            with concurrent.futures.ThreadPoolExecutor(max_workers=len(jobs)) as executor:
-                for job in jobs:
-                    executor.submit(task.handler, self._create_task_context_from_job(job))
+            for response in responses:
+                for job in response.jobs:
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=len(response.jobs)) as executor:
+                        executor.submit(task.handler, self._create_task_context_from_job(job))
+                    executor.shutdown(wait=True)
 
-    def _get_active_jobs(self, task: Task) -> List[ActivatedJob]:
+    def _get_active_jobs(self, task: Task) -> ActivateJobsResponse:
         request = ActivateJobsRequest(type=task.type, worker=self.name, timeout=task.timeout,
                                       maxJobsToActivate=task.max_jobs_to_activate,
                                       fetchVariable=task.variables_to_fetch, requestTimeout=self.request_timeout)
-        response = next(self.zeebe_client.ActivateJobs(request))
-        return response.jobs
+        return self.zeebe_client.ActivateJobs(request)
 
     @staticmethod
     def _create_task_context_from_job(job) -> TaskContext:
@@ -52,7 +54,7 @@ class ZeebeWorker(ZeebeBase, BaseZeebeDecorator):
                            workflow_key=job.workflowKey,
                            element_id=job.elementId,
                            element_instance_key=job.elementInstanceKey,
-                           custom_headers=json.loads(job.custom_headers),
+                           custom_headers=json.loads(job.customHeaders),
                            worker=job.worker,
                            retries=job.retries,
                            deadline=job.deadline,
@@ -77,12 +79,15 @@ class ZeebeWorker(ZeebeBase, BaseZeebeDecorator):
         after_decorators_runner = self._create_decorator_handler(self._merge_after_decorators(task))
 
         def task_handler(context: TaskContext):
-            before_output = before_decorators_runner(context)
-            task_output = task.original_handler(**before_output.variables)
-            before_output.variables = task_output
-            after_output = after_decorators_runner(before_output)
-            self.zeebe_client.CompleteJob(
-                CompleteJobRequest(jobKey=after_output.key, variables=json.dumps(after_output.variables)))
+            try:
+                before_output = before_decorators_runner(context)
+                task_output = task.original_handler(**before_output.variables)
+                before_output.variables = task_output
+                after_output = after_decorators_runner(before_output)
+                self.zeebe_client.CompleteJob(
+                    CompleteJobRequest(jobKey=after_output.key, variables=json.dumps(after_output.variables)))
+            except Exception as e:
+                task.exception_handler(e, context)
 
         return task_handler
 

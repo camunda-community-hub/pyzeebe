@@ -14,8 +14,10 @@ class ZeebeBase(object):
         self.zeebe_client = GatewayStub(self._channel)
 
     def __check_connectivity(self, value: str):
+        print(value)
         if value == grpc.ChannelConnectivity.READY:
             self.connected = True
+            self.retrying_connection = False
         elif value != grpc.ChannelConnectivity.CONNECTING:
             self.connected = False
             self.retrying_connection = True
