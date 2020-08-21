@@ -1,0 +1,17 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+autopep8 = "*"
+pylint = "*"
+coverage = "~=5.2.1"
+pytest = "*"
+pytest-grpc = "~=0.8.0"
+
+[packages]
+grpcio = "*"
+
+[requires]
+python_version = "3.8"
