@@ -2,21 +2,21 @@ import socket
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Callable, Generator, Dict
 
-from pyz.base_types.zeebe_base import ZeebeBase
 from pyz.decorators.base_zeebe_decorator import BaseZeebeDecorator
 from pyz.decorators.task_decorator import TaskDecorator
 from pyz.exceptions import TaskNotFoundException
+from pyz.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyz.task.job_context import JobContext
 from pyz.task.task import Task
 from pyz.task.task_status_setter import TaskStatusSetter
 
 
 # TODO: Add support for async tasks
-class ZeebeWorker(ZeebeBase, BaseZeebeDecorator):
+class ZeebeWorker(BaseZeebeDecorator):
     def __init__(self, name: str = None, request_timeout: int = 0, hostname: str = None, port: int = None,
                  before: List[TaskDecorator] = None, after: List[TaskDecorator] = None):
-        ZeebeBase.__init__(self, hostname=hostname, port=port)
-        BaseZeebeDecorator.__init__(self, before=before, after=after)
+        super().__init__(before, after)
+        self.zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port)
         self.name = name or socket.gethostname()
         self.request_timeout = request_timeout
         self.tasks = []
@@ -27,8 +27,8 @@ class ZeebeWorker(ZeebeBase, BaseZeebeDecorator):
         executor.shutdown(wait=True)
 
     def handle_task(self, task: Task):
-        while self.connected or self.retrying_connection:
-            if self.retrying_connection:
+        while self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection:
+            if self.zeebe_adapter.retrying_connection:
                 continue
 
             self.handle_task_jobs(task)
@@ -39,10 +39,10 @@ class ZeebeWorker(ZeebeBase, BaseZeebeDecorator):
         executor.shutdown(wait=False)  # Do not wait for tasks to finish
 
     def _get_jobs(self, task: Task) -> Generator[JobContext, None, None]:
-        return self.zeebe_client.activate_jobs(task_type=task.type, worker=self.name, timeout=task.timeout,
-                                               max_jobs_to_activate=task.max_jobs_to_activate,
-                                               variables_to_fetch=task.variables_to_fetch,
-                                               request_timeout=self.request_timeout)
+        return self.zeebe_adapter.activate_jobs(task_type=task.type, worker=self.name, timeout=task.timeout,
+                                                max_jobs_to_activate=task.max_jobs_to_activate,
+                                                variables_to_fetch=task.variables_to_fetch,
+                                                request_timeout=self.request_timeout)
 
     def add_task(self, task: Task) -> None:
         task.handler = self.create_zeebe_task_handler(task)
@@ -57,10 +57,10 @@ class ZeebeWorker(ZeebeBase, BaseZeebeDecorator):
                 context = before_decorator_runner(context)
                 context.variables = task.inner_function(**context.variables)
                 context = after_decorator_runner(context)
-                self.zeebe_client.complete_job(job_key=context.key, variables=context.variables)
+                self.zeebe_adapter.complete_job(job_key=context.key, variables=context.variables)
                 return context.variables
             except Exception as e:
-                task.exception_handler(e, context, TaskStatusSetter(context, self.zeebe_client))
+                task.exception_handler(e, context, TaskStatusSetter(context, self.zeebe_adapter))
                 return e
 
         return task_handler
