@@ -25,6 +25,7 @@ jobs:
       - name: Install dependencies
         run: |
           pipenv install --dev
+          pipenv install protobuf
 
       - name: Test with pytest
         run: |
