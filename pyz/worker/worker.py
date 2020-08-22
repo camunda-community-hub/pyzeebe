@@ -8,7 +8,7 @@ from pyz.exceptions import TaskNotFoundException
 from pyz.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyz.task.job_context import JobContext
 from pyz.task.task import Task
-from pyz.task.task_status_setter import TaskStatusSetter
+from pyz.task.task_status_controller import TaskStatusController
 
 
 # TODO: Add support for async tasks
@@ -60,7 +60,7 @@ class ZeebeWorker(BaseZeebeDecorator):
                 self.zeebe_adapter.complete_job(job_key=context.key, variables=context.variables)
                 return context.variables
             except Exception as e:
-                task.exception_handler(e, context, TaskStatusSetter(context, self.zeebe_adapter))
+                task.exception_handler(e, context, TaskStatusController(context, self.zeebe_adapter))
                 return e
 
         return task_handler
