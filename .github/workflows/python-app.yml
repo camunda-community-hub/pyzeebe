@@ -10,25 +10,25 @@ on:
     branches: [ master, development ]
 
 jobs:
-  build:
+  test:
 
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-    - name: Install pipenv
-      uses: dschep/install-pipenv-action@v1
-    - name: Install dependencies
-      run: |
-        pipenv install
-        
-    - name: Test with pytest
-      run: |
-        pipenv run coverage run --source=. -m py.test
-    - name: Upload coverage
-      shell: pwsh
-      run: coverage report -m
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install pipenv
+        uses: dschep/install-pipenv-action@v1
+      - name: Install dependencies
+        run: |
+          pipenv install --dev
+
+      - name: Test with pytest
+        run: |
+          pipenv run coverage run --source=. -m py.test
+      - name: Upload coverage
+        shell: pwsh
+        run: coverage report -m
