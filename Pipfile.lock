@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "9c1eafa04bfab0615b713a4759a556fce1aedede7fba15976f387c4c56d8b310"
+            "sha256": "38bfe7f5473aea6a99d37df3fe237d8bf0778757ba6e1683dbbf1655c596d477"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -352,6 +352,10 @@
                 "sha256:b62ffa81fb85f4332a4f609cab4ac40709470da05643a082ec1eb88e6d9b97d7"
             ],
             "version": "==1.12.1"
+        },
+        "zeebepy": {
+            "editable": true,
+            "path": "."
         }
     }
 }
