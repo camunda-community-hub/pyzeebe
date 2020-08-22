@@ -28,7 +28,7 @@ jobs:
         
     - name: Test with pytest
       run: |
-        coverage run --source=. -m py.test
+        python -m coverage run --source=. -m py.test
         
     - name: Upload coverage
       shell: pwsh
