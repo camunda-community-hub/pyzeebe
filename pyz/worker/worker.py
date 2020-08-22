@@ -2,8 +2,8 @@ import socket
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Callable, Generator, Dict, Tuple
 
-from pyz.decorators.base_zeebe_decorator import BaseZeebeDecorator
 from pyz.decorators.task_decorator import TaskDecorator
+from pyz.decorators.zeebe_decorator_base import ZeebeDecoratorBase
 from pyz.exceptions import TaskNotFoundException
 from pyz.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyz.task.job_context import JobContext
@@ -12,7 +12,7 @@ from pyz.task.task_status_controller import TaskStatusController
 
 
 # TODO: Add support for async tasks
-class ZeebeWorker(BaseZeebeDecorator):
+class ZeebeWorker(ZeebeDecoratorBase):
     def __init__(self, name: str = None, request_timeout: int = 0, hostname: str = None, port: int = None,
                  before: List[TaskDecorator] = None, after: List[TaskDecorator] = None):
         super().__init__(before, after)

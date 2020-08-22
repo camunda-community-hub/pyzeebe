@@ -1,12 +1,12 @@
 from typing import Callable, List, Dict
 
-from pyz.decorators.base_zeebe_decorator import BaseZeebeDecorator
+from pyz.decorators.zeebe_decorator_base import ZeebeDecoratorBase
 from pyz.task.job_context import JobContext
 from pyz.task.task_status_controller import TaskStatusController
 
 
 # TODO: Add support for async tasks
-class Task(BaseZeebeDecorator):
+class Task(ZeebeDecoratorBase):
     def __init__(self, task_type: str, task_handler: Callable[..., Dict],
                  exception_handler: Callable[[Exception, JobContext, TaskStatusController], None],
                  timeout: int = 0, max_jobs_to_activate: int = 32, variables_to_fetch: List[str] = None,
