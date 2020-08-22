@@ -4,6 +4,7 @@ from uuid import uuid4
 
 import pytest
 
+from pyz.common.test_utils import random_job_context
 from pyz.exceptions import TaskNotFoundException
 from pyz.task.job_context import JobContext
 from pyz.task.task import Task
@@ -11,20 +12,10 @@ from pyz.worker.worker import ZeebeWorker
 
 zeebe_worker: ZeebeWorker
 task: Task
-RANDOM_RANGE = 100000
 
 
 def decorator(context: JobContext) -> JobContext:
     return context
-
-
-def random_job_context(task: Task) -> JobContext:
-    return JobContext(_type=task.type, key=randint(0, RANDOM_RANGE), worker=str(uuid4()),
-                      retries=randint(0, 10), workflow_instance_key=randint(0, RANDOM_RANGE),
-                      bpmn_process_id=str(uuid4()), workflow_definition_version=randint(0, 100),
-                      workflow_key=randint(0, RANDOM_RANGE), element_id=str(uuid4()),
-                      element_instance_key=randint(0, RANDOM_RANGE), variables={}, custom_headers={},
-                      deadline=randint(0, RANDOM_RANGE))
 
 
 @pytest.fixture(autouse=True)

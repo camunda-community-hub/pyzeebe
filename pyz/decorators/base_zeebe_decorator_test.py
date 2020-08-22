@@ -1,3 +1,4 @@
+from pyz.common.test_utils import random_job_context
 from pyz.decorators.base_zeebe_decorator import BaseZeebeDecorator
 
 
@@ -20,6 +21,11 @@ def test_add_before_plus_constructor():
     def function_decorator(x):
         return x
 
+    context = random_job_context()
+
+    assert constructor_decorator(context) == context
+    assert function_decorator(context) == context
+
     base_decorator = BaseZeebeDecorator(before=[constructor_decorator])
     base_decorator.before(function_decorator)
     assert len(base_decorator._before) == 2
@@ -32,6 +38,11 @@ def test_add_after_plus_constructor():
 
     def function_decorator(x):
         return x
+
+    context = random_job_context()
+
+    assert constructor_decorator(context) == context
+    assert function_decorator(context) == context
 
     base_decorator = BaseZeebeDecorator(after=[constructor_decorator])
     base_decorator.after(function_decorator)
