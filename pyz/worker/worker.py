@@ -25,15 +25,17 @@ class ZeebeWorker(ZeebeBase, BaseZeebeDecorator):
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.tasks)) as executor:
             for task in self.tasks:
                 executor.submit(self.handle_task, task=task)
-            executor.shutdown(wait=True)
+            executor.shutdown(wait=False)
 
     def handle_task(self, task: Task) -> None:
         while self.connected or self.retrying_connection:
             if self.retrying_connection:
                 continue
 
+            executor = concurrent.futures.ThreadPoolExecutor()
             for context in self._get_task_stream(task):
-                task.handler(context)
+                executor.submit(task.handler, context=context)
+            executor.shutdown(wait=False)
 
     def _get_task_stream(self, task: Task) -> Generator[TaskContext, None, None]:
         request = ActivateJobsRequest(type=task.type, worker=self.name, timeout=task.timeout,
