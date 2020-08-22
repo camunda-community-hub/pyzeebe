@@ -119,6 +119,29 @@ def test_get_fake_task():
         zeebe_worker.get_task(str(uuid4()))
 
 
+def test_get_task():
+    zeebe_worker.add_task(task)
+    found_task = zeebe_worker.get_task(task.type)
+    assert isinstance(found_task, Task)
+    assert found_task == task
+
+
+def test_get_task_index():
+    zeebe_worker.add_task(task)
+    index = zeebe_worker._get_task_index(task.type)
+    assert isinstance(index, int)
+    assert zeebe_worker.tasks[index] == task
+
+
+def test_get_task_and_index():
+    zeebe_worker.add_task(task)
+    found_task, index = zeebe_worker._get_task_and_index(task.type)
+    assert isinstance(index, int)
+    assert zeebe_worker.tasks[index] == task
+    assert isinstance(found_task, Task)
+    assert found_task == task
+
+
 def test_add_before_decorator():
     zeebe_worker.before(decorator)
     assert len(zeebe_worker._before) == 1

@@ -1,6 +1,6 @@
 import socket
 from concurrent.futures import ThreadPoolExecutor
-from typing import List, Callable, Generator, Dict
+from typing import List, Callable, Generator, Dict, Tuple
 
 from pyz.decorators.base_zeebe_decorator import BaseZeebeDecorator
 from pyz.decorators.task_decorator import TaskDecorator
@@ -88,16 +88,14 @@ class ZeebeWorker(BaseZeebeDecorator):
         task_index = self._get_task_index(task_type)
         return self.tasks.pop(task_index)
 
-    # TODO: Think about refactoring get_task and _get_task_index
-
     def get_task(self, task_type: str) -> Task:
-        for task in self.tasks:
-            if task.type == task_type:
-                return task
-        raise TaskNotFoundException(f"Could not find task {task_type}")
+        return self._get_task_and_index(task_type)[0]
 
     def _get_task_index(self, task_type: str) -> int:
+        return self._get_task_and_index(task_type)[-1]
+
+    def _get_task_and_index(self, task_type: str) -> Tuple[Task, int]:
         for index, task in enumerate(self.tasks):
             if task.type == task_type:
-                return index
+                return task, index
         raise TaskNotFoundException(f"Could not find task {task_type}")
