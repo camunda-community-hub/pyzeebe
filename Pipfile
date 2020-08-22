@@ -10,6 +10,7 @@ coverage = "~=5.2.1"
 pytest = "*"
 pytest-grpc = "~=0.8.0"
 mypy = "*"
+pytest-mock = "~=3.3.0"
 
 [packages]
 grpcio = "*"

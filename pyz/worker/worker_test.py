@@ -25,38 +25,6 @@ def grpc_stub_cls(grpc_channel):
     return GatewayStub
 
 
-def test_add_before():
-    base_decorator = ZeebeWorker()
-    base_decorator.before(lambda x: x)
-    assert len(base_decorator._before) == 1
-
-
-def test_add_after():
-    base_decorator = ZeebeWorker()
-    base_decorator.after(lambda x: x)
-    assert len(base_decorator._after) == 1
-
-
-def test_add_before_plus_constructor():
-    constructor_decorator = lambda x: x + 1
-    function_decorator = lambda x: x
-
-    base_decorator = ZeebeWorker(before=[constructor_decorator])
-    base_decorator.before(function_decorator)
-    assert len(base_decorator._before) == 2
-    assert base_decorator._before == [constructor_decorator, function_decorator]
-
-
-def test_add_after_plus_constructor():
-    constructor_decorator = lambda x: x + 1
-    function_decorator = lambda x: x
-
-    base_decorator = ZeebeWorker(after=[constructor_decorator])
-    base_decorator.after(function_decorator)
-    assert len(base_decorator._after) == 2
-    assert base_decorator._after == [constructor_decorator, function_decorator]
-
-
 class TestZeebeWorker:
     def setup_class(self):
         self.zeebe_worker = ZeebeWorker()
@@ -79,3 +47,6 @@ class TestZeebeWorker:
     def test_add_decorator(self):
         self.zeebe_worker = ZeebeWorker(before=[lambda x: x])
         assert len(self.zeebe_worker._before) == 1
+
+    def test_activate_jobs(self):
+        self.zeebe_worker.add_task()

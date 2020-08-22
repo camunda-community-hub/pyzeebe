@@ -2,17 +2,17 @@ import os
 
 import grpc
 
-from pyz.grpc_internals.zeebe_pb2_grpc import GatewayStub
+from pyz.grpc_internals.zeebe_adapter import ZeebeAdapter
 
 
 class ZeebeBase(object):
     def __init__(self, hostname: str = None, port: int = None, **kwargs):
-        self._connection_uri = f'{hostname}:{port}' or os.getenv('ZEEBE_HOST') or 'localhost:26500'
+        self._connection_uri = f'{hostname}:{port}' or os.getenv('ZEEBE_ADDRESS') or 'localhost:26500'
         self._channel = grpc.insecure_channel(self._connection_uri)
         self.connected = False
         self.retrying_connection = True
         self._channel.subscribe(self.__check_connectivity, try_to_connect=True)
-        self.zeebe_client = GatewayStub(self._channel)
+        self.zeebe_client = ZeebeAdapter(self._channel)
 
     def __check_connectivity(self, value: str):
         if value == grpc.ChannelConnectivity.READY:
