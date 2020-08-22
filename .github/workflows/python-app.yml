@@ -32,4 +32,4 @@ jobs:
           pipenv run coverage run --source=. -m py.test
       - name: Upload coverage
         shell: pwsh
-        run: coverage report -m
+        run: pipenv run coverage report -m
