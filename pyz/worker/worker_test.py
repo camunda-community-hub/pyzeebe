@@ -75,6 +75,25 @@ def test_after_task_decorator_called():
         mock.assert_called_with(context)
 
 
+def test_task_exception_handler_called():
+    def task_handler(x):
+        raise Exception()
+
+    def exception_handler(e, context, status_setter):
+        pass
+
+    context = random_job_context(task)
+    context.variables = {'x': str(uuid4())}
+
+    task.inner_function = task_handler
+    task.exception_handler = exception_handler
+
+    with patch('pyz.worker.worker_test.task.exception_handler') as mock:
+        zeebe_worker.add_task(task)
+        task.handler(context)
+        mock.assert_called()
+
+
 def test_remove_task():
     zeebe_worker.add_task(task)
     assert zeebe_worker.remove_task(task.type) is not None
