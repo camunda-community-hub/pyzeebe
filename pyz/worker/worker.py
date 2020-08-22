@@ -53,7 +53,6 @@ class ZeebeWorker(ZeebeBase, BaseZeebeDecorator):
         after_decorator_runner = self._create_after_decorator_runner(task)
 
         def task_handler(context: JobContext):
-            # TODO: Write tests for try/except + complete_job + exception_handler
             try:
                 context = before_decorator_runner(context)
                 context.variables = task.inner_function(**context.variables)
