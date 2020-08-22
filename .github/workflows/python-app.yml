@@ -25,10 +25,10 @@ jobs:
       - name: Install dependencies
         run: |
           pipenv install --dev
+          pipenv install protobuf
 
       - name: Test with pytest
         run: |
           pipenv run coverage run --source=. -m py.test
-      - name: Upload coverage
-        shell: pwsh
-        run: coverage report -m
+      - name: Coveralls Python
+        uses: AndreMiras/coveralls-python-action@v20200413
