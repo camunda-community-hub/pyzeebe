@@ -41,7 +41,7 @@ def test_add_task():
     context.variables = {'x': str(uuid4())}
     with patch('pyz.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job') as mock:
         assert isinstance(task.handler(context), dict)
-    # TODO: Assert completeJob called
+        mock.assert_called_with(job_key=context.key, variables=context.variables)
 
 
 def test_before_task_decorator_called():
@@ -55,6 +55,7 @@ def test_before_task_decorator_called():
         zeebe_worker.add_task(task)
         with patch('pyz.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job') as grpc_mock:
             assert isinstance(task.handler(context), dict)
+            grpc_mock.assert_called_with(job_key=context.key, variables=context.variables)
         mock.assert_called_with(context)
 
 
@@ -70,6 +71,7 @@ def test_after_task_decorator_called():
 
         with patch('pyz.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job') as grpc_mock:
             assert isinstance(task.handler(context), dict)
+            grpc_mock.assert_called_with(job_key=context.key, variables=context.variables)
         mock.assert_called_with(context)
 
 
@@ -91,6 +93,11 @@ def test_remove_task_from_many():
 def test_remove_fake_task():
     with pytest.raises(TaskNotFoundException):
         zeebe_worker.remove_task(str(uuid4()))
+
+
+def test_get_fake_task():
+    with pytest.raises(TaskNotFoundException):
+        zeebe_worker.get_task(str(uuid4()))
 
 
 def test_add_before_decorator():
