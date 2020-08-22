@@ -2,7 +2,7 @@ import socket
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Callable, Generator, Dict
 
-from pyz.base_types.base import ZeebeBase
+from pyz.base_types.zeebe_base import ZeebeBase
 from pyz.decorators.base_zeebe_decorator import BaseZeebeDecorator
 from pyz.decorators.task_decorator import TaskDecorator
 from pyz.exceptions import TaskNotFoundException
