@@ -49,5 +49,3 @@ def test_connectivity_transient_failure():
 def test_connectivity_shutdown():
     with pytest.raises(ConnectionAbortedError):
         zeebe_base._check_connectivity(grpc.ChannelConnectivity.SHUTDOWN)
-        assert not zeebe_base.retrying_connection
-        assert not zeebe_base.connected
