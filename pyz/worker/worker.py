@@ -1,16 +1,17 @@
-import concurrent.futures
 import socket
-from typing import Tuple, List, Callable, Generator
+from concurrent.futures import ThreadPoolExecutor
+from typing import List, Callable, Generator, Dict
 
 from pyz.base_types.base import ZeebeBase
 from pyz.decorators.base_zeebe_decorator import BaseZeebeDecorator
 from pyz.decorators.task_decorator import TaskDecorator
 from pyz.exceptions import TaskNotFoundException
+from pyz.task.job_context import JobContext
 from pyz.task.task import Task
-from pyz.task.task_context import TaskContext
 from pyz.task.task_status_setter import TaskStatusSetter
 
 
+# TODO: Add support for async tasks
 class ZeebeWorker(ZeebeBase, BaseZeebeDecorator):
     def __init__(self, name: str = None, request_timeout: int = 0, hostname: str = None, port: int = None,
                  before: List[TaskDecorator] = None, after: List[TaskDecorator] = None):
@@ -18,79 +19,86 @@ class ZeebeWorker(ZeebeBase, BaseZeebeDecorator):
         BaseZeebeDecorator.__init__(self, before=before, after=after)
         self.name = name or socket.gethostname()
         self.request_timeout = request_timeout
-        self.tasks: List[Task] = []
+        self.tasks = []
 
-    def work(self) -> None:
-        executor = concurrent.futures.ThreadPoolExecutor(max_workers=len(self.tasks))
-        for task in self.tasks:
-            executor.submit(self.handle_task, task=task)
+    def work(self):
+        executor = ThreadPoolExecutor(max_workers=len(self.tasks))
+        executor.map(self.handle_task, self.tasks)
         executor.shutdown(wait=True)
 
-    def handle_task(self, task: Task) -> None:
+    def handle_task(self, task: Task):
         while self.connected or self.retrying_connection:
             if self.retrying_connection:
                 continue
 
-            executor = concurrent.futures.ThreadPoolExecutor()
-            for task_context in self._generate_tasks(task):
-                executor.submit(task.handler, context=task_context)
-            executor.shutdown(wait=False)  # Do not wait for tasks to finish
+            self.handle_task_jobs(task)
 
-    def _generate_tasks(self, task: Task) -> Generator[TaskContext, None, None]:
+    def handle_task_jobs(self, task: Task):
+        executor = ThreadPoolExecutor()
+        executor.map(task.handler, self._get_jobs(task))
+        executor.shutdown(wait=False)  # Do not wait for tasks to finish
+
+    def _get_jobs(self, task: Task) -> Generator[JobContext, None, None]:
         return self.zeebe_client.activate_jobs(task_type=task.type, worker=self.name, timeout=task.timeout,
                                                max_jobs_to_activate=task.max_jobs_to_activate,
                                                variables_to_fetch=task.variables_to_fetch,
                                                request_timeout=self.request_timeout)
 
-    def remove_task(self, task_type: str) -> Task:
-        task, index = self.get_task(task_type)
-        return self.tasks.pop(index)
-
-    def get_task(self, task_type: str) -> Tuple[Task, int]:
-        for index, task in enumerate(self.tasks):
-            if self._is_task_of_type(task, task_type):
-                return task, index
-        raise TaskNotFoundException(f"Could not find task {task_type}")
-
     def add_task(self, task: Task) -> None:
-        task.handler = self.create_handler(task)
+        task.handler = self.create_zeebe_task_handler(task)
         self.tasks.append(task)
 
-    def create_handler(self, task: Task):
-        before_decorators_runner = self._create_decorator_handler(self._merge_before_decorators(task))
-        after_decorators_runner = self._create_decorator_handler(self._merge_after_decorators(task))
+    def create_zeebe_task_handler(self, task: Task) -> Callable[[JobContext], Dict]:
+        before_decorator_runner = self._create_before_decorator_runner(task)
+        after_decorator_runner = self._create_after_decorator_runner(task)
 
-        def task_handler(context: TaskContext):
+        def task_handler(context: JobContext):
+            # TODO: Write tests for try/except + complete_job + exception_handler
             try:
-                before_output = before_decorators_runner(context)
-                task_output = task.inner_function(**before_output.variables)
-                before_output.variables = task_output
-                after_output = after_decorators_runner(before_output)
-                self.zeebe_client.complete_job(job_key=after_output.key, variables=after_output.variables)
+                context = before_decorator_runner(context)
+                context.variables = task.inner_function(**context.variables)
+                context = after_decorator_runner(context)
+                self.zeebe_client.complete_job(job_key=context.key, variables=context.variables)
+                return context.variables
             except Exception as e:
                 task.exception_handler(e, context, TaskStatusSetter(context, self.zeebe_client))
+                return e
 
         return task_handler
 
+    def _create_before_decorator_runner(self, task: Task) -> Callable[[JobContext], JobContext]:
+        decorators = task._before.copy()
+        decorators.extend(self._before)
+        return self._create_decorator_runner(decorators)
+
+    def _create_after_decorator_runner(self, task: Task) -> Callable[[JobContext], JobContext]:
+        decorators = self._after.copy()
+        decorators.extend(task._after)
+        return self._create_decorator_runner(decorators)
+
     @staticmethod
-    def _create_decorator_handler(decorators: List[TaskDecorator]) -> Callable[[TaskContext], TaskContext]:
-        def decorator_runner(context: TaskContext):
+    def _create_decorator_runner(decorators: List[TaskDecorator]) -> Callable[[JobContext], JobContext]:
+        def decorator_runner(context: JobContext):
             for decorator in decorators:
                 context = decorator(context)
             return context
 
         return decorator_runner
 
-    def _merge_before_decorators(self, decorator_instance: Task) -> List[TaskDecorator]:
-        decorators = decorator_instance._before.copy()
-        decorators.extend(self._before)
-        return decorators
+    def remove_task(self, task_type: str) -> Task:
+        task_index = self._get_task_index(task_type)
+        return self.tasks.pop(task_index)
 
-    def _merge_after_decorators(self, decorator_instance: Task):
-        decorators = decorator_instance._after.copy()
-        decorators.extend(self._after)
-        return decorators
+    # TODO: Think about refactoring get_task and _get_task_index
 
-    @staticmethod
-    def _is_task_of_type(task: Task, task_type: str) -> bool:
-        return task.type == task_type
+    def get_task(self, task_type: str) -> Task:
+        for task in self.tasks:
+            if task.type == task_type:
+                return task
+        raise TaskNotFoundException(f"Could not find task {task_type}")
+
+    def _get_task_index(self, task_type: str) -> int:
+        for index, task in enumerate(self.tasks):
+            if task.type == task_type:
+                return index
+        raise TaskNotFoundException(f"Could not find task {task_type}")

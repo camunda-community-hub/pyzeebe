@@ -5,7 +5,7 @@ from grpc import Channel
 
 from pyz.grpc_internals.zeebe_pb2 import *
 from pyz.grpc_internals.zeebe_pb2_grpc import GatewayStub
-from pyz.task.task_context import TaskContext
+from pyz.task.job_context import JobContext
 
 
 class ZeebeAdapter:
@@ -13,7 +13,7 @@ class ZeebeAdapter:
         self.gateway_stub = GatewayStub(channel)
 
     def activate_jobs(self, task_type: str, worker: str, timeout: int, max_jobs_to_activate: int,
-                      variables_to_fetch: List[str], request_timeout: int) -> Generator[TaskContext, None, None]:
+                      variables_to_fetch: List[str], request_timeout: int) -> Generator[JobContext, None, None]:
         for response in self.gateway_stub.ActivateJobs(
                 ActivateJobsRequest(type=task_type, worker=worker, timeout=timeout,
                                     maxJobsToActivate=max_jobs_to_activate,
@@ -22,19 +22,19 @@ class ZeebeAdapter:
                 yield self._create_task_context_from_job(job)
 
     @staticmethod
-    def _create_task_context_from_job(job) -> TaskContext:
-        return TaskContext(key=job.key, _type=job.type,
-                           workflow_instance_key=job.workflowInstanceKey,
-                           bpmn_process_id=job.bpmnProcessId,
-                           workflow_definition_version=job.workflowDefinitionVersion,
-                           workflow_key=job.workflowKey,
-                           element_id=job.elementId,
-                           element_instance_key=job.elementInstanceKey,
-                           custom_headers=json.loads(job.customHeaders),
-                           worker=job.worker,
-                           retries=job.retries,
-                           deadline=job.deadline,
-                           variables=json.loads(job.variables))
+    def _create_task_context_from_job(job) -> JobContext:
+        return JobContext(key=job.key, _type=job.type,
+                          workflow_instance_key=job.workflowInstanceKey,
+                          bpmn_process_id=job.bpmnProcessId,
+                          workflow_definition_version=job.workflowDefinitionVersion,
+                          workflow_key=job.workflowKey,
+                          element_id=job.elementId,
+                          element_instance_key=job.elementInstanceKey,
+                          custom_headers=json.loads(job.customHeaders),
+                          worker=job.worker,
+                          retries=job.retries,
+                          deadline=job.deadline,
+                          variables=json.loads(job.variables))
 
     def complete_job(self, job_key: int, variables: Dict) -> None:
         self.gateway_stub.CompleteJob(CompleteJobRequest(jobKey=job_key, variables=json.dumps(variables)))

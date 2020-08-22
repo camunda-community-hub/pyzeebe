@@ -1,9 +1,9 @@
 from pyz.grpc_internals.zeebe_adapter import ZeebeAdapter
-from pyz.task.task_context import TaskContext
+from pyz.task.job_context import JobContext
 
 
 class TaskStatusSetter:
-    def __init__(self, context: TaskContext, zeebe_client: ZeebeAdapter):
+    def __init__(self, context: JobContext, zeebe_client: ZeebeAdapter):
         self.zeebe_client = zeebe_client
         self.context = context
 
