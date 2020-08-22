@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/JonatanMartens/zeebepy/badge.svg?branch=master)](https://coveralls.io/github/JonatanMartens/zeebepy?branch=master)
+
 # Zeebepy
 Zeebepy is a python grpc client for Zeebe.
 
