@@ -26,6 +26,11 @@ jobs:
         pip install pipenv
         pipenv install
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        
     - name: Test with pytest
       run: |
-        pytest
+        coverage run --source=. -m py.test
+        
+    - name: Upload coverage
+      shell: pwsh
+      run: coverage report -m
