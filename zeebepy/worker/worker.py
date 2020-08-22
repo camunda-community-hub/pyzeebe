@@ -2,9 +2,9 @@ import socket
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Callable, Generator, Dict, Tuple
 
+from zeebepy.common.exceptions import TaskNotFoundException, NotEnoughTasksException
 from zeebepy.decorators.task_decorator import TaskDecorator
 from zeebepy.decorators.zeebe_decorator_base import ZeebeDecoratorBase
-from zeebepy.exceptions import TaskNotFoundException
 from zeebepy.grpc_internals.zeebe_adapter import ZeebeAdapter
 from zeebepy.task.job_context import JobContext
 from zeebepy.task.task import Task
@@ -22,9 +22,12 @@ class ZeebeWorker(ZeebeDecoratorBase):
         self.tasks = []
 
     def work(self):
-        executor = ThreadPoolExecutor(max_workers=len(self.tasks))
-        executor.map(self.handle_task, self.tasks)
-        executor.shutdown(wait=True)
+        if len(self.tasks) > 0:
+            executor = ThreadPoolExecutor(max_workers=len(self.tasks))
+            executor.map(self.handle_task, self.tasks)
+            executor.shutdown(wait=True)
+        else:
+            raise NotEnoughTasksException('Worker needs tasks in order to work')
 
     def handle_task(self, task: Task):
         while self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection:

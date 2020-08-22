@@ -4,8 +4,8 @@ from uuid import uuid4
 
 import pytest
 
+from zeebepy.common.exceptions import TaskNotFoundException, NotEnoughTasksException
 from zeebepy.common.test_utils import random_job_context
-from zeebepy.exceptions import TaskNotFoundException
 from zeebepy.task.job_context import JobContext
 from zeebepy.task.task import Task
 from zeebepy.worker.worker import ZeebeWorker
@@ -206,3 +206,8 @@ def test_handle_many_jobs():
             task_handler_mock.return_value = {'x': str(uuid4())}
             zeebe_worker.handle_task_jobs(task)
             task_handler_mock.assert_called_with(context)
+
+
+def test_work_without_tasks():
+    with pytest.raises(NotEnoughTasksException):
+        zeebe_worker.work()
