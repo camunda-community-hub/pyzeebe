@@ -1,8 +1,8 @@
 from typing import Callable, List, Dict
 
-from pyz.decorators.zeebe_decorator_base import ZeebeDecoratorBase
-from pyz.task.job_context import JobContext
-from pyz.task.task_status_controller import TaskStatusController
+from zeebepy.decorators.zeebe_decorator_base import ZeebeDecoratorBase
+from zeebepy.task.job_context import JobContext
+from zeebepy.task.task_status_controller import TaskStatusController
 
 
 # TODO: Add support for async tasks

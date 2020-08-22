@@ -1,6 +1,6 @@
 from typing import List
 
-from pyz.decorators.task_decorator import TaskDecorator
+from zeebepy.decorators.task_decorator import TaskDecorator
 
 
 class ZeebeDecoratorBase(object):

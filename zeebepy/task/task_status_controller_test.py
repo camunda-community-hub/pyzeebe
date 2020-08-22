@@ -3,9 +3,9 @@ from uuid import uuid4
 
 import pytest
 
-from pyz.common.test_utils import random_job_context
-from pyz.grpc_internals.zeebe_adapter import ZeebeAdapter
-from pyz.task.task_status_controller import TaskStatusController
+from zeebepy.common.test_utils import random_job_context
+from zeebepy.grpc_internals.zeebe_adapter import ZeebeAdapter
+from zeebepy.task.task_status_controller import TaskStatusController
 
 task_status_controller: TaskStatusController
 
@@ -20,14 +20,14 @@ def run_around_tests():
 
 
 def test_success():
-    with patch('pyz.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job') as complete_job_mock:
+    with patch('zeebepy.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job') as complete_job_mock:
         task_status_controller.success()
         complete_job_mock.assert_called_with(job_key=task_status_controller.context.key,
                                              variables=task_status_controller.context.variables)
 
 
 def test_error():
-    with patch('pyz.grpc_internals.zeebe_adapter.ZeebeAdapter.throw_error') as throw_error_mock:
+    with patch('zeebepy.grpc_internals.zeebe_adapter.ZeebeAdapter.throw_error') as throw_error_mock:
         message = str(uuid4())
         task_status_controller.error(message)
         throw_error_mock.assert_called_with(job_key=task_status_controller.context.key,
@@ -35,7 +35,7 @@ def test_error():
 
 
 def test_failure():
-    with patch('pyz.grpc_internals.zeebe_adapter.ZeebeAdapter.fail_job') as fail_job_mock:
+    with patch('zeebepy.grpc_internals.zeebe_adapter.ZeebeAdapter.fail_job') as fail_job_mock:
         message = str(uuid4())
         task_status_controller.failure(message)
         fail_job_mock.assert_called_with(job_key=task_status_controller.context.key,

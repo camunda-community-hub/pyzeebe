@@ -1,29 +1,32 @@
-import uuid
-
-from pyz.task.task import Task
+from zeebepy.common.test_utils import random_job_context
+from zeebepy.decorators.zeebe_decorator_base import ZeebeDecoratorBase
 
 
 def test_add_before():
-    base_decorator = Task(task_type=str(uuid.uuid4()), task_handler=lambda x: x, exception_handler=lambda x: x)
+    base_decorator = ZeebeDecoratorBase()
     base_decorator.before(lambda x: x)
     assert len(base_decorator._before) == 1
 
 
 def test_add_after():
-    base_decorator = Task(task_type=str(uuid.uuid4()), task_handler=lambda x: x, exception_handler=lambda x: x)
+    base_decorator = ZeebeDecoratorBase()
     base_decorator.after(lambda x: x)
     assert len(base_decorator._after) == 1
 
 
 def test_add_before_plus_constructor():
     def constructor_decorator(x):
-        return x + 1
+        return x
 
     def function_decorator(x):
         return x
 
-    base_decorator = Task(task_type=str(uuid.uuid4()), task_handler=lambda x: x, exception_handler=lambda x: x,
-                          before=[constructor_decorator])
+    context = random_job_context()
+
+    assert constructor_decorator(context) == context
+    assert function_decorator(context) == context
+
+    base_decorator = ZeebeDecoratorBase(before=[constructor_decorator])
     base_decorator.before(function_decorator)
     assert len(base_decorator._before) == 2
     assert base_decorator._before == [constructor_decorator, function_decorator]
@@ -31,13 +34,17 @@ def test_add_before_plus_constructor():
 
 def test_add_after_plus_constructor():
     def constructor_decorator(x):
-        return x + 1
+        return x
 
     def function_decorator(x):
         return x
 
-    base_decorator = Task(task_type=str(uuid.uuid4()), task_handler=lambda x: x, exception_handler=lambda x: x,
-                          after=[constructor_decorator])
+    context = random_job_context()
+
+    assert constructor_decorator(context) == context
+    assert function_decorator(context) == context
+
+    base_decorator = ZeebeDecoratorBase(after=[constructor_decorator])
     base_decorator.after(function_decorator)
     assert len(base_decorator._after) == 2
     assert base_decorator._after == [constructor_decorator, function_decorator]

@@ -5,10 +5,10 @@ from uuid import uuid4
 import grpc
 import pytest
 
-from pyz.common.test_utils import RANDOM_RANGE
-from pyz.grpc_internals.zeebe_adapter import ZeebeAdapter
-from pyz.grpc_internals.zeebe_pb2 import *
-from pyz.grpc_internals.zeebe_pb2_grpc import GatewayServicer
+from zeebepy.common.test_utils import RANDOM_RANGE
+from zeebepy.grpc_internals.zeebe_adapter import ZeebeAdapter
+from zeebepy.grpc_internals.zeebe_pb2 import *
+from zeebepy.grpc_internals.zeebe_pb2_grpc import GatewayServicer
 
 zeebe_adapter: ZeebeAdapter
 
@@ -62,7 +62,7 @@ class TestGatewayServicer(GatewayServicer):
 
 @pytest.fixture(scope='module')
 def grpc_add_to_server():
-    from pyz.grpc_internals.zeebe_pb2_grpc import add_GatewayServicer_to_server
+    from zeebepy.grpc_internals.zeebe_pb2_grpc import add_GatewayServicer_to_server
     return add_GatewayServicer_to_server
 
 
@@ -73,7 +73,7 @@ def grpc_servicer():
 
 @pytest.fixture(scope='module')
 def grpc_stub_cls(grpc_channel):
-    from pyz.grpc_internals.zeebe_pb2_grpc import GatewayStub
+    from zeebepy.grpc_internals.zeebe_pb2_grpc import GatewayStub
     return GatewayStub
 
 

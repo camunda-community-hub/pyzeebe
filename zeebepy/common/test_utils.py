@@ -1,8 +1,8 @@
 from random import randint
 from uuid import uuid4
 
-from pyz.task.job_context import JobContext
-from pyz.task.task import Task
+from zeebepy.task.job_context import JobContext
+from zeebepy.task.task import Task
 
 RANDOM_RANGE = 100000
 
