@@ -5,7 +5,7 @@ from uuid import uuid4
 import pytest
 
 from zeebepy.common.exceptions import TaskNotFoundException, NotEnoughTasksException
-from zeebepy.common.test_utils import random_job_context
+from zeebepy.common.random_utils import random_job_context
 from zeebepy.task.job_context import JobContext
 from zeebepy.task.task import Task
 from zeebepy.worker.worker import ZeebeWorker

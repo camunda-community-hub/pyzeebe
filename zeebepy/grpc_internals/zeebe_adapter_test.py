@@ -5,7 +5,7 @@ from uuid import uuid4
 import grpc
 import pytest
 
-from zeebepy.common.test_utils import RANDOM_RANGE
+from zeebepy.common.random_utils import RANDOM_RANGE
 from zeebepy.grpc_internals.zeebe_adapter import ZeebeAdapter
 from zeebepy.grpc_internals.zeebe_pb2 import *
 from zeebepy.grpc_internals.zeebe_pb2_grpc import GatewayServicer

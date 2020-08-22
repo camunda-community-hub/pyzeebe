@@ -1,4 +1,4 @@
-from zeebepy.common.test_utils import random_job_context
+from zeebepy.common.random_utils import random_job_context
 from zeebepy.decorators.zeebe_decorator_base import ZeebeDecoratorBase
 
 
