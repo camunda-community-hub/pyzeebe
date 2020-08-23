@@ -17,7 +17,7 @@ Zeebe version support:
 
 | Zeebepy version | Tested Zeebe versions |
 |:---------------:|----------------|
-| 0.0.1           | 0.24.2         |
+| 1.00           | 0.24.2         |
 
 ## Getting Started
 To install:
