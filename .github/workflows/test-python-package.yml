@@ -33,5 +33,8 @@ jobs:
       - name: Test with pytest
         run: |
           pipenv run coverage run --source=. -m py.test
-      - name: Coveralls Python
-        uses: AndreMiras/coveralls-python-action@v20200413
+      - name: Upload to coveralls
+        run: |
+          pipenv run coveralls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
