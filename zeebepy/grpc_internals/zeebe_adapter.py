@@ -9,7 +9,7 @@ from zeebepy.grpc_internals.zeebe_pb2_grpc import GatewayStub
 from zeebepy.task.task_context import TaskContext
 
 
-class ZeebeAdapter:
+class ZeebeAdapter(object):
     def __init__(self, hostname: str = None, port: int = None, channel: grpc.Channel = None, **kwargs):
         self._connection_uri = f'{hostname}:{port}' or os.getenv('ZEEBE_ADDRESS') or 'localhost:26500'
         self._channel = channel or grpc.insecure_channel(self._connection_uri)
