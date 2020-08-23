@@ -1,4 +1,4 @@
-name: Publish zeebepy
+name: Publish pyzeebe
 
 on:
   release:

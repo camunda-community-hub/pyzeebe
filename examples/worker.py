@@ -1,6 +1,6 @@
 from typing import Dict
 
-from zeebepy import Task, TaskContext, TaskStatusController, ZeebeWorker
+from pyzeebe import Task, TaskContext, TaskStatusController, ZeebeWorker
 
 
 def example_task(input: str) -> Dict:

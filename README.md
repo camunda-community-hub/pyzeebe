@@ -1,34 +1,34 @@
-[![Coverage Status](https://coveralls.io/repos/github/JonatanMartens/zeebepy/badge.svg?branch=master)](https://coveralls.io/github/JonatanMartens/zeebepy?branch=master)
-![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/JonatanMartens/zeebepy/Test%20zeebepy/master)
-![GitHub issues](https://img.shields.io/github/issues-raw/JonatanMartens/zeebepy)
-![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/JonatanMartens/zeebepy)
-![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed-raw/JonatanMartens/zeebepy)
-![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/JonatanMartens/zeebepy)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/zeebepy)
-![PyPI](https://img.shields.io/pypi/v/zeebepy)
+[![Coverage Status](https://coveralls.io/repos/github/JonatanMartens/pyzeebe/badge.svg?branch=master)](https://coveralls.io/github/JonatanMartens/pyzeebe?branch=master)
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/JonatanMartens/pyzeebe/Test%20pyzeebe/master)
+![GitHub issues](https://img.shields.io/github/issues-raw/JonatanMartens/pyzeebe)
+![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/JonatanMartens/pyzeebe)
+![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed-raw/JonatanMartens/pyzeebe)
+![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/JonatanMartens/pyzeebe)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyzeebe)
+![PyPI](https://img.shields.io/pypi/v/pyzeebe)
 
 
 
-# Zeebepy
-Zeebepy is a python grpc client for Zeebe.
+# Pyzeebe
+pyzeebe is a python grpc client for Zeebe.
 
 Zeebe version support:
 
-| Zeebepy version | Tested Zeebe versions |
+| Pyzeebe version | Tested Zeebe versions |
 |:---------------:|----------------|
 | 1.0.1           | 0.24.2         |
 
 ## Getting Started
 To install:
 
-`pip install zeebepy`
+`pip install pyzeebe`
 
 ## Usage
 
 ### Worker
 
 ```python
-from zeebepy import ZeebeWorker, Task, TaskStatusController, TaskContext
+from pyzeebe import ZeebeWorker, Task, TaskStatusController, TaskContext
 
 def example_task(input: str):
     return {'output': f'Hello world, {input}!'}
@@ -49,7 +49,7 @@ worker.work() # Now every time that a task with type example is called example_t
 ```
 
 ## Tests
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install zeebepy
+Use the package manager [pip](https://pip.pypa.io/en/stable/) to install pyzeebe
  
 `pytest .`
 

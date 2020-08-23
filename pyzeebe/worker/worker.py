@@ -2,13 +2,13 @@ import socket
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Callable, Generator, Dict, Tuple
 
-from zeebepy.common.exceptions import TaskNotFoundException, NotEnoughTasksException
-from zeebepy.decorators.zeebe_decorator_base import ZeebeDecoratorBase
-from zeebepy.grpc_internals.zeebe_adapter import ZeebeAdapter
-from zeebepy.task.task import Task
-from zeebepy.task.task_context import TaskContext
-from zeebepy.task.task_decorator import TaskDecorator
-from zeebepy.task.task_status_controller import TaskStatusController
+from pyzeebe.common.exceptions import TaskNotFoundException, NotEnoughTasksException
+from pyzeebe.decorators.zeebe_decorator_base import ZeebeDecoratorBase
+from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
+from pyzeebe.task.task import Task
+from pyzeebe.task.task_context import TaskContext
+from pyzeebe.task.task_decorator import TaskDecorator
+from pyzeebe.task.task_status_controller import TaskStatusController
 
 
 # TODO: Add support for async tasks
