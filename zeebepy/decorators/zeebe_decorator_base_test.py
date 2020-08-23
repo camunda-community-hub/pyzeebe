@@ -1,4 +1,4 @@
-from zeebepy.common.random_utils import random_job_context
+from zeebepy.common.random_utils import random_task_context
 from zeebepy.decorators.zeebe_decorator_base import ZeebeDecoratorBase
 
 
@@ -21,7 +21,7 @@ def test_add_before_plus_constructor():
     def function_decorator(x):
         return x
 
-    context = random_job_context()
+    context = random_task_context()
 
     assert constructor_decorator(context) == context
     assert function_decorator(context) == context
@@ -39,7 +39,7 @@ def test_add_after_plus_constructor():
     def function_decorator(x):
         return x
 
-    context = random_job_context()
+    context = random_task_context()
 
     assert constructor_decorator(context) == context
     assert function_decorator(context) == context

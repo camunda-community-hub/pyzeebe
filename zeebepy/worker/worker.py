@@ -6,8 +6,8 @@ from zeebepy.common.exceptions import TaskNotFoundException, NotEnoughTasksExcep
 from zeebepy.decorators.task_decorator import TaskDecorator
 from zeebepy.decorators.zeebe_decorator_base import ZeebeDecoratorBase
 from zeebepy.grpc_internals.zeebe_adapter import ZeebeAdapter
-from zeebepy.task.job_context import JobContext
 from zeebepy.task.task import Task
+from zeebepy.task.task_context import TaskContext
 from zeebepy.task.task_status_controller import TaskStatusController
 
 
@@ -24,38 +24,38 @@ class ZeebeWorker(ZeebeDecoratorBase):
     def work(self):
         if len(self.tasks) > 0:
             executor = ThreadPoolExecutor(max_workers=len(self.tasks))
-            executor.map(self.handle_task, self.tasks)
+            executor.map(self._handle_task, self.tasks)
             executor.shutdown(wait=True)
         else:
             raise NotEnoughTasksException('Worker needs tasks in order to work')
 
-    def handle_task(self, task: Task):
+    def _handle_task(self, task: Task):
         while self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection:
             if self.zeebe_adapter.retrying_connection:
                 continue
 
-            self.handle_task_jobs(task)
+            self._handle_task_contexts(task)
 
-    def handle_task_jobs(self, task: Task):
+    def _handle_task_contexts(self, task: Task):
         executor = ThreadPoolExecutor()
-        executor.map(task.handler, self._get_jobs(task))
+        executor.map(task.handler, self._get_task_contexts(task))
         executor.shutdown(wait=False)  # Do not wait for tasks to finish
 
-    def _get_jobs(self, task: Task) -> Generator[JobContext, None, None]:
+    def _get_task_contexts(self, task: Task) -> Generator[TaskContext, None, None]:
         return self.zeebe_adapter.activate_jobs(task_type=task.type, worker=self.name, timeout=task.timeout,
                                                 max_jobs_to_activate=task.max_jobs_to_activate,
                                                 variables_to_fetch=task.variables_to_fetch,
                                                 request_timeout=self.request_timeout)
 
     def add_task(self, task: Task) -> None:
-        task.handler = self.create_zeebe_task_handler(task)
+        task.handler = self._create_zeebe_task_handler(task)
         self.tasks.append(task)
 
-    def create_zeebe_task_handler(self, task: Task) -> Callable[[JobContext], Dict]:
+    def _create_zeebe_task_handler(self, task: Task) -> Callable[[TaskContext], Dict]:
         before_decorator_runner = self._create_before_decorator_runner(task)
         after_decorator_runner = self._create_after_decorator_runner(task)
 
-        def task_handler(context: JobContext):
+        def task_handler(context: TaskContext):
             try:
                 context = before_decorator_runner(context)
                 context.variables = task.inner_function(**context.variables)
@@ -68,19 +68,19 @@ class ZeebeWorker(ZeebeDecoratorBase):
 
         return task_handler
 
-    def _create_before_decorator_runner(self, task: Task) -> Callable[[JobContext], JobContext]:
+    def _create_before_decorator_runner(self, task: Task) -> Callable[[TaskContext], TaskContext]:
         decorators = task._before.copy()
         decorators.extend(self._before)
         return self._create_decorator_runner(decorators)
 
-    def _create_after_decorator_runner(self, task: Task) -> Callable[[JobContext], JobContext]:
+    def _create_after_decorator_runner(self, task: Task) -> Callable[[TaskContext], TaskContext]:
         decorators = self._after.copy()
         decorators.extend(task._after)
         return self._create_decorator_runner(decorators)
 
     @staticmethod
-    def _create_decorator_runner(decorators: List[TaskDecorator]) -> Callable[[JobContext], JobContext]:
-        def decorator_runner(context: JobContext):
+    def _create_decorator_runner(decorators: List[TaskDecorator]) -> Callable[[TaskContext], TaskContext]:
+        def decorator_runner(context: TaskContext):
             for decorator in decorators:
                 context = decorator(context)
             return context

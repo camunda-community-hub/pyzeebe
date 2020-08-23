@@ -29,12 +29,12 @@ To install:
 ### Worker
 
 ```python
-from zeebepy import ZeebeWorker, Task, TaskStatusController, JobContext
+from zeebepy import ZeebeWorker, Task, TaskStatusController, TaskContext
 
 def example_task(input: str):
     return {'output': f'Hello world, {input}!'}
 
-def on_error(exception: Exception, context: JobContext, task_status_controller: TaskStatusController):
+def on_error(exception: Exception, context: TaskContext, task_status_controller: TaskStatusController):
     """
     on_error will be called when the task fails
     """ 

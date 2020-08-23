@@ -1,13 +1,13 @@
 from typing import Dict
 
-from zeebepy import Task, JobContext, TaskStatusController, ZeebeWorker
+from zeebepy import Task, TaskContext, TaskStatusController, ZeebeWorker
 
 
 def example_task(input: str) -> Dict:
     return {'output': f'Hello world, {input}!'}
 
 
-def example_exception_handler(exc: Exception, context: JobContext, controller: TaskStatusController) -> None:
+def example_exception_handler(exc: Exception, context: TaskContext, controller: TaskStatusController) -> None:
     print(exc)
     print(context)
     controller.error(f'Failed to run task {context.type}. Reason: {exc}')

@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import pytest
 
-from zeebepy.common.random_utils import random_job_context
+from zeebepy.common.random_utils import random_task_context
 from zeebepy.grpc_internals.zeebe_adapter import ZeebeAdapter
 from zeebepy.task.task_status_controller import TaskStatusController
 
@@ -14,9 +14,9 @@ task_status_controller: TaskStatusController
 def run_around_tests():
     zeebe_adapter = ZeebeAdapter()
     global task_status_controller
-    task_status_controller = TaskStatusController(random_job_context(), zeebe_adapter)
+    task_status_controller = TaskStatusController(random_task_context(), zeebe_adapter)
     yield
-    task_status_controller = TaskStatusController(random_job_context(), zeebe_adapter)
+    task_status_controller = TaskStatusController(random_task_context(), zeebe_adapter)
 
 
 def test_success():

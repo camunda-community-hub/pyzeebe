@@ -1,5 +1,5 @@
 from typing import Callable
 
-from zeebepy.task.job_context import JobContext
+from zeebepy.task.task_context import TaskContext
 
-TaskDecorator = Callable[[JobContext], JobContext]
+TaskDecorator = Callable[[TaskContext], TaskContext]

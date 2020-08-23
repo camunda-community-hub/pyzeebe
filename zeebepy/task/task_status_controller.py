@@ -1,9 +1,9 @@
 from zeebepy.grpc_internals.zeebe_adapter import ZeebeAdapter
-from zeebepy.task.job_context import JobContext
+from zeebepy.task.task_context import TaskContext
 
 
 class TaskStatusController:
-    def __init__(self, context: JobContext, zeebe_adapter: ZeebeAdapter):
+    def __init__(self, context: TaskContext, zeebe_adapter: ZeebeAdapter):
         self.zeebe_adapter = zeebe_adapter
         self.context = context
 
