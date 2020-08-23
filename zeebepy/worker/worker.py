@@ -13,8 +13,19 @@ from zeebepy.task.task_status_controller import TaskStatusController
 
 # TODO: Add support for async tasks
 class ZeebeWorker(ZeebeDecoratorBase):
+    """A zeebe worker that can connect to a zeebe instance and perform tasks."""
+
     def __init__(self, name: str = None, request_timeout: int = 0, hostname: str = None, port: int = None,
                  before: List[TaskDecorator] = None, after: List[TaskDecorator] = None):
+        """
+        Args:
+            hostname (str): Zeebe instance hostname
+            port (int): Port of the zeebe
+            name (str): Name of zeebe worker
+            request_timeout (int): Longpolling timeout for getting tasks from zeebe. If 0 default value is used
+            before (List[TaskDecorator]): Decorators to be performed before each task
+            after (List[TaskDecorator]): Decorators to be performed after each task
+        """
         super().__init__(before, after)
         self.zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port)
         self.name = name or socket.gethostname()
