@@ -1,0 +1,17 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+autopep8 = "~=1.5.4"
+pylint = "~=2.6.0"
+coverage = "~=5.2.1"
+pytest = "~=6.0.1"
+pytest-grpc = "~=0.8.0"
+mypy = "~=0.782"
+zeebepy = {editable = true, path = "."}
+
+[packages]
+grpcio = "~=1.31.0"
+protobuf = "~=3.13.0"

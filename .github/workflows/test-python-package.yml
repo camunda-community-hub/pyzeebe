@@ -5,7 +5,7 @@ name: Test zeebepy
 
 on:
   push:
-    branches: [ master, development ]
+    branches: [ master, development, feature/* ]
   pull_request:
     branches: [ master, development, feature/* ]
 
@@ -18,17 +18,20 @@ jobs:
         python-version: [3.5, 3.6, 3.7, 3.8]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pipenv
-        pipenv install --dev
-        pipenv install protobuf
-    - name: Test with pytest
-      run: |
-        pytest
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install pipenv
+        uses: dschep/install-pipenv-action@v1
+
+      - name: Install dependencies
+        run: |
+          pip install pipenv
+          pipenv install --dev
+      - name: Test with pytest
+        run: |
+          pipenv run coverage run --source=. -m py.test
+      - name: Coveralls Python
+        uses: AndreMiras/coveralls-python-action@v20200413
