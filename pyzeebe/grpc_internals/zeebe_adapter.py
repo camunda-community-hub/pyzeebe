@@ -10,9 +10,14 @@ from pyzeebe.task.task_context import TaskContext
 
 
 class ZeebeAdapter(object):
-    def __init__(self, hostname: str = None, port: int = None, channel: grpc.Channel = None, **kwargs):
-        self._connection_uri = f'{hostname}:{port}' or os.getenv('ZEEBE_ADDRESS') or 'localhost:26500'
-        self._channel = channel or grpc.insecure_channel(self._connection_uri)
+    def __init__(self, hostname: str = 'localhost', port: int = 26500, channel: grpc.Channel = None):
+        self._connection_uri = f'{hostname or "localhost"}:{port or 26500}' or os.getenv('ZEEBE_ADDRESS')
+
+        if channel:
+            self._channel = channel
+        else:
+            self._channel = grpc.insecure_channel(self._connection_uri)
+
         self.connected = False
         self.retrying_connection = True
         self._channel.subscribe(self._check_connectivity, try_to_connect=True)
@@ -64,7 +69,7 @@ class ZeebeAdapter(object):
         return self.gateway_stub.ThrowError(
             ThrowErrorRequest(jobKey=job_key, errorMessage=message))
 
-    def create_workflow_instance(self, bpmn_process_id: str, version: int, variables: Dict) -> str:
+    def create_workflow_instance(self, bpmn_process_id: str, version: int, variables: Dict) -> int:
         response = self.gateway_stub.CreateWorkflowInstance(
             CreateWorkflowInstanceRequest(bpmnProcessId=bpmn_process_id, version=version,
                                           variables=json.dumps(variables)))
@@ -79,6 +84,10 @@ class ZeebeAdapter(object):
                 requestTimeout=timeout, fetchVariables=variables_to_fetch))
         return json.loads(response.variables)
 
+    def cancel_workflow_instance(self, workflow_instance_key: int) -> CancelWorkflowInstanceResponse:
+        return self.gateway_stub.CancelWorkflowInstance(
+            CancelWorkflowInstanceRequest(workflowInstanceKey=workflow_instance_key))
+
     def publish_message(self, name: str, correlation_key: str, time_to_live_in_milliseconds: int,
                         variables: Dict) -> PublishMessageResponse:
         return self.gateway_stub.PublishMessage(
@@ -91,5 +100,6 @@ class ZeebeAdapter(object):
 
     @staticmethod
     def _get_workflow_request_object(workflow_file_path: str) -> WorkflowRequestObject:
-        return WorkflowRequestObject(name=os.path.split(workflow_file_path)[-1],
-                                     definition=open(workflow_file_path).read())
+        with open(workflow_file_path, mode='rb') as workflow_file:
+            return WorkflowRequestObject(name=os.path.split(workflow_file_path)[-1],
+                                         definition=workflow_file.read())

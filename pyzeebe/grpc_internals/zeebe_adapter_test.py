@@ -1,63 +1,15 @@
 from random import randint
-from unittest.mock import patch
 from uuid import uuid4
 
 import grpc
 import pytest
 
+from pyzeebe.common.gateway_mock import GatewayMock
 from pyzeebe.common.random_utils import RANDOM_RANGE
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.grpc_internals.zeebe_pb2 import *
-from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayServicer
 
 zeebe_adapter: ZeebeAdapter
-
-
-@patch('grpc.insecure_channel')
-def mock_channel():
-    pass
-
-
-class TestGatewayServicer(GatewayServicer):
-    """
-    def ActivateJobs(self, request, context):
-        return ActivateJobsResponse(jobs=[ActivatedJob()])
-    """
-
-    def __init__(self):
-        self.workflows = {}
-
-    def CompleteJob(self, request, context):
-        return CompleteJobResponse()
-
-    def FailJob(self, request, context):
-        return FailJobResponse()
-
-    def ThrowError(self, request, context):
-        return ThrowErrorResponse()
-
-    def CreateWorkflowInstance(self, request, context):
-        return CreateWorkflowInstanceResponse(workflowKey=randint(0, RANDOM_RANGE),
-                                              bpmnProcessId=request.bpmnProcessId,
-                                              version=request.version, workflowInstanceKey=randint(0, RANDOM_RANGE))
-
-    def CreateWorkflowInstanceWithResult(self, request, context):
-        return CreateWorkflowInstanceWithResultResponse(workflowKey=request.request.workflowKey,
-                                                        bpmnProcessId=request.request.bpmnProcessId,
-                                                        version=randint(0, 10), variables=request.request.variables)
-
-    def DeployWorkflow(self, request, context):
-        workflows = []
-        for workflow in request.workflows:
-            workflow_metadata = WorkflowMetadata(bpmnProcessId=str(uuid4()), version=randint(0, 10),
-                                                 workflowKey=randint(0, RANDOM_RANGE), resourceName=workflow.name)
-            workflows.append(workflow_metadata)
-            self.workflows[workflow_metadata.bpmnProcessId] = workflow_metadata
-
-        return DeployWorkflowResponse(key=randint(0, RANDOM_RANGE), workflows=workflows)
-
-    def PublishMessage(self, request, context):
-        return PublishMessageResponse()
 
 
 @pytest.fixture(scope='module')
@@ -68,7 +20,7 @@ def grpc_add_to_server():
 
 @pytest.fixture(scope='module')
 def grpc_servicer():
-    return TestGatewayServicer()
+    return GatewayMock()
 
 
 @pytest.fixture(scope='module')

@@ -3,8 +3,8 @@ from typing import Dict
 from pyzeebe import Task, TaskContext, TaskStatusController, ZeebeWorker
 
 
-def example_task(input: str) -> Dict:
-    return {'output': f'Hello world, {input}!'}
+def example_task() -> Dict:
+    return {'output': f'Hello world, test!'}
 
 
 def example_exception_handler(exc: Exception, context: TaskContext, controller: TaskStatusController) -> None:
@@ -13,7 +13,8 @@ def example_exception_handler(exc: Exception, context: TaskContext, controller: 
     controller.error(f'Failed to run task {context.type}. Reason: {exc}')
 
 
-task = Task(task_type='example', task_handler=example_task, exception_handler=example_exception_handler)
+task = Task(task_type='test', task_handler=example_task, exception_handler=example_exception_handler)
+task_2 = Task(task_type='test2', task_handler=example_task, exception_handler=example_exception_handler)
 
 worker = ZeebeWorker()  # Will use environment variable ZEEBE_ADDRESS or localhost:26500
 
