@@ -4,9 +4,6 @@
 ![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/JonatanMartens/zeebepy)
 ![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed-raw/JonatanMartens/zeebepy)
 ![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/JonatanMartens/zeebepy)
-![PyPI - Downloads](https://img.shields.io/pypi/dd/zeebepy)
-![PyPI - Downloads](https://img.shields.io/pypi/dw/zeebepy)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/zeebepy)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/zeebepy)
 ![PyPI](https://img.shields.io/pypi/v/zeebepy)
 
