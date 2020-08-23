@@ -11,6 +11,7 @@ pytest = "~=6.0.1"
 pytest-grpc = "~=0.8.0"
 mypy = "~=0.782"
 zeebepy = {editable = true, path = "."}
+coveralls = "~=2.1.2"
 
 [packages]
 grpcio = "~=1.31.0"
