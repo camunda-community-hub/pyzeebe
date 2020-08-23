@@ -14,6 +14,7 @@ zeebepy = {editable = true, path = "."}
 
 [packages]
 grpcio = "~=1.31.0"
+protobuf = "~=3.13.0"
 
 [requires]
 python_version = "3.8"

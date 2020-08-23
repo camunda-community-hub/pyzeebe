@@ -27,7 +27,6 @@ jobs:
         run: |
           pip install pipenv
           pipenv install --dev
-          pipenv install protobuf
       - name: Test with pytest
         run: |
           pipenv run coverage run --source=. -m py.test
