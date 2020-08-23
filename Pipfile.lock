@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "8c4166d32e85a7cb347cba7feb118f85099f7e3620539908cc3b4f82309ec295"
+            "sha256": "4da03aba2dccc4f8850ca3c6cdc3f94e08d344e3bba9607bbda122a48283866a"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -364,6 +364,10 @@
             "index": "pypi",
             "version": "==0.8.0"
         },
+        "pyzeebe": {
+            "editable": true,
+            "path": "."
+        },
         "requests": {
             "hashes": [
                 "sha256:b3559a131db72c33ee969480840fff4bb6dd111de7dd27c8ee1f820f4f00231b",
@@ -434,10 +438,6 @@
                 "sha256:b62ffa81fb85f4332a4f609cab4ac40709470da05643a082ec1eb88e6d9b97d7"
             ],
             "version": "==1.12.1"
-        },
-        "zeebepy": {
-            "editable": true,
-            "path": "."
         },
         "zipp": {
             "hashes": [

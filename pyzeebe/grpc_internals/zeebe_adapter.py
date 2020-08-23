@@ -4,9 +4,9 @@ from typing import List, Generator, Dict
 
 import grpc
 
-from zeebepy.grpc_internals.zeebe_pb2 import *
-from zeebepy.grpc_internals.zeebe_pb2_grpc import GatewayStub
-from zeebepy.task.task_context import TaskContext
+from pyzeebe.grpc_internals.zeebe_pb2 import *
+from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayStub
+from pyzeebe.task.task_context import TaskContext
 
 
 class ZeebeAdapter:

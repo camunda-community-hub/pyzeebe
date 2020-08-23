@@ -1,5 +1,5 @@
-from zeebepy.common.random_utils import random_task_context
-from zeebepy.decorators.zeebe_decorator_base import ZeebeDecoratorBase
+from pyzeebe.common.random_utils import random_task_context
+from pyzeebe.decorators.zeebe_decorator_base import ZeebeDecoratorBase
 
 
 def test_add_before():

@@ -1,5 +1,5 @@
-from zeebepy.grpc_internals.zeebe_adapter import ZeebeAdapter
-from zeebepy.task.task_context import TaskContext
+from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
+from pyzeebe.task.task_context import TaskContext
 
 
 class TaskStatusController:
