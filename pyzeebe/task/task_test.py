@@ -1,6 +1,6 @@
 import uuid
 
-from zeebepy.task.task import Task
+from pyzeebe.task.task import Task
 
 
 def test_add_before():

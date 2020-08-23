@@ -1,7 +1,4 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-
-name: Test zeebepy
+name: Test pyzeebe
 
 on:
   push:
@@ -33,5 +30,8 @@ jobs:
       - name: Test with pytest
         run: |
           pipenv run coverage run --source=. -m py.test
-      - name: Coveralls Python
-        uses: AndreMiras/coveralls-python-action@v20200413
+      - name: Upload to coveralls
+        run: |
+          pipenv run coveralls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

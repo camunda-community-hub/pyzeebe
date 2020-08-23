@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import zeebepy.grpc_internals.zeebe_pb2 as zeebe__pb2
+import pyzeebe.grpc_internals.zeebe_pb2 as zeebe__pb2
 
 
 class GatewayStub(object):
