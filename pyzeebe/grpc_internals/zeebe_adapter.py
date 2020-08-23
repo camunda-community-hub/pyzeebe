@@ -12,7 +12,15 @@ from pyzeebe.task.task_context import TaskContext
 class ZeebeAdapter:
     def __init__(self, hostname: str = None, port: int = None, channel: grpc.Channel = None, **kwargs):
         self._connection_uri = f'{hostname}:{port}' or os.getenv('ZEEBE_ADDRESS') or 'localhost:26500'
-        self._channel = channel or grpc.insecure_channel(self._connection_uri)
+        if channel:
+            self._channel = channel
+        else:
+            if hostname or port:
+                self._connection_uri = f'{hostname or "localhost"}:{port or 26500}'
+            else:
+                self._connection_uri = os.getenv('ZEEBE_ADDRESS') or 'localhost:26500'
+            self._channel = grpc.insecure_channel(self._connection_uri)
+
         self.connected = False
         self.retrying_connection = True
         self._channel.subscribe(self._check_connectivity, try_to_connect=True)

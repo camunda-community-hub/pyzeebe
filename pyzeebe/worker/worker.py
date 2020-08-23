@@ -11,7 +11,6 @@ from pyzeebe.task.task_decorator import TaskDecorator
 from pyzeebe.task.task_status_controller import TaskStatusController
 
 
-# TODO: Add support for async tasks
 class ZeebeWorker(ZeebeDecoratorBase):
     """A zeebe worker that can connect to a zeebe instance and perform tasks."""
 
@@ -34,7 +33,7 @@ class ZeebeWorker(ZeebeDecoratorBase):
 
     def work(self):
         if len(self.tasks) > 0:
-            executor = ThreadPoolExecutor(max_workers=len(self.tasks))
+            executor = ThreadPoolExecutor(max_workers=len(self.tasks), thread_name_prefix='TASK_HANDLER_THREAD')
             executor.map(self._handle_task, self.tasks)
             executor.shutdown(wait=True)
         else:
@@ -48,7 +47,7 @@ class ZeebeWorker(ZeebeDecoratorBase):
             self._handle_task_contexts(task)
 
     def _handle_task_contexts(self, task: Task):
-        executor = ThreadPoolExecutor()
+        executor = ThreadPoolExecutor(thread_name_prefix='JOB_HANDLER_THREAD')
         executor.map(task.handler, self._get_task_contexts(task))
         executor.shutdown(wait=False)  # Do not wait for tasks to finish
 
