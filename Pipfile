@@ -12,6 +12,7 @@ pytest-grpc = "~=0.8.0"
 mypy = "~=0.782"
 zeebepy = {editable = true, path = "."}
 coveralls = "~=2.1.2"
+importlib-metadata = "~=1.7.0"
 
 [packages]
 grpcio = "~=1.31.0"
