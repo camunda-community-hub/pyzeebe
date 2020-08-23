@@ -5,11 +5,10 @@ from pyzeebe.task.task_context import TaskContext
 from pyzeebe.task.task_status_controller import TaskStatusController
 
 
-# TODO: Add support for async tasks
 class Task(ZeebeDecoratorBase):
     def __init__(self, task_type: str, task_handler: Callable[..., Dict],
                  exception_handler: Callable[[Exception, TaskContext, TaskStatusController], None],
-                 timeout: int = 0, max_jobs_to_activate: int = 32, variables_to_fetch: List[str] = None,
+                 timeout: int = 10000, max_jobs_to_activate: int = 32, variables_to_fetch: List[str] = None,
                  before: List = None, after: List = None):
         super().__init__(before=before, after=after)
 
