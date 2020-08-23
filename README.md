@@ -1,11 +1,13 @@
 [![Coverage Status](https://coveralls.io/repos/github/JonatanMartens/zeebepy/badge.svg?branch=master)](https://coveralls.io/github/JonatanMartens/zeebepy?branch=master)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/JonatanMartens/zeebepy/Zeebepy)
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/JonatanMartens/zeebepy/Test%20zeebepy/master)
 ![GitHub issues](https://img.shields.io/github/issues-raw/JonatanMartens/zeebepy)
 ![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/JonatanMartens/zeebepy)
 ![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed-raw/JonatanMartens/zeebepy)
 ![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/JonatanMartens/zeebepy)
+![PyPI - Downloads](https://img.shields.io/pypi/dd/zeebepy)
+![PyPI - Downloads](https://img.shields.io/pypi/dw/zeebepy)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/zeebepy)
-![GitHub Pipenv locked Python version](https://img.shields.io/github/pipenv/locked/python-version/JonatanMartens/zeebepy)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/zeebepy)
 ![PyPI](https://img.shields.io/pypi/v/zeebepy)
 
 
