@@ -7,7 +7,7 @@ class TaskContext(object):
                  custom_headers: Dict, worker: str, retries: int, deadline: int, variables: Dict):
         self.key = key
         self.type = _type
-        self.wokflow_instance_key = workflow_instance_key
+        self.workflow_instance_key = workflow_instance_key
         self.bpmn_process_id = bpmn_process_id
         self.workflow_definition_version = workflow_definition_version
         self.workflow_key = workflow_key
@@ -18,3 +18,11 @@ class TaskContext(object):
         self.retries = retries
         self.deadline = deadline
         self.variables = variables
+
+    def __repr__(self):
+        return str({'jobKey': self.key, 'taskType': self.type, 'workflowInstanceKey': self.workflow_instance_key,
+                    'bpmnProcessId': self.bpmn_process_id,
+                    'workflowDefinitionVersion': self.workflow_definition_version, 'workflowKey': self.workflow_key,
+                    'elementId': self.element_id, 'elementInstanceKey': self.element_instance_key,
+                    'customHeaders': self.custom_headers, 'worker': self.worker, 'retries': self.retries,
+                    'deadline': self.deadline, 'variables': self.variables})

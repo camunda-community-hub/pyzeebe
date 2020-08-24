@@ -1,4 +1,5 @@
 import json
+import logging
 import os.path
 from typing import List, Generator, Dict
 
@@ -9,13 +10,16 @@ from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayStub
 from pyzeebe.task.task_context import TaskContext
 
 
-class ZeebeAdapter(object):
-    def __init__(self, hostname: str = 'localhost', port: int = 26500, channel: grpc.Channel = None):
-        self._connection_uri = f'{hostname or "localhost"}:{port or 26500}' or os.getenv('ZEEBE_ADDRESS')
-
+class ZeebeAdapter:
+    def __init__(self, hostname: str = None, port: int = None, channel: grpc.Channel = None, **kwargs):
+        self._connection_uri = f'{hostname}:{port}' or os.getenv('ZEEBE_ADDRESS') or 'localhost:26500'
         if channel:
             self._channel = channel
         else:
+            if hostname or port:
+                self._connection_uri = f'{hostname or "localhost"}:{port or 26500}'
+            else:
+                self._connection_uri = os.getenv('ZEEBE_ADDRESS') or 'localhost:26500'
             self._channel = grpc.insecure_channel(self._connection_uri)
 
         self.connected = False
@@ -24,13 +28,17 @@ class ZeebeAdapter(object):
         self.gateway_stub = GatewayStub(self._channel)
 
     def _check_connectivity(self, value: grpc.ChannelConnectivity) -> None:
+        logging.debug(f'Grpc channel connectivity changed to: {value}')
         if value in [grpc.ChannelConnectivity.READY, grpc.ChannelConnectivity.IDLE]:
+            logging.debug('Connected to Zeebe')
             self.connected = True
             self.retrying_connection = False
         elif value in [grpc.ChannelConnectivity.CONNECTING, grpc.ChannelConnectivity.TRANSIENT_FAILURE]:
+            logging.warning('No connection to Zeebe, recoverable. Reconnecting...')
             self.connected = False
             self.retrying_connection = True
         elif value == grpc.ChannelConnectivity.SHUTDOWN:
+            logging.error('Failed to establish connection to Zeebe. Non recoverable')
             self.connected = False
             self.retrying_connection = False
             raise ConnectionAbortedError(f'Lost connection to {self._connection_uri}')
@@ -42,7 +50,9 @@ class ZeebeAdapter(object):
                                     maxJobsToActivate=max_jobs_to_activate,
                                     fetchVariable=variables_to_fetch, requestTimeout=request_timeout)):
             for job in response.jobs:
-                yield self._create_task_context_from_job(job)
+                context = self._create_task_context_from_job(job)
+                logging.debug(f'Got job: {context} from zeebe')
+                yield context
 
     @staticmethod
     def _create_task_context_from_job(job) -> TaskContext:
@@ -69,7 +79,7 @@ class ZeebeAdapter(object):
         return self.gateway_stub.ThrowError(
             ThrowErrorRequest(jobKey=job_key, errorMessage=message))
 
-    def create_workflow_instance(self, bpmn_process_id: str, version: int, variables: Dict) -> int:
+    def create_workflow_instance(self, bpmn_process_id: str, version: int, variables: Dict) -> str:
         response = self.gateway_stub.CreateWorkflowInstance(
             CreateWorkflowInstanceRequest(bpmnProcessId=bpmn_process_id, version=version,
                                           variables=json.dumps(variables)))
@@ -84,10 +94,6 @@ class ZeebeAdapter(object):
                 requestTimeout=timeout, fetchVariables=variables_to_fetch))
         return json.loads(response.variables)
 
-    def cancel_workflow_instance(self, workflow_instance_key: int) -> CancelWorkflowInstanceResponse:
-        return self.gateway_stub.CancelWorkflowInstance(
-            CancelWorkflowInstanceRequest(workflowInstanceKey=workflow_instance_key))
-
     def publish_message(self, name: str, correlation_key: str, time_to_live_in_milliseconds: int,
                         variables: Dict) -> PublishMessageResponse:
         return self.gateway_stub.PublishMessage(
@@ -100,6 +106,5 @@ class ZeebeAdapter(object):
 
     @staticmethod
     def _get_workflow_request_object(workflow_file_path: str) -> WorkflowRequestObject:
-        with open(workflow_file_path, mode='rb') as workflow_file:
-            return WorkflowRequestObject(name=os.path.split(workflow_file_path)[-1],
-                                         definition=workflow_file.read())
+        return WorkflowRequestObject(name=os.path.split(workflow_file_path)[-1],
+                                     definition=open(workflow_file_path).read())
