@@ -1,6 +1,6 @@
 import logging
 import socket
-from threading import Thread
+from concurrent.futures import ThreadPoolExecutor
 from typing import List, Callable, Generator, Tuple
 
 from pyzeebe.common.exceptions import TaskNotFoundException
@@ -33,14 +33,9 @@ class ZeebeWorker(ZeebeDecoratorBase):
         self.tasks = []
 
     def work(self):
-        threads = []
-        for task in self.tasks:
-            thread = Thread(target=self._handle_task, args=(task,))
-            thread.start()
-            threads.append(thread)
-
-        for thread in threads:
-            thread.join()
+        with ThreadPoolExecutor(thread_name_prefix='zeebe-task') as executor:
+            for task in self.tasks:
+                executor.submit(self._handle_task, task)
 
     def _handle_task(self, task: Task):
         logging.debug(f'Handling task {task}')
@@ -49,9 +44,11 @@ class ZeebeWorker(ZeebeDecoratorBase):
                 logging.debug(f'Retrying connection to {self.zeebe_adapter._connection_uri}')
                 continue
 
+            executor = ThreadPoolExecutor(thread_name_prefix=f'zeebe-job-{task.type}')
             for task_context in self._get_task_contexts(task):
                 logging.debug(f'Creating task: {task_context.key}')
-                Thread(target=task.handler, args=(task_context,)).run()
+                executor.submit(task.handler, task_context)
+            executor.shutdown(wait=False)
 
     def _get_task_contexts(self, task: Task) -> Generator[TaskContext, None, None]:
         logging.debug(f'Activating jobs for task: {task}')
