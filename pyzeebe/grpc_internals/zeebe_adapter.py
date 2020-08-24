@@ -1,4 +1,5 @@
 import json
+import logging
 import os.path
 from typing import List, Generator, Dict
 
@@ -27,13 +28,17 @@ class ZeebeAdapter:
         self.gateway_stub = GatewayStub(self._channel)
 
     def _check_connectivity(self, value: grpc.ChannelConnectivity) -> None:
+        logging.debug(f'Grpc channel connectivity changed to: {value}')
         if value in [grpc.ChannelConnectivity.READY, grpc.ChannelConnectivity.IDLE]:
+            logging.debug('Connected to Zeebe')
             self.connected = True
             self.retrying_connection = False
         elif value in [grpc.ChannelConnectivity.CONNECTING, grpc.ChannelConnectivity.TRANSIENT_FAILURE]:
+            logging.warning('No connection to Zeebe, recoverable. Reconnecting...')
             self.connected = False
             self.retrying_connection = True
         elif value == grpc.ChannelConnectivity.SHUTDOWN:
+            logging.error('Failed to establish connection to Zeebe. Non recoverable')
             self.connected = False
             self.retrying_connection = False
             raise ConnectionAbortedError(f'Lost connection to {self._connection_uri}')
@@ -45,7 +50,9 @@ class ZeebeAdapter:
                                     maxJobsToActivate=max_jobs_to_activate,
                                     fetchVariable=variables_to_fetch, requestTimeout=request_timeout)):
             for job in response.jobs:
-                yield self._create_task_context_from_job(job)
+                context = self._create_task_context_from_job(job)
+                logging.debug(f'Got job: {context} from zeebe')
+                yield context
 
     @staticmethod
     def _create_task_context_from_job(job) -> TaskContext:
