@@ -44,11 +44,14 @@ class ZeebeWorker(ZeebeDecoratorBase):
                 logging.debug(f'Retrying connection to {self.zeebe_adapter._connection_uri}')
                 continue
 
-            executor = ThreadPoolExecutor(thread_name_prefix=f'zeebe-job-{task.type}')
-            for task_context in self._get_task_contexts(task):
-                logging.debug(f'Creating task: {task_context.key}')
-                executor.submit(task.handler, task_context)
-            executor.shutdown(wait=False)
+            self._handle_task_contexts(task)
+
+    def _handle_task_contexts(self, task: Task):
+        executor = ThreadPoolExecutor(thread_name_prefix=f'zeebe-job-{task.type}')
+        for task_context in self._get_task_contexts(task):
+            logging.debug(f'Running job: {task_context}')
+            executor.submit(task.handler, task_context)
+        executor.shutdown(wait=False)
 
     def _get_task_contexts(self, task: Task) -> Generator[TaskContext, None, None]:
         logging.debug(f'Activating jobs for task: {task}')
@@ -74,7 +77,7 @@ class ZeebeWorker(ZeebeDecoratorBase):
                 self.zeebe_adapter.complete_job(job_key=context.key, variables=context.variables)
                 return context
             except Exception as e:
-                logging.debug(f'Failed job: {str(e)}. Calling task exception_handler with context: {context}.')
+                logging.debug(f'Failed job: {context}. Error: {e}.')
                 task.exception_handler(e, context, TaskStatusController(context, self.zeebe_adapter))
                 return e
 

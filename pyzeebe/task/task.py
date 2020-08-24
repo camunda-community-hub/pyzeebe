@@ -1,4 +1,4 @@
-from typing import Callable, List, Dict, Awaitable
+from typing import Callable, List, Dict
 
 from pyzeebe.decorators.zeebe_decorator_base import ZeebeDecoratorBase
 from pyzeebe.task.task_context import TaskContext
@@ -18,4 +18,8 @@ class Task(ZeebeDecoratorBase):
         self.timeout = timeout
         self.max_jobs_to_activate = max_jobs_to_activate
         self.variables_to_fetch = variables_to_fetch or []
-        self.handler: Callable[[TaskContext], Awaitable[TaskContext]] = None
+        self.handler: Callable[[TaskContext], TaskContext] = None
+
+    def __repr__(self):
+        return str({'type': self.type, 'timeout': self.timeout, 'max_jobs_to_activate': self.max_jobs_to_activate,
+                    'variables_to_fetch': self.variables_to_fetch})
