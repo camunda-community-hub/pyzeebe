@@ -2,25 +2,21 @@ class TaskNotFound(Exception):
     pass
 
 
-class WorkflowDoesNotExist(Exception):
+class WorkflowNotFound(Exception):
     def __init__(self, bpmn_process_id: str, version: int):
         super().__init__(
-            f'Workflow definition: {bpmn_process_id}  with {version} does not exist. Have you forgotten to deploy it?')
+            f'Workflow definition: {bpmn_process_id}  with {version} was not found')
         self.bpmn_process_id = bpmn_process_id
         self.version = version
 
 
-class WorkflowInstanceDoesNotExist(Exception):
+class WorkflowInstanceNotFound(Exception):
     """
     GRPC_STATUS_NOT_FOUND
     Returned if:
         no workflow with the given key exists (if workflowKey was given)
         no workflow with the given process ID exists (if bpmnProcessId was given but version was -1)
         no workflow with the given process ID and version exists (if both bpmnProcessId and version were given)
-
-    GRPC_STATUS_FAILED_PRECONDITION
-    Returned if:
-        the workflow definition does not contain a none start event; only workflows with none start event can be started manually.
 
     GRPC_STATUS_INVALID_ARGUMENT
     Returned if:
@@ -29,8 +25,17 @@ class WorkflowInstanceDoesNotExist(Exception):
     """
 
     def __init__(self, workflow_instance_key: int):
-        super().__init__(f'Workflow instance key: {workflow_instance_key} does not exist')
+        super().__init__(f'Workflow instance key: {workflow_instance_key} was not found')
         self.workflow_instance_key = workflow_instance_key
+
+
+class WorkflowHasNoStartEvent(Exception):
+    """
+    GRPC_STATUS_FAILED_PRECONDITION
+    Returned if:
+        the workflow definition does not contain a none start event; only workflows with none start event can be started manually.
+    """
+    pass
 
 
 class InvalidActivateJobs(Exception):
@@ -55,6 +60,14 @@ class InvalidCompleteJob(Exception):
     Returned if:
         the job was marked as failed. In that case, the related incident must be resolved before the job can be activated again and completed.
     """
+    pass
+
+
+class JobAlreadyFailed(Exception):
+    pass
+
+
+class JobNotFound(Exception):
     pass
 
 
@@ -85,7 +98,7 @@ class InvalidDeployWorkflow(Exception):
     pass
 
 
-class InvalidPublishMessage(Exception):
+class MessageAlreadyExists(Exception):
     """
     GRPC_STATUS_ALREADY_EXISTS
     Returned if:
@@ -94,12 +107,20 @@ class InvalidPublishMessage(Exception):
     pass
 
 
-class InvalidResolveIncident(Exception):
+class IncidentNotFound(Exception):
     """
     GRPC_STATUS_NOT_FOUND
     Returned if:
         no incident with the given key exists
     """
+    pass
+
+
+class ElementNotFound(Exception):
+    pass
+
+
+class InvalidJSON(Exception):
     pass
 
 

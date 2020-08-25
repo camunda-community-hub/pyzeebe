@@ -4,7 +4,7 @@ from uuid import uuid4
 import pytest
 
 from pyzeebe.client.client import ZeebeClient
-from pyzeebe.common.exceptions import WorkflowDoesNotExist
+from pyzeebe.common.exceptions import WorkflowNotFound
 from pyzeebe.common.gateway_mock import GatewayMock
 from pyzeebe.common.random_utils import RANDOM_RANGE
 
@@ -58,12 +58,12 @@ def test_deploy_workflow(grpc_servicer):
 
 
 def test_run_non_existent_workflow():
-    with pytest.raises(WorkflowDoesNotExist):
+    with pytest.raises(WorkflowNotFound):
         zeebe_client.run_workflow(bpmn_process_id=str(uuid4()))
 
 
 def test_run_non_existent_workflow_with_result():
-    with pytest.raises(WorkflowDoesNotExist):
+    with pytest.raises(WorkflowNotFound):
         zeebe_client.run_workflow_with_result(bpmn_process_id=str(uuid4()))
 
 
