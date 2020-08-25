@@ -104,6 +104,8 @@ class ZeebeAdapter:
         except grpc.RpcError as rpc_error:
             if self._is_error_of_status(rpc_error, grpc.StatusCode.NOT_FOUND):
                 raise WorkflowDoesNotExist(bpmn_process_id=bpmn_process_id, version=version)
+            elif self._is_error_of_status(rpc_error, grpc.StatusCode.RESOURCE_EXHAUSTED):
+                pass
             else:
                 raise
 
