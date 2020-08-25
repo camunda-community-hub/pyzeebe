@@ -1,9 +1,9 @@
 from random import randint
-from typing import Dict
+from typing import List
 from unittest.mock import patch
 from uuid import uuid4
 
-import pytest
+import grpc
 
 from pyzeebe.common.random_utils import RANDOM_RANGE
 from pyzeebe.grpc_internals.zeebe_pb2 import *
@@ -15,22 +15,12 @@ def mock_channel():
     pass
 
 
-deployed_workflows: Dict
-
-
-@pytest.fixture(autouse=True)
-def run_around_tests(grpc_channel):
-    global deployed_workflows
-    deployed_workflows = {}
-    yield
-    deployed_workflows = {}
-
-
 class GatewayMock(GatewayServicer):
     # TODO: Mock behaviour of zeebe
 
     def __init__(self):
         self.deployed_workflows = {}
+        self.active_jobs = {}
 
     def CompleteJob(self, request, context):
         return CompleteJobResponse()
@@ -39,18 +29,26 @@ class GatewayMock(GatewayServicer):
         return FailJobResponse()
 
     def ThrowError(self, request, context):
+        self.active_jobs[request.jobKey]['error'] = True
         return ThrowErrorResponse()
 
     def CreateWorkflowInstance(self, request, context):
-        # context.set_code(grpc.StatusCode.NOT_FOUND)
-        return CreateWorkflowInstanceResponse(workflowKey=randint(0, RANDOM_RANGE),
-                                              bpmnProcessId=request.bpmnProcessId,
-                                              version=request.version, workflowInstanceKey=randint(0, RANDOM_RANGE))
+        if request.bpmnProcessId in self.deployed_workflows.keys():
+            return CreateWorkflowInstanceResponse(workflowKey=randint(0, RANDOM_RANGE),
+                                                  bpmnProcessId=request.bpmnProcessId,
+                                                  version=request.version, workflowInstanceKey=randint(0, RANDOM_RANGE))
+        else:
+            context.set_code(grpc.StatusCode.NOT_FOUND)
+            return CreateWorkflowInstanceResponse()
 
     def CreateWorkflowInstanceWithResult(self, request, context):
-        return CreateWorkflowInstanceWithResultResponse(workflowKey=request.request.workflowKey,
-                                                        bpmnProcessId=request.request.bpmnProcessId,
-                                                        version=randint(0, 10), variables=request.request.variables)
+        if request.request.bpmnProcessId in self.deployed_workflows.keys():
+            return CreateWorkflowInstanceWithResultResponse(workflowKey=request.request.workflowKey,
+                                                            bpmnProcessId=request.request.bpmnProcessId,
+                                                            version=randint(0, 10), variables=request.request.variables)
+        else:
+            context.set_code(grpc.StatusCode.NOT_FOUND)
+            return CreateWorkflowInstanceWithResultResponse()
 
     def CancelWorkflowInstance(self, request, context):
         return CancelWorkflowInstanceResponse()
@@ -61,9 +59,12 @@ class GatewayMock(GatewayServicer):
             workflow_metadata = WorkflowMetadata(bpmnProcessId=str(uuid4()), version=randint(0, 10),
                                                  workflowKey=randint(0, RANDOM_RANGE), resourceName=workflow.name)
             workflows.append(workflow_metadata)
-            deployed_workflows[workflow_metadata.bpmnProcessId] = workflow_metadata
 
         return DeployWorkflowResponse(key=randint(0, RANDOM_RANGE), workflows=workflows)
 
     def PublishMessage(self, request, context):
         return PublishMessageResponse()
+
+    def mock_deploy_workflow(self, bpmn_process_id: str, version: int, tasks: List[str]):
+        self.deployed_workflows[bpmn_process_id] = {'bpmn_process_id': bpmn_process_id, 'version': version,
+                                                    'tasks': tasks}

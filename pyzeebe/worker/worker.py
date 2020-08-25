@@ -3,7 +3,7 @@ import socket
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Callable, Generator, Tuple
 
-from pyzeebe.common.exceptions import TaskNotFoundException
+from pyzeebe.common.exceptions import TaskNotFound
 from pyzeebe.decorators.zeebe_decorator_base import ZeebeDecoratorBase
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.task.task import Task
@@ -116,4 +116,4 @@ class ZeebeWorker(ZeebeDecoratorBase):
         for index, task in enumerate(self.tasks):
             if task.type == task_type:
                 return task, index
-        raise TaskNotFoundException(f"Could not find task {task_type}")
+        raise TaskNotFound(f"Could not find task {task_type}")
