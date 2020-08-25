@@ -24,8 +24,8 @@ class ZeebeClient(object):
         self.zeebe_adapter.cancel_workflow_instance(workflow_instance_key=workflow_instance_key)
         return workflow_instance_key
 
-    def deploy_workflow(self, workflow_file_path: str):
-        self.zeebe_adapter.deploy_workflow(workflow_file_path)
+    def deploy_workflow(self, *workflow_file_path: str):
+        self.zeebe_adapter.deploy_workflow(*workflow_file_path)
 
     def publish_message(self, name: str, correlation_key: str, variables: Dict = None,
                         time_to_live_in_milliseconds: int = 60000) -> None:

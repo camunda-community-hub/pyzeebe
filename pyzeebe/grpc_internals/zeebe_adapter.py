@@ -123,8 +123,9 @@ class ZeebeAdapter:
 
     @staticmethod
     def _get_workflow_request_object(workflow_file_path: str) -> WorkflowRequestObject:
-        return WorkflowRequestObject(name=os.path.split(workflow_file_path)[-1],
-                                     definition=open(workflow_file_path).read())
+        with open(workflow_file_path, 'rb') as file:
+            return WorkflowRequestObject(name=os.path.split(workflow_file_path)[-1],
+                                         definition=file.read())
 
     @staticmethod
     def _is_error_of_status(rpc_error: grpc.RpcError, status_code: grpc.StatusCode):
