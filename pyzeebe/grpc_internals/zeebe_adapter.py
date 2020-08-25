@@ -56,8 +56,8 @@ class ZeebeAdapter:
                     logging.debug(f'Got job: {context} from zeebe')
                     yield context
         except grpc.RpcError as rpc_error:
-            if self._is_error_of_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
-                raise InvalidActivateJobs()  # TODO make proper exception
+            if self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
+                raise ActivateJobsRequestInvalid(task_type, worker, timeout, max_jobs_to_activate)
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 
@@ -80,10 +80,10 @@ class ZeebeAdapter:
         try:
             return self.gateway_stub.CompleteJob(CompleteJobRequest(jobKey=job_key, variables=json.dumps(variables)))
         except grpc.RpcError as rpc_error:
-            if self._is_error_of_status(rpc_error, grpc.StatusCode.NOT_FOUND):
-                raise JobNotFound()
-            elif self._is_error_of_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
-                raise InvalidCompleteJob()  # TODO proper exception
+            if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
+                raise JobNotFound(job_key=job_key)
+            elif self.is_error_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
+                raise JobAlreadyFailed(job_key=job_key)
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 
@@ -91,10 +91,10 @@ class ZeebeAdapter:
         try:
             return self.gateway_stub.FailJob(FailJobRequest(jobKey=job_key, errorMessage=message))
         except grpc.RpcError as rpc_error:
-            if self._is_error_of_status(rpc_error, grpc.StatusCode.NOT_FOUND):
-                raise JobNotFound()
-            elif self._is_error_of_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
-                InvalidFailJob()  # TODO make good exception
+            if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
+                raise JobNotFound(job_key=job_key)
+            elif self.is_error_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
+                raise JobAlreadyFailed(job_key=job_key)
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 
@@ -103,10 +103,10 @@ class ZeebeAdapter:
             return self.gateway_stub.ThrowError(
                 ThrowErrorRequest(jobKey=job_key, errorMessage=message))
         except grpc.RpcError as rpc_error:
-            if self._is_error_of_status(rpc_error, grpc.StatusCode.NOT_FOUND):
-                raise JobNotFound()
-            elif self._is_error_of_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
-                InvalidThrowError()  # TODO make good exception
+            if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
+                raise JobNotFound(job_key=job_key)
+            elif self.is_error_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
+                raise JobAlreadyFailed(job_key=job_key)
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 
@@ -117,12 +117,7 @@ class ZeebeAdapter:
                                               variables=json.dumps(variables)))
             return response.workflowInstanceKey
         except grpc.RpcError as rpc_error:
-            if self._is_error_of_status(rpc_error, grpc.StatusCode.NOT_FOUND):
-                raise WorkflowNotFound(bpmn_process_id=bpmn_process_id, version=version)
-            elif self._is_error_of_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
-                raise WorkflowNotFound(bpmn_process_id=bpmn_process_id, version=version)  # TODO: Change exception
-            else:
-                self._common_zeebe_grpc_errors(rpc_error)
+            self._create_workflow_errors(rpc_error, bpmn_process_id, version, variables)
 
     def create_workflow_instance_with_result(self, bpmn_process_id: str, version: int, variables: Dict,
                                              timeout: int, variables_to_fetch) -> Dict:
@@ -134,19 +129,26 @@ class ZeebeAdapter:
                     requestTimeout=timeout, fetchVariables=variables_to_fetch))
             return json.loads(response.variables)
         except grpc.RpcError as rpc_error:
-            if self._is_error_of_status(rpc_error, grpc.StatusCode.NOT_FOUND):
-                raise WorkflowNotFound(bpmn_process_id=bpmn_process_id, version=version)
-            elif self._is_error_of_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
-                raise WorkflowNotFound(bpmn_process_id=bpmn_process_id, version=version)  # TODO: Change exception
-            else:
-                self._common_zeebe_grpc_errors(rpc_error)
+            self._create_workflow_errors(rpc_error, bpmn_process_id, version, variables)
+
+    def _create_workflow_errors(self, rpc_error: grpc.RpcError, bpmn_process_id: str, version: int,
+                                variables: Dict) -> None:
+        if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
+            raise WorkflowNotFound(bpmn_process_id=bpmn_process_id, version=version)
+        elif self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
+            raise InvalidJSON(
+                f"Cannot start workflow: {bpmn_process_id} with version {version}. Variables: {variables}")
+        elif self.is_error_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
+            raise WorkflowHasNoStartEvent(bpmn_process_id=bpmn_process_id)
+        else:
+            self._common_zeebe_grpc_errors(rpc_error)
 
     def cancel_workflow_instance(self, workflow_instance_key: int) -> None:
         try:
             self.gateway_stub.CancelWorkflowInstance(
                 CancelWorkflowInstanceRequest(workflowInstanceKey=workflow_instance_key))
         except grpc.RpcError as rpc_error:
-            if self._is_error_of_status(rpc_error, grpc.StatusCode.NOT_FOUND):
+            if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
                 raise WorkflowInstanceNotFound(workflow_instance_key=workflow_instance_key)
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
@@ -159,30 +161,21 @@ class ZeebeAdapter:
                                       timeToLive=time_to_live_in_milliseconds,
                                       variables=json.dumps(variables)))
         except grpc.RpcError as rpc_error:
-            if self._is_error_of_status(rpc_error, grpc.StatusCode.ALREADY_EXISTS):
+            if self.is_error_status(rpc_error, grpc.StatusCode.ALREADY_EXISTS):
                 raise MessageAlreadyExists()
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 
     def deploy_workflow(self, *workflow_file_path: str) -> DeployWorkflowResponse:
+
         try:
             return self.gateway_stub.DeployWorkflow(
                 DeployWorkflowRequest(workflows=map(self._get_workflow_request_object, workflow_file_path)))
         except grpc.RpcError as rpc_error:
-            if self._is_error_of_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
-                raise InvalidDeployWorkflow()
+            if self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
+                raise WorkflowInvalid()
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
-
-    def _common_zeebe_grpc_errors(self, rpc_error: grpc.RpcError):
-        if self._is_error_of_status(rpc_error, grpc.StatusCode.RESOURCE_EXHAUSTED):
-            raise ZeebeBackPressure()
-        elif self._is_error_of_status(rpc_error, grpc.StatusCode.UNAVAILABLE):
-            raise ZeebeGatewayUnavailable()
-        elif self._is_error_of_status(rpc_error, grpc.StatusCode.INTERNAL):
-            raise ZeebeInternalError()
-        else:
-            raise rpc_error
 
     @staticmethod
     def _get_workflow_request_object(workflow_file_path: str) -> WorkflowRequestObject:
@@ -190,6 +183,16 @@ class ZeebeAdapter:
             return WorkflowRequestObject(name=os.path.split(workflow_file_path)[-1],
                                          definition=file.read())
 
+    def _common_zeebe_grpc_errors(self, rpc_error: grpc.RpcError):
+        if self.is_error_status(rpc_error, grpc.StatusCode.RESOURCE_EXHAUSTED):
+            raise ZeebeBackPressure()
+        elif self.is_error_status(rpc_error, grpc.StatusCode.UNAVAILABLE):
+            raise ZeebeGatewayUnavailable()
+        elif self.is_error_status(rpc_error, grpc.StatusCode.INTERNAL):
+            raise ZeebeInternalError()
+        else:
+            raise rpc_error
+
     @staticmethod
-    def _is_error_of_status(rpc_error: grpc.RpcError, status_code: grpc.StatusCode):
+    def is_error_status(rpc_error: grpc.RpcError, status_code: grpc.StatusCode):
         return rpc_error.args[0].code == status_code
