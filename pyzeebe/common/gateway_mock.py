@@ -29,7 +29,6 @@ class GatewayMock(GatewayServicer):
         return FailJobResponse()
 
     def ThrowError(self, request, context):
-        self.active_jobs[request.jobKey]['error'] = True
         return ThrowErrorResponse()
 
     def CreateWorkflowInstance(self, request, context):

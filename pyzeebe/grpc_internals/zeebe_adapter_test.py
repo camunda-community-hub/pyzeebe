@@ -81,16 +81,20 @@ def test_throw_error():
     assert isinstance(response, ThrowErrorResponse)
 
 
-def test_create_workflow_instance():
-    response = zeebe_adapter.create_workflow_instance(bpmn_process_id=str(uuid4()), variables={},
-                                                      version=randint(0, 10))
+def test_create_workflow_instance(grpc_servicer):
+    bpmn_process_id = str(uuid4())
+    version = randint(0, 10)
+    grpc_servicer.mock_deploy_workflow(bpmn_process_id, version, [])
+    response = zeebe_adapter.create_workflow_instance(bpmn_process_id=bpmn_process_id, variables={}, version=version)
     assert isinstance(response, int)
 
 
-def test_create_workflow_instance_with_result():
-    response = zeebe_adapter.create_workflow_instance_with_result(bpmn_process_id=str(uuid4()), variables={},
-                                                                  version=randint(0, 10), timeout=0,
-                                                                  variables_to_fetch=[])
+def test_create_workflow_instance_with_result(grpc_servicer):
+    bpmn_process_id = str(uuid4())
+    version = randint(0, 10)
+    grpc_servicer.mock_deploy_workflow(bpmn_process_id, version, [])
+    response = zeebe_adapter.create_workflow_instance_with_result(bpmn_process_id=bpmn_process_id, variables={},
+                                                                  version=version, timeout=0, variables_to_fetch=[])
     assert isinstance(response, dict)
 
 

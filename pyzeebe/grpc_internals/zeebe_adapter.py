@@ -89,6 +89,8 @@ class ZeebeAdapter:
         except grpc.RpcError as rpc_error:
             if self._is_error_of_status(rpc_error, grpc.StatusCode.NOT_FOUND):
                 raise WorkflowDoesNotExist(bpmn_process_id=bpmn_process_id, version=version)
+            else:
+                raise
 
     def create_workflow_instance_with_result(self, bpmn_process_id: str, version: int, variables: Dict,
                                              timeout: int, variables_to_fetch) -> Dict:
@@ -102,6 +104,8 @@ class ZeebeAdapter:
         except grpc.RpcError as rpc_error:
             if self._is_error_of_status(rpc_error, grpc.StatusCode.NOT_FOUND):
                 raise WorkflowDoesNotExist(bpmn_process_id=bpmn_process_id, version=version)
+            else:
+                raise
 
     def cancel_workflow_instance(self, workflow_instance_key: int) -> None:
         self.gateway_stub.CancelWorkflowInstance(
