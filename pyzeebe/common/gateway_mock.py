@@ -27,6 +27,22 @@ class GatewayMock(GatewayServicer):
         self.active_jobs: Dict[int, TaskContext] = {}
 
     def ActivateJobs(self, request, context):
+        if not request.type:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            return ActivateJobsResponse()
+
+        if request.maxJobsToActivate <= 0:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            return ActivateJobsResponse()
+
+        if request.timeout <= 0:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            return ActivateJobsResponse()
+
+        if not request.worker:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            return ActivateJobsResponse()
+
         jobs = []
         for active_job in self.active_jobs.values():
             if active_job.type == request.type:

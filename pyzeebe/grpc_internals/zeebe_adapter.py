@@ -195,4 +195,4 @@ class ZeebeAdapter(object):
 
     @staticmethod
     def is_error_status(rpc_error: grpc.RpcError, status_code: grpc.StatusCode):
-        return rpc_error.args[0].code == status_code
+        return rpc_error._state.code == status_code

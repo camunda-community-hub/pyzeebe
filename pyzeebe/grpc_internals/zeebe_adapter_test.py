@@ -69,6 +69,45 @@ def test_connectivity_shutdown():
         zeebe_adapter._check_connectivity(grpc.ChannelConnectivity.SHUTDOWN)
 
 
+def test_activate_jobs(grpc_servicer):
+    task_type = create_random_task_and_activate(grpc_servicer)
+    active_jobs_count = randint(4, 100)
+    counter = 0
+    for i in range(0, active_jobs_count):
+        create_random_task_and_activate(grpc_servicer, task_type)
+
+    for job in zeebe_adapter.activate_jobs(task_type=task_type, worker=str(uuid4()), timeout=randint(10, 100),
+                                           request_timeout=100, max_jobs_to_activate=1, variables_to_fetch=[]):
+        counter += 1
+        assert isinstance(job, TaskContext)
+    assert counter == active_jobs_count + 1
+
+
+def test_activate_jobs_invalid_worker():
+    with pytest.raises(ActivateJobsRequestInvalid):
+        next(zeebe_adapter.activate_jobs(task_type=str(uuid4()), worker=None, timeout=randint(10, 100),
+                                         request_timeout=100,
+                                         max_jobs_to_activate=1, variables_to_fetch=[]))
+
+
+def test_activate_jobs_invalid_job_timeout():
+    with pytest.raises(ActivateJobsRequestInvalid):
+        next(zeebe_adapter.activate_jobs(task_type=str(uuid4()), worker=str(uuid4()), timeout=0,
+                                         request_timeout=100, max_jobs_to_activate=1, variables_to_fetch=[]))
+
+
+def test_activate_jobs_invalid_task_type():
+    with pytest.raises(ActivateJobsRequestInvalid):
+        next(zeebe_adapter.activate_jobs(task_type=None, worker=str(uuid4()), timeout=randint(10, 100),
+                                         request_timeout=100, max_jobs_to_activate=1, variables_to_fetch=[]))
+
+
+def test_activate_jobs_invalid_max_jobs():
+    with pytest.raises(ActivateJobsRequestInvalid):
+        next(zeebe_adapter.activate_jobs(task_type=str(uuid4()), worker=str(uuid4()), timeout=randint(10, 100),
+                                         request_timeout=100, max_jobs_to_activate=0, variables_to_fetch=[]))
+
+
 def test_complete_job(grpc_servicer):
     task_type = create_random_task_and_activate(grpc_servicer)
     job = get_first_active_job(task_type)
@@ -152,8 +191,11 @@ def test_publish_message():
     assert isinstance(response, PublishMessageResponse)
 
 
-def create_random_task_and_activate(grpc_servicer) -> str:
-    mock_task_type = str(uuid4())
+def create_random_task_and_activate(grpc_servicer, task_type: str = None) -> str:
+    if task_type:
+        mock_task_type = task_type
+    else:
+        mock_task_type = str(uuid4())
     task = Task(task_type=mock_task_type, task_handler=lambda x: x, exception_handler=lambda x: x)
     task_context = random_task_context(task)
     grpc_servicer.active_jobs[task_context.key] = task_context
