@@ -6,10 +6,10 @@ from uuid import uuid4
 
 import grpc
 
-from pyzeebe.common.random_utils import RANDOM_RANGE
-from pyzeebe.common.random_utils import random_task_context
+from pyzeebe.common.random_utils import RANDOM_RANGE, random_task_context
 from pyzeebe.grpc_internals.zeebe_pb2 import *
 from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayServicer
+from pyzeebe.task.task import Task
 from pyzeebe.task.task_context import TaskContext
 
 
@@ -26,22 +26,21 @@ class GatewayMock(GatewayServicer):
         self.active_jobs: Dict[str, TaskContext] = {}
 
     def ActivateJobs(self, request, context):
-        return ActivateJobsResponse(jobs=self.get_active_job_generator(request.type))
-
-    def get_active_job_generator(self, task_type: str):
+        jobs = []
         for active_job in self.active_jobs.values():
-            if active_job.type == task_type:
-                yield ActivatedJob(key=active_job.key, type=active_job.type,
-                                   workflowInstanceKey=active_job.workflow_instance_key,
-                                   bpmnProcessId=active_job.bpmn_process_id,
-                                   workflowDefinitionVersion=active_job.workflow_definition_version,
-                                   workflowKey=active_job.workflow_key,
-                                   elementId=active_job.element_id,
-                                   elementInstanceKey=active_job.element_instance_key,
-                                   customHeaders=json.dumps(active_job.custom_headers),
-                                   worker=active_job.worker, retries=active_job.retries,
-                                   deadline=active_job.deadline,
-                                   variables=json.dumps(active_job.variables))
+            if active_job.type == request.type:
+                jobs.append(ActivatedJob(key=active_job.key, type=active_job.type,
+                                         workflowInstanceKey=active_job.workflow_instance_key,
+                                         bpmnProcessId=active_job.bpmn_process_id,
+                                         workflowDefinitionVersion=active_job.workflow_definition_version,
+                                         workflowKey=active_job.workflow_key,
+                                         elementId=active_job.element_id,
+                                         elementInstanceKey=active_job.element_instance_key,
+                                         customHeaders=json.dumps(active_job.custom_headers),
+                                         worker=active_job.worker, retries=active_job.retries,
+                                         deadline=active_job.deadline,
+                                         variables=json.dumps(active_job.variables)))
+        yield ActivateJobsResponse(jobs=jobs)
 
     def CompleteJob(self, request, context):
         return CompleteJobResponse()
@@ -92,6 +91,6 @@ class GatewayMock(GatewayServicer):
     def PublishMessage(self, request, context):
         return PublishMessageResponse()
 
-    def mock_deploy_workflow(self, bpmn_process_id: str, version: int, tasks: List[str]):
+    def mock_deploy_workflow(self, bpmn_process_id: str, version: int, tasks: List[Task]):
         self.deployed_workflows[bpmn_process_id] = {'bpmn_process_id': bpmn_process_id, 'version': version,
                                                     'tasks': tasks}
