@@ -1,13 +1,16 @@
+import json
 from random import randint
-from typing import List
+from typing import List, Dict
 from unittest.mock import patch
 from uuid import uuid4
 
 import grpc
 
 from pyzeebe.common.random_utils import RANDOM_RANGE
+from pyzeebe.common.random_utils import random_task_context
 from pyzeebe.grpc_internals.zeebe_pb2 import *
 from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayServicer
+from pyzeebe.task.task_context import TaskContext
 
 
 @patch('grpc.insecure_channel')
@@ -20,19 +23,44 @@ class GatewayMock(GatewayServicer):
 
     def __init__(self):
         self.deployed_workflows = {}
-        self.active_jobs = {}
+        self.active_jobs: Dict[str, TaskContext] = {}
+
+    def ActivateJobs(self, request, context):
+        return ActivateJobsResponse(jobs=self.get_active_job_generator(request.type))
+
+    def get_active_job_generator(self, task_type: str):
+        for active_job in self.active_jobs.values():
+            if active_job.type == task_type:
+                yield ActivatedJob(key=active_job.key, type=active_job.type,
+                                   workflowInstanceKey=active_job.workflow_instance_key,
+                                   bpmnProcessId=active_job.bpmn_process_id,
+                                   workflowDefinitionVersion=active_job.workflow_definition_version,
+                                   workflowKey=active_job.workflow_key,
+                                   elementId=active_job.element_id,
+                                   elementInstanceKey=active_job.element_instance_key,
+                                   customHeaders=json.dumps(active_job.custom_headers),
+                                   worker=active_job.worker, retries=active_job.retries,
+                                   deadline=active_job.deadline,
+                                   variables=json.dumps(active_job.variables))
 
     def CompleteJob(self, request, context):
         return CompleteJobResponse()
 
     def FailJob(self, request, context):
-        return FailJobResponse()
+        if request.jobKey in self.active_jobs.keys():
+            return FailJobResponse()
+        else:
+            context.set_code(grpc.StatusCode.NOT_FOUND)
+            return FailJobResponse()
 
     def ThrowError(self, request, context):
         return ThrowErrorResponse()
 
     def CreateWorkflowInstance(self, request, context):
         if request.bpmnProcessId in self.deployed_workflows.keys():
+            for task in self.deployed_workflows[request.bpmnProcessId]['tasks']:
+                task_context = random_task_context(task)
+                self.active_jobs[task_context.key] = task_context
             return CreateWorkflowInstanceResponse(workflowKey=randint(0, RANDOM_RANGE),
                                                   bpmnProcessId=request.bpmnProcessId,
                                                   version=request.version, workflowInstanceKey=randint(0, RANDOM_RANGE))

@@ -1,7 +1,9 @@
+import logging
 from typing import Dict
 
 from pyzeebe import Task, TaskContext, TaskStatusController, ZeebeWorker
 
+logging.basicConfig(level=logging.DEBUG)
 
 def example_task() -> Dict:
     return {'output': f'Hello world, test!'}

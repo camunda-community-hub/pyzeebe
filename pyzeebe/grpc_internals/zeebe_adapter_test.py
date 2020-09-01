@@ -4,10 +4,12 @@ from uuid import uuid4
 import grpc
 import pytest
 
+from pyzeebe.common.exceptions import *
 from pyzeebe.common.gateway_mock import GatewayMock
 from pyzeebe.common.random_utils import RANDOM_RANGE
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.grpc_internals.zeebe_pb2 import *
+from pyzeebe.task.task import Task
 
 zeebe_adapter: ZeebeAdapter
 
@@ -71,9 +73,22 @@ def test_complete_job():
     assert isinstance(response, CompleteJobResponse)
 
 
-def test_fail_job():
-    response = zeebe_adapter.fail_job(job_key=randint(0, RANDOM_RANGE), message=str(uuid4()))
+def test_fail_job(grpc_servicer):
+    mock_workflow_id = str(uuid4())
+    mock_workflow_version = randint(0, 10)
+    mock_task_type = str(uuid4())
+    task = Task(task_type=mock_task_type, task_handler=lambda x: x, exception_handler=lambda x: x)
+    grpc_servicer.mock_deploy_workflow(mock_workflow_id, version=mock_workflow_version, tasks=[task])
+    zeebe_adapter.create_workflow_instance(bpmn_process_id=mock_workflow_id, version=randint(0, 10), variables={})
+    job = zeebe_adapter.activate_jobs(task_type=mock_task_type, max_jobs_to_activate=1, request_timeout=10,
+                                      timeout=100, variables_to_fetch=[], worker=str(uuid4()))
+    response = zeebe_adapter.fail_job(job_key=next(job).key, message=str(uuid4()))
     assert isinstance(response, FailJobResponse)
+
+
+def test_fail_job_not_found():
+    with pytest.raises(JobNotFound):
+        zeebe_adapter.fail_job(job_key=randint(0, RANDOM_RANGE), message=str(uuid4()))
 
 
 def test_throw_error():
