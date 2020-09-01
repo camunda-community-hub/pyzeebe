@@ -6,10 +6,11 @@ import pytest
 
 from pyzeebe.common.exceptions import *
 from pyzeebe.common.gateway_mock import GatewayMock
-from pyzeebe.common.random_utils import RANDOM_RANGE
+from pyzeebe.common.random_utils import RANDOM_RANGE, random_task_context
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.grpc_internals.zeebe_pb2 import *
 from pyzeebe.task.task import Task
+from pyzeebe.task.task_context import TaskContext
 
 zeebe_adapter: ZeebeAdapter
 
@@ -74,21 +75,23 @@ def test_complete_job():
 
 
 def test_fail_job(grpc_servicer):
-    mock_workflow_id = str(uuid4())
-    mock_workflow_version = randint(0, 10)
-    mock_task_type = str(uuid4())
-    task = Task(task_type=mock_task_type, task_handler=lambda x: x, exception_handler=lambda x: x)
-    grpc_servicer.mock_deploy_workflow(mock_workflow_id, version=mock_workflow_version, tasks=[task])
-    zeebe_adapter.create_workflow_instance(bpmn_process_id=mock_workflow_id, version=randint(0, 10), variables={})
-    job = zeebe_adapter.activate_jobs(task_type=mock_task_type, max_jobs_to_activate=1, request_timeout=10,
-                                      timeout=100, variables_to_fetch=[], worker=str(uuid4()))
-    response = zeebe_adapter.fail_job(job_key=next(job).key, message=str(uuid4()))
+    mock_task_type = create_random_task_and_activate(grpc_servicer)
+    job = get_first_active_job(mock_task_type)
+    response = zeebe_adapter.fail_job(job_key=job.key, message=str(uuid4()))
     assert isinstance(response, FailJobResponse)
 
 
 def test_fail_job_not_found():
     with pytest.raises(JobNotFound):
         zeebe_adapter.fail_job(job_key=randint(0, RANDOM_RANGE), message=str(uuid4()))
+
+
+def test_fail_job_already_failed(grpc_servicer):
+    mock_task_type = create_random_task_and_activate(grpc_servicer)
+    job = get_first_active_job(mock_task_type)
+    zeebe_adapter.fail_job(job_key=job.key, message=str(uuid4()))
+    with pytest.raises(JobAlreadyFailed):
+        zeebe_adapter.fail_job(job_key=job.key, message=str(uuid4()))
 
 
 def test_throw_error():
@@ -117,3 +120,16 @@ def test_publish_message():
     response = zeebe_adapter.publish_message(name=str(uuid4()), variables={}, correlation_key=str(uuid4()),
                                              time_to_live_in_milliseconds=randint(0, RANDOM_RANGE))
     assert isinstance(response, PublishMessageResponse)
+
+
+def create_random_task_and_activate(grpc_servicer) -> str:
+    mock_task_type = str(uuid4())
+    task = Task(task_type=mock_task_type, task_handler=lambda x: x, exception_handler=lambda x: x)
+    task_context = random_task_context(task)
+    grpc_servicer.active_jobs[task_context.key] = task_context
+    return mock_task_type
+
+
+def get_first_active_job(task_type) -> TaskContext:
+    return next(zeebe_adapter.activate_jobs(task_type=task_type, max_jobs_to_activate=1, request_timeout=10,
+                                            timeout=100, variables_to_fetch=[], worker=str(uuid4())))

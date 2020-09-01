@@ -11,6 +11,7 @@ from pyzeebe.grpc_internals.zeebe_pb2 import *
 from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayServicer
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_context import TaskContext
+from pyzeebe.task.task_status import TaskStatus
 
 
 @patch('grpc.insecure_channel')
@@ -23,7 +24,7 @@ class GatewayMock(GatewayServicer):
 
     def __init__(self):
         self.deployed_workflows = {}
-        self.active_jobs: Dict[str, TaskContext] = {}
+        self.active_jobs: Dict[int, TaskContext] = {}
 
     def ActivateJobs(self, request, context):
         jobs = []
@@ -47,6 +48,11 @@ class GatewayMock(GatewayServicer):
 
     def FailJob(self, request, context):
         if request.jobKey in self.active_jobs.keys():
+            active_job = self.active_jobs.get(request.jobKey)
+            if active_job.status != TaskStatus.Running:
+                context.set_code(grpc.StatusCode.FAILED_PRECONDITION)
+            else:
+                active_job.status = TaskStatus.Failed
             return FailJobResponse()
         else:
             context.set_code(grpc.StatusCode.NOT_FOUND)
