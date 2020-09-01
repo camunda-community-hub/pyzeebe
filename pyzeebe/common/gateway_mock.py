@@ -44,22 +44,39 @@ class GatewayMock(GatewayServicer):
         yield ActivateJobsResponse(jobs=jobs)
 
     def CompleteJob(self, request, context):
-        return CompleteJobResponse()
+        if request.jobKey in self.active_jobs.keys():
+            active_job = self.active_jobs.get(request.jobKey)
+            self.handle_job(active_job, TaskStatus.Completed, context)
+            return CompleteJobResponse()
+        else:
+            context.set_code(grpc.StatusCode.NOT_FOUND)
+            return CompleteJobResponse()
 
     def FailJob(self, request, context):
         if request.jobKey in self.active_jobs.keys():
             active_job = self.active_jobs.get(request.jobKey)
-            if active_job.status != TaskStatus.Running:
-                context.set_code(grpc.StatusCode.FAILED_PRECONDITION)
-            else:
-                active_job.status = TaskStatus.Failed
+            self.handle_job(active_job, TaskStatus.Failed, context)
             return FailJobResponse()
         else:
             context.set_code(grpc.StatusCode.NOT_FOUND)
             return FailJobResponse()
 
     def ThrowError(self, request, context):
-        return ThrowErrorResponse()
+        if request.jobKey in self.active_jobs.keys():
+            active_job = self.active_jobs.get(request.jobKey)
+            self.handle_job(active_job, TaskStatus.ErrorThrown, context)
+            return CompleteJobResponse()
+        else:
+            context.set_code(grpc.StatusCode.NOT_FOUND)
+            return CompleteJobResponse()
+
+    @staticmethod
+    def handle_job(job: TaskContext, status_on_deactivate: TaskStatus, context):
+        if job.status != TaskStatus.Running:
+            context.set_code(grpc.StatusCode.FAILED_PRECONDITION)
+        else:
+            job.status = status_on_deactivate
+        return context
 
     def CreateWorkflowInstance(self, request, context):
         if request.bpmnProcessId in self.deployed_workflows.keys():

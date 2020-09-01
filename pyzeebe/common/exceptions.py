@@ -37,9 +37,9 @@ class ActivateJobsRequestInvalid(Exception):
         super().__init__(msg)
 
 
-class JobAlreadyFailed(Exception):
+class JobAlreadyDeactivated(Exception):
     def __init__(self, job_key: int):
-        super().__init__(f"Job {job_key} already failed")
+        super().__init__(f"Job {job_key} was already stopped (Completed/Failed/Error)")
         self.job_key = job_key
 
 

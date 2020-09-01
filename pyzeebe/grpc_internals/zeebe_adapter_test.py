@@ -69,14 +69,29 @@ def test_connectivity_shutdown():
         zeebe_adapter._check_connectivity(grpc.ChannelConnectivity.SHUTDOWN)
 
 
-def test_complete_job():
-    response = zeebe_adapter.complete_job(job_key=randint(0, RANDOM_RANGE), variables={})
+def test_complete_job(grpc_servicer):
+    task_type = create_random_task_and_activate(grpc_servicer)
+    job = get_first_active_job(task_type)
+    response = zeebe_adapter.complete_job(job_key=job.key, variables={})
     assert isinstance(response, CompleteJobResponse)
 
 
+def test_complete_job_not_found(grpc_servicer):
+    with pytest.raises(JobNotFound):
+        zeebe_adapter.complete_job(job_key=randint(0, RANDOM_RANGE), variables={})
+
+
+def test_complete_job_already_completed(grpc_servicer):
+    task_type = create_random_task_and_activate(grpc_servicer)
+    job = get_first_active_job(task_type)
+    zeebe_adapter.complete_job(job_key=job.key, variables={})
+    with pytest.raises(JobAlreadyDeactivated):
+        zeebe_adapter.complete_job(job_key=job.key, variables={})
+
+
 def test_fail_job(grpc_servicer):
-    mock_task_type = create_random_task_and_activate(grpc_servicer)
-    job = get_first_active_job(mock_task_type)
+    task_type = create_random_task_and_activate(grpc_servicer)
+    job = get_first_active_job(task_type)
     response = zeebe_adapter.fail_job(job_key=job.key, message=str(uuid4()))
     assert isinstance(response, FailJobResponse)
 
@@ -87,16 +102,31 @@ def test_fail_job_not_found():
 
 
 def test_fail_job_already_failed(grpc_servicer):
-    mock_task_type = create_random_task_and_activate(grpc_servicer)
-    job = get_first_active_job(mock_task_type)
+    task_type = create_random_task_and_activate(grpc_servicer)
+    job = get_first_active_job(task_type)
     zeebe_adapter.fail_job(job_key=job.key, message=str(uuid4()))
-    with pytest.raises(JobAlreadyFailed):
+    with pytest.raises(JobAlreadyDeactivated):
         zeebe_adapter.fail_job(job_key=job.key, message=str(uuid4()))
 
 
-def test_throw_error():
-    response = zeebe_adapter.throw_error(job_key=randint(0, RANDOM_RANGE), message=str(uuid4()))
+def test_throw_error(grpc_servicer):
+    task_type = create_random_task_and_activate(grpc_servicer)
+    job = get_first_active_job(task_type)
+    response = zeebe_adapter.throw_error(job_key=job.key, message=str(uuid4()))
     assert isinstance(response, ThrowErrorResponse)
+
+
+def test_throw_error_job_not_found():
+    with pytest.raises(JobNotFound):
+        zeebe_adapter.throw_error(job_key=randint(0, RANDOM_RANGE), message=str(uuid4()))
+
+
+def test_throw_error_already_thrown(grpc_servicer):
+    task_type = create_random_task_and_activate(grpc_servicer)
+    job = get_first_active_job(task_type)
+    zeebe_adapter.throw_error(job_key=job.key, message=str(uuid4()))
+    with pytest.raises(JobAlreadyDeactivated):
+        zeebe_adapter.throw_error(job_key=job.key, message=str(uuid4()))
 
 
 def test_create_workflow_instance(grpc_servicer):

@@ -83,7 +83,7 @@ class ZeebeAdapter(object):
             if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
                 raise JobNotFound(job_key=job_key)
             elif self.is_error_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
-                raise JobAlreadyFailed(job_key=job_key)
+                raise JobAlreadyDeactivated(job_key=job_key)
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 
@@ -94,7 +94,7 @@ class ZeebeAdapter(object):
             if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
                 raise JobNotFound(job_key=job_key)
             elif self.is_error_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
-                raise JobAlreadyFailed(job_key=job_key)
+                raise JobAlreadyDeactivated(job_key=job_key)
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 
@@ -106,7 +106,7 @@ class ZeebeAdapter(object):
             if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
                 raise JobNotFound(job_key=job_key)
             elif self.is_error_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
-                raise JobAlreadyFailed(job_key=job_key)
+                raise JobAlreadyDeactivated(job_key=job_key)
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 
