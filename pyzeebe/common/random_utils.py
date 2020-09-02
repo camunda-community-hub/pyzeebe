@@ -9,7 +9,7 @@ RANDOM_RANGE = 1000000000
 
 def random_task_context(task: Task = Task(task_type='test', task_handler=lambda x: {'x': x},
                                           exception_handler=lambda x, y, z: x)) -> TaskContext:
-    return TaskContext(_type=task.type, key=randint(0, RANDOM_RANGE), worker=str(uuid4()),
+    return TaskContext(type=task.type, key=randint(0, RANDOM_RANGE), worker=str(uuid4()),
                        retries=randint(0, 10), workflow_instance_key=randint(0, RANDOM_RANGE),
                        bpmn_process_id=str(uuid4()), workflow_definition_version=randint(0, 100),
                        workflow_key=randint(0, RANDOM_RANGE), element_id=str(uuid4()),
