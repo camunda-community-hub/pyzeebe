@@ -11,17 +11,18 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    services:
-      zeebe:
-        image: camunda/zeebe:${{zeebe-version}}
-        ports:
-          - 26500/tcp
 
 
     strategy:
       matrix:
         zeebe-version: [ 0.20, 0.21, 0.22, 0.23, 0.24 ]
         python-version: [ 3.5, 3.6, 3.7, 3.8 ]
+
+    services:
+      zeebe:
+        image: camunda/zeebe:${{zeebe-version}}
+        ports:
+          - 26500/tcp
 
     steps:
       - uses: actions/checkout@v2
