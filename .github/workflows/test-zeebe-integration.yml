@@ -1,0 +1,46 @@
+name: Test pyzeebe
+
+on:
+  push:
+    branches: [ master, development, feature/*, bugfix/* ]
+  pull_request:
+    branches: [ master, development, feature/*, bugfix/* ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        zeebe-version: [ 0.20, 0.21, 0.22, 0.23, 0.24 ]
+        python-version: [ 3.5, 3.6, 3.7, 3.8 ]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install pipenv
+        uses: dschep/install-pipenv-action@v1
+
+      - name: Install dependencies
+        run: |
+          pip install pipenv
+          pipenv install --dev
+
+      - name: Run integration tests
+        env:
+          ZEEBE_ADDRESS: zeebe:26500
+
+        with:
+          zeebe-version: ${{ matrix.zeebe-version }}
+
+        services:
+          zeebe:
+            image: camunda/zeebe:${{zeebe-version}}
+
+            ports:
+              - 26500/tcp
+        run: |
+          pipenv run pytest tests
