@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pytest
 
-from pyzeebe.common.exceptions import TaskNotFoundException
+from pyzeebe.common.exceptions import TaskNotFound
 from pyzeebe.common.random_utils import random_task_context
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_context import TaskContext
@@ -110,12 +110,12 @@ def test_remove_task_from_many():
 
 
 def test_remove_fake_task():
-    with pytest.raises(TaskNotFoundException):
+    with pytest.raises(TaskNotFound):
         zeebe_worker.remove_task(str(uuid4()))
 
 
 def test_get_fake_task():
-    with pytest.raises(TaskNotFoundException):
+    with pytest.raises(TaskNotFound):
         zeebe_worker.get_task(str(uuid4()))
 
 

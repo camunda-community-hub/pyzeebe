@@ -5,6 +5,7 @@ from typing import List, Generator, Dict
 
 import grpc
 
+from pyzeebe.common.exceptions import WorkflowDoesNotExist
 from pyzeebe.grpc_internals.zeebe_pb2 import *
 from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayStub
 from pyzeebe.task.task_context import TaskContext
@@ -79,20 +80,38 @@ class ZeebeAdapter:
         return self.gateway_stub.ThrowError(
             ThrowErrorRequest(jobKey=job_key, errorMessage=message))
 
-    def create_workflow_instance(self, bpmn_process_id: str, version: int, variables: Dict) -> str:
-        response = self.gateway_stub.CreateWorkflowInstance(
-            CreateWorkflowInstanceRequest(bpmnProcessId=bpmn_process_id, version=version,
-                                          variables=json.dumps(variables)))
-        return response.workflowInstanceKey
+    def create_workflow_instance(self, bpmn_process_id: str, version: int, variables: Dict) -> int:
+        try:
+            response = self.gateway_stub.CreateWorkflowInstance(
+                CreateWorkflowInstanceRequest(bpmnProcessId=bpmn_process_id, version=version,
+                                              variables=json.dumps(variables)))
+            return response.workflowInstanceKey
+        except grpc.RpcError as rpc_error:
+            if self._is_error_of_status(rpc_error, grpc.StatusCode.NOT_FOUND):
+                raise WorkflowDoesNotExist(bpmn_process_id=bpmn_process_id, version=version)
+            else:
+                raise
 
     def create_workflow_instance_with_result(self, bpmn_process_id: str, version: int, variables: Dict,
                                              timeout: int, variables_to_fetch) -> Dict:
-        response = self.gateway_stub.CreateWorkflowInstanceWithResult(
-            CreateWorkflowInstanceWithResultRequest(
-                request=CreateWorkflowInstanceRequest(bpmnProcessId=bpmn_process_id, version=version,
-                                                      variables=json.dumps(variables)),
-                requestTimeout=timeout, fetchVariables=variables_to_fetch))
-        return json.loads(response.variables)
+        try:
+            response = self.gateway_stub.CreateWorkflowInstanceWithResult(
+                CreateWorkflowInstanceWithResultRequest(
+                    request=CreateWorkflowInstanceRequest(bpmnProcessId=bpmn_process_id, version=version,
+                                                          variables=json.dumps(variables)),
+                    requestTimeout=timeout, fetchVariables=variables_to_fetch))
+            return json.loads(response.variables)
+        except grpc.RpcError as rpc_error:
+            if self._is_error_of_status(rpc_error, grpc.StatusCode.NOT_FOUND):
+                raise WorkflowDoesNotExist(bpmn_process_id=bpmn_process_id, version=version)
+            elif self._is_error_of_status(rpc_error, grpc.StatusCode.RESOURCE_EXHAUSTED):
+                pass
+            else:
+                raise
+
+    def cancel_workflow_instance(self, workflow_instance_key: int) -> None:
+        self.gateway_stub.CancelWorkflowInstance(
+            CancelWorkflowInstanceRequest(workflowInstanceKey=workflow_instance_key))
 
     def publish_message(self, name: str, correlation_key: str, time_to_live_in_milliseconds: int,
                         variables: Dict) -> PublishMessageResponse:
@@ -106,5 +125,10 @@ class ZeebeAdapter:
 
     @staticmethod
     def _get_workflow_request_object(workflow_file_path: str) -> WorkflowRequestObject:
-        return WorkflowRequestObject(name=os.path.split(workflow_file_path)[-1],
-                                     definition=open(workflow_file_path).read())
+        with open(workflow_file_path, 'rb') as file:
+            return WorkflowRequestObject(name=os.path.split(workflow_file_path)[-1],
+                                         definition=file.read())
+
+    @staticmethod
+    def _is_error_of_status(rpc_error: grpc.RpcError, status_code: grpc.StatusCode):
+        return rpc_error.args[0].code == status_code

@@ -4,7 +4,7 @@ from uuid import uuid4
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_context import TaskContext
 
-RANDOM_RANGE = 100000
+RANDOM_RANGE = 1000000000
 
 
 def random_task_context(task: Task = Task(task_type='test', task_handler=lambda x: {'x': x},

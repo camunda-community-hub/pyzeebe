@@ -1,3 +1,4 @@
+from io import BytesIO
 from random import randint
 from unittest.mock import patch
 from uuid import uuid4
@@ -5,59 +6,12 @@ from uuid import uuid4
 import grpc
 import pytest
 
+from pyzeebe.common.gateway_mock import GatewayMock
 from pyzeebe.common.random_utils import RANDOM_RANGE
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.grpc_internals.zeebe_pb2 import *
-from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayServicer
 
 zeebe_adapter: ZeebeAdapter
-
-
-@patch('grpc.insecure_channel')
-def mock_channel():
-    pass
-
-
-class TestGatewayServicer(GatewayServicer):
-    """
-    def ActivateJobs(self, request, context):
-        return ActivateJobsResponse(jobs=[ActivatedJob()])
-    """
-
-    def __init__(self):
-        self.workflows = {}
-
-    def CompleteJob(self, request, context):
-        return CompleteJobResponse()
-
-    def FailJob(self, request, context):
-        return FailJobResponse()
-
-    def ThrowError(self, request, context):
-        return ThrowErrorResponse()
-
-    def CreateWorkflowInstance(self, request, context):
-        return CreateWorkflowInstanceResponse(workflowKey=randint(0, RANDOM_RANGE),
-                                              bpmnProcessId=request.bpmnProcessId,
-                                              version=request.version, workflowInstanceKey=randint(0, RANDOM_RANGE))
-
-    def CreateWorkflowInstanceWithResult(self, request, context):
-        return CreateWorkflowInstanceWithResultResponse(workflowKey=request.request.workflowKey,
-                                                        bpmnProcessId=request.request.bpmnProcessId,
-                                                        version=randint(0, 10), variables=request.request.variables)
-
-    def DeployWorkflow(self, request, context):
-        workflows = []
-        for workflow in request.workflows:
-            workflow_metadata = WorkflowMetadata(bpmnProcessId=str(uuid4()), version=randint(0, 10),
-                                                 workflowKey=randint(0, RANDOM_RANGE), resourceName=workflow.name)
-            workflows.append(workflow_metadata)
-            self.workflows[workflow_metadata.bpmnProcessId] = workflow_metadata
-
-        return DeployWorkflowResponse(key=randint(0, RANDOM_RANGE), workflows=workflows)
-
-    def PublishMessage(self, request, context):
-        return PublishMessageResponse()
 
 
 @pytest.fixture(scope='module')
@@ -68,7 +22,7 @@ def grpc_add_to_server():
 
 @pytest.fixture(scope='module')
 def grpc_servicer():
-    return TestGatewayServicer()
+    return GatewayMock()
 
 
 @pytest.fixture(scope='module')
@@ -129,16 +83,20 @@ def test_throw_error():
     assert isinstance(response, ThrowErrorResponse)
 
 
-def test_create_workflow_instance():
-    response = zeebe_adapter.create_workflow_instance(bpmn_process_id=str(uuid4()), variables={},
-                                                      version=randint(0, 10))
+def test_create_workflow_instance(grpc_servicer):
+    bpmn_process_id = str(uuid4())
+    version = randint(0, 10)
+    grpc_servicer.mock_deploy_workflow(bpmn_process_id, version, [])
+    response = zeebe_adapter.create_workflow_instance(bpmn_process_id=bpmn_process_id, variables={}, version=version)
     assert isinstance(response, int)
 
 
-def test_create_workflow_instance_with_result():
-    response = zeebe_adapter.create_workflow_instance_with_result(bpmn_process_id=str(uuid4()), variables={},
-                                                                  version=randint(0, 10), timeout=0,
-                                                                  variables_to_fetch=[])
+def test_create_workflow_instance_with_result(grpc_servicer):
+    bpmn_process_id = str(uuid4())
+    version = randint(0, 10)
+    grpc_servicer.mock_deploy_workflow(bpmn_process_id, version, [])
+    response = zeebe_adapter.create_workflow_instance_with_result(bpmn_process_id=bpmn_process_id, variables={},
+                                                                  version=version, timeout=0, variables_to_fetch=[])
     assert isinstance(response, dict)
 
 
@@ -146,3 +104,11 @@ def test_publish_message():
     response = zeebe_adapter.publish_message(name=str(uuid4()), variables={}, correlation_key=str(uuid4()),
                                              time_to_live_in_milliseconds=randint(0, RANDOM_RANGE))
     assert isinstance(response, PublishMessageResponse)
+
+
+def test_get_workflow_request_object():
+    with patch('builtins.open') as mock_open:
+        mock_open.return_value = BytesIO()
+        file_path = str(uuid4())
+        zeebe_adapter._get_workflow_request_object(file_path)
+        mock_open.assert_called_with(file_path, 'rb')

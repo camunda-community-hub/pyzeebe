@@ -1,7 +1,7 @@
 from typing import Dict
 
 
-class TaskContext:
+class TaskContext(object):
     def __init__(self, key: int, _type: str, workflow_instance_key: int, bpmn_process_id: str,
                  workflow_definition_version: int, workflow_key: int, element_id: str, element_instance_key: int,
                  custom_headers: Dict, worker: str, retries: int, deadline: int, variables: Dict):
