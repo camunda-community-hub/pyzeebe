@@ -63,7 +63,7 @@ class ZeebeAdapter(object):
 
     @staticmethod
     def _create_task_context_from_job(job) -> TaskContext:
-        return TaskContext(key=job.key, type=job.type,
+        return TaskContext(key=job.key, _type=job.type,
                            workflow_instance_key=job.workflowInstanceKey,
                            bpmn_process_id=job.bpmnProcessId,
                            workflow_definition_version=job.workflowDefinitionVersion,
