@@ -7,9 +7,17 @@ on:
     branches: [ master, development, feature/*, bugfix/* ]
 
 jobs:
-  build:
+  test:
 
     runs-on: ubuntu-latest
+
+    services:
+      zeebe:
+        image: camunda/zeebe:${{zeebe-version}}
+        ports:
+          - 26500/tcp
+
+
     strategy:
       matrix:
         zeebe-version: [ 0.20, 0.21, 0.22, 0.23, 0.24 ]
@@ -36,11 +44,5 @@ jobs:
         with:
           zeebe-version: ${{ matrix.zeebe-version }}
 
-        services:
-          zeebe:
-            image: camunda/zeebe:${{zeebe-version}}
-
-            ports:
-              - 26500/tcp
         run: |
           pipenv run pytest tests
