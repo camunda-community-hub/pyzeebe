@@ -20,7 +20,7 @@ jobs:
 
     services:
       zeebe:
-        image: camunda/zeebe:${{zeebe-version}}
+        image: camunda/zeebe:${{ matrix.zeebe-version }}
         ports:
           - 26500/tcp
 
@@ -38,12 +38,14 @@ jobs:
           pip install pipenv
           pipenv install --dev
 
+      - name: Run on every zeebe version
+        with:
+          zeebe-version: ${{ matrix.zeebe-version }}
+
+
       - name: Run integration tests
         env:
           ZEEBE_ADDRESS: zeebe:26500
-
-        with:
-          zeebe-version: ${{ matrix.zeebe-version }}
 
         run: |
           pipenv run pytest tests
