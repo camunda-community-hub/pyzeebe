@@ -1,4 +1,6 @@
+from io import BytesIO
 from random import randint
+from unittest.mock import patch
 from uuid import uuid4
 
 import grpc
@@ -102,3 +104,11 @@ def test_publish_message():
     response = zeebe_adapter.publish_message(name=str(uuid4()), variables={}, correlation_key=str(uuid4()),
                                              time_to_live_in_milliseconds=randint(0, RANDOM_RANGE))
     assert isinstance(response, PublishMessageResponse)
+
+
+def test_get_workflow_request_object():
+    with patch('builtins.open') as mock_open:
+        mock_open.return_value = BytesIO()
+        file_path = str(uuid4())
+        zeebe_adapter._get_workflow_request_object(file_path)
+        mock_open.assert_called_with(file_path, 'rb')
