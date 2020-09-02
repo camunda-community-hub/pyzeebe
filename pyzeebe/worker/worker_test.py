@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pytest
 
-from pyzeebe.common.exceptions import TaskNotFoundException, NotEnoughTasksException
+from pyzeebe.common.exceptions import TaskNotFound
 from pyzeebe.common.random_utils import random_task_context
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_context import TaskContext
@@ -40,7 +40,7 @@ def test_add_task():
     context = random_task_context(task)
     context.variables = {'x': str(uuid4())}
     with patch('pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job') as mock:
-        assert isinstance(task.handler(context), dict)
+        assert isinstance(task.handler(context), TaskContext)
         mock.assert_called_with(job_key=context.key, variables=context.variables)
 
 
@@ -54,7 +54,7 @@ def test_before_task_decorator_called():
         task.before(decorator)
         zeebe_worker.add_task(task)
         with patch('pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job') as grpc_mock:
-            assert isinstance(task.handler(context), dict)
+            assert isinstance(task.handler(context), TaskContext)
             grpc_mock.assert_called_with(job_key=context.key, variables=context.variables)
         mock.assert_called_with(context)
 
@@ -70,7 +70,7 @@ def test_after_task_decorator_called():
         zeebe_worker.add_task(task)
 
         with patch('pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job') as grpc_mock:
-            assert isinstance(task.handler(context), dict)
+            assert isinstance(task.handler(context), TaskContext)
             grpc_mock.assert_called_with(job_key=context.key, variables=context.variables)
         mock.assert_called_with(context)
 
@@ -110,12 +110,12 @@ def test_remove_task_from_many():
 
 
 def test_remove_fake_task():
-    with pytest.raises(TaskNotFoundException):
+    with pytest.raises(TaskNotFound):
         zeebe_worker.remove_task(str(uuid4()))
 
 
 def test_get_fake_task():
-    with pytest.raises(TaskNotFoundException):
+    with pytest.raises(TaskNotFound):
         zeebe_worker.get_task(str(uuid4()))
 
 
@@ -206,8 +206,3 @@ def test_handle_many_jobs():
             task_handler_mock.return_value = {'x': str(uuid4())}
             zeebe_worker._handle_task_contexts(task)
             task_handler_mock.assert_called_with(context)
-
-
-def test_work_without_tasks():
-    with pytest.raises(NotEnoughTasksException):
-        zeebe_worker.work()
