@@ -8,7 +8,6 @@ on:
 
 jobs:
   test:
-    container: ubuntu:latest
     runs-on: ubuntu-latest
 
     strategy:
@@ -38,8 +37,5 @@ jobs:
           pipenv install --dev
 
       - name: Run integration tests
-        env:
-          ZEEBE_ADDRESS: zeebe:26500
-
         run: |
           pipenv run pytest tests
