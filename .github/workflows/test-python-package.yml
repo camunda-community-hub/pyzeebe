@@ -29,7 +29,7 @@ jobs:
           pipenv install --dev
       - name: Test with pytest
         run: |
-          pipenv run coverage run --source=. -m py.test
+          pipenv run coverage run --source=. -m py.test pyzeebe
       - name: Upload to coveralls
         run: |
           pipenv run coveralls
