@@ -35,6 +35,10 @@ jobs:
         run: |
           pip install pipenv
           pipenv install --dev
+      - name: Wait / Sleep
+        uses: jakejarvis/wait-action@v0.1.0
+        with:
+          time: 30s
 
       - name: Run integration tests
         run: |
