@@ -1,45 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_05ja50g" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Zeebe Modeler" exporterVersion="0.9.1">
-  <bpmn:process id="test" name="Test" isExecutable="true">
-    <bpmn:startEvent id="test-start">
-      <bpmn:outgoing>Flow_0fpfmf3</bpmn:outgoing>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_005122u" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Zeebe Modeler" exporterVersion="0.9.1">
+  <bpmn:process id="test" name="test" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_1o209vx</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:sequenceFlow id="Flow_0fpfmf3" sourceRef="test-start" targetRef="test-task" />
-    <bpmn:serviceTask id="test-task" name="Test">
+    <bpmn:sequenceFlow id="Flow_1o209vx" sourceRef="StartEvent_1" targetRef="test-task" />
+    <bpmn:serviceTask id="test-task" name="test">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="test" />
         <zeebe:ioMapping>
-          <zeebe:input source="=shouldThrow" target="shouldThrow" />
-          <zeebe:input source="=in" target="in" />
-          <zeebe:output source="=out" target="out" />
+          <zeebe:input source="=input" target="input" />
+          <zeebe:input source="=should_throw" target="should_throw" />
+          <zeebe:output source="=output" target="output" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0fpfmf3</bpmn:incoming>
-      <bpmn:outgoing>Flow_05ukp8d</bpmn:outgoing>
+      <bpmn:incoming>Flow_1o209vx</bpmn:incoming>
+      <bpmn:outgoing>Flow_00xikey</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:sequenceFlow id="Flow_05ukp8d" sourceRef="test-task" targetRef="test-end" />
-    <bpmn:endEvent id="test-end">
-      <bpmn:incoming>Flow_05ukp8d</bpmn:incoming>
+    <bpmn:endEvent id="Event_1bh2p7v">
+      <bpmn:incoming>Flow_00xikey</bpmn:incoming>
     </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_00xikey" sourceRef="test-task" targetRef="Event_1bh2p7v" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="test">
-      <bpmndi:BPMNEdge id="Flow_05ukp8d_di" bpmnElement="Flow_05ukp8d">
-        <di:waypoint x="350" y="117" />
-        <di:waypoint x="382" y="117" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0fpfmf3_di" bpmnElement="Flow_0fpfmf3">
+      <bpmndi:BPMNEdge id="Flow_1o209vx_di" bpmnElement="Flow_1o209vx">
         <di:waypoint x="215" y="117" />
-        <di:waypoint x="250" y="117" />
+        <di:waypoint x="270" y="117" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="test-start">
+      <bpmndi:BPMNEdge id="Flow_00xikey_di" bpmnElement="Flow_00xikey">
+        <di:waypoint x="370" y="117" />
+        <di:waypoint x="432" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
         <dc:Bounds x="179" y="99" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_170j3va_di" bpmnElement="test-task">
-        <dc:Bounds x="250" y="77" width="100" height="80" />
+      <bpmndi:BPMNShape id="Activity_0mozble_di" bpmnElement="test-task">
+        <dc:Bounds x="270" y="77" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1ylpcev_di" bpmnElement="test-end">
-        <dc:Bounds x="382" y="99" width="36" height="36" />
+      <bpmndi:BPMNShape id="Event_1bh2p7v_di" bpmnElement="Event_1bh2p7v">
+        <dc:Bounds x="432" y="99" width="36" height="36" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
