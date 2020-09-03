@@ -1,3 +1,4 @@
+import os.path
 from concurrent.futures import ThreadPoolExecutor
 from typing import Dict
 from uuid import uuid4
@@ -38,7 +39,10 @@ def setup():
     executor.submit(run_worker)
 
     zeebe_client = ZeebeClient()
-    zeebe_client.deploy_workflow('test.bpmn')
+    try:
+        zeebe_client.deploy_workflow(os.path.join('tests', 'test.bpmn'))
+    except FileNotFoundError:
+        zeebe_client.deploy_workflow('test.bpmn')
 
     yield zeebe_client
 
