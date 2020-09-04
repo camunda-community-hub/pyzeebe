@@ -227,6 +227,7 @@ def get_first_active_job(task_type) -> TaskContext:
     return next(zeebe_adapter.activate_jobs(task_type=task_type, max_jobs_to_activate=1, request_timeout=10,
                                             timeout=100, variables_to_fetch=[], worker=str(uuid4())))
 
+
 def test_get_workflow_request_object():
     with patch('builtins.open') as mock_open:
         mock_open.return_value = BytesIO()

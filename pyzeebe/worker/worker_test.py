@@ -1,10 +1,12 @@
 from random import randint
+from threading import Event
 from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
 
 from pyzeebe.common.exceptions import TaskNotFound
+from pyzeebe.common.gateway_mock import GatewayMock
 from pyzeebe.common.random_utils import random_task_context
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_context import TaskContext
@@ -16,6 +18,23 @@ task: Task
 
 def decorator(context: TaskContext) -> TaskContext:
     return context
+
+
+@pytest.fixture(scope='module')
+def grpc_add_to_server():
+    from pyzeebe.grpc_internals.zeebe_pb2_grpc import add_GatewayServicer_to_server
+    return add_GatewayServicer_to_server
+
+
+@pytest.fixture(scope='module')
+def grpc_servicer():
+    return GatewayMock()
+
+
+@pytest.fixture(scope='module')
+def grpc_stub_cls(grpc_channel):
+    from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayStub
+    return GatewayStub
 
 
 @pytest.fixture(autouse=True)
@@ -206,3 +225,9 @@ def test_handle_many_jobs():
             task_handler_mock.return_value = {'x': str(uuid4())}
             zeebe_worker._handle_task_contexts(task)
             task_handler_mock.assert_called_with(context)
+
+
+def test_stop_worker():
+    stop_event = Event()
+    zeebe_worker.work(stop_event=stop_event)
+    stop_event.set()
