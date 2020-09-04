@@ -35,7 +35,7 @@ class ZeebeWorker(ZeebeDecoratorBase):
 
     def work(self, stop_event: Event = None):
         for task in self.tasks:
-            task_thread = Thread(target=self._handle_task, args=(task, stop_event), daemon=True)
+            task_thread = Thread(target=self._handle_task, args=(task, stop_event))
             self._task_threads.append(task_thread)
             task_thread.start()
 
