@@ -8,6 +8,8 @@ on:
 
 jobs:
   test:
+    env:
+      ZEEBE_ADDRESS: "zeebe:26500"
     runs-on: ubuntu-latest
     strategy:
       matrix:
