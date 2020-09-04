@@ -1,5 +1,5 @@
-import os.path
-from concurrent.futures import ThreadPoolExecutor
+import os
+from threading import Thread, Event
 from typing import Dict
 from uuid import uuid4
 
@@ -22,21 +22,21 @@ def exception_handler(exc: Exception, context: TaskContext, controller: TaskStat
 task = Task('test', task_handler, exception_handler)
 
 zeebe_client: ZeebeClient
-executor: ThreadPoolExecutor
 
 
-def run_worker():
+def run_worker(stop_event):
     zeebe_worker = ZeebeWorker()
     zeebe_worker.add_task(task)
-    zeebe_worker.work()
+    zeebe_worker.work(stop_event)
 
 
 @pytest.fixture(scope='module', autouse=True)
 def setup():
-    global p, zeebe_client, executor
+    global zeebe_client
 
-    executor = ThreadPoolExecutor()
-    executor.submit(run_worker)
+    stop_event = Event()
+    t = Thread(target=run_worker, args=(stop_event,))
+    t.start()
 
     zeebe_client = ZeebeClient()
     try:
@@ -45,8 +45,7 @@ def setup():
         zeebe_client.deploy_workflow('test.bpmn')
 
     yield zeebe_client
-
-    executor.shutdown(wait=False)
+    stop_event.set()
 
 
 def test_run_workflow():

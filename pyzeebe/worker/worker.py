@@ -1,6 +1,6 @@
 import logging
 import socket
-from concurrent.futures import ThreadPoolExecutor
+from threading import Thread, Event
 from typing import List, Callable, Generator, Tuple
 
 from pyzeebe.common.exceptions import TaskNotFound
@@ -31,15 +31,17 @@ class ZeebeWorker(ZeebeDecoratorBase):
         self.name = name or socket.gethostname()
         self.request_timeout = request_timeout
         self.tasks = []
+        self._task_threads: List[Thread] = []
 
-    def work(self):
-        with ThreadPoolExecutor(thread_name_prefix='zeebe-task') as executor:
-            for task in self.tasks:
-                executor.submit(self._handle_task, task)
+    def work(self, stop_event: Event = None):
+        for task in self.tasks:
+            task_thread = Thread(target=self._handle_task, args=(task, stop_event), daemon=True)
+            self._task_threads.append(task_thread)
+            task_thread.start()
 
-    def _handle_task(self, task: Task):
+    def _handle_task(self, task: Task, stop_event: Event):
         logging.debug(f'Handling task {task}')
-        while self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection:
+        while not stop_event.is_set() and self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection:
             if self.zeebe_adapter.retrying_connection:
                 logging.debug(f'Retrying connection to {self.zeebe_adapter._connection_uri}')
                 continue
@@ -47,11 +49,10 @@ class ZeebeWorker(ZeebeDecoratorBase):
             self._handle_task_contexts(task)
 
     def _handle_task_contexts(self, task: Task):
-        executor = ThreadPoolExecutor(thread_name_prefix=f'zeebe-job-{task.type}')
         for task_context in self._get_task_contexts(task):
+            thread = Thread(target=task.handler, args=(task_context,))
             logging.debug(f'Running job: {task_context}')
-            executor.submit(task.handler, task_context)
-        executor.shutdown(wait=False)
+            thread.start()
 
     def _get_task_contexts(self, task: Task) -> Generator[TaskContext, None, None]:
         logging.debug(f'Activating jobs for task: {task}')
