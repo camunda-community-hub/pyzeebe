@@ -1,4 +1,4 @@
-name: Test pyzeebe
+name: Integration test pyzeebe
 
 on:
   push:
