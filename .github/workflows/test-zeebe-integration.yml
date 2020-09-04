@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        zeebe-version: [ "0.22.5", "0.23.5", "0.24.2" ]
+        zeebe-version: [ "0.23.5", "0.24.2" ]
 
     container: python:3.6
 
@@ -29,10 +29,6 @@ jobs:
         run: |
           pip install pipenv
           pipenv install --dev
-      #- name: Wait / Sleep
-      #  uses: jakejarvis/wait-action@v0.1.0
-      #  with:
-      #    time: 30s
 
       - name: Run integration tests
         run: |
