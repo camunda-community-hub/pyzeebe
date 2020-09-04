@@ -14,9 +14,8 @@ jobs:
     strategy:
       matrix:
         zeebe-version: [ "0.20.0", "0.21.0", "0.22.0", "0.23.0", "0.24.0" ]
-        python-version: [ 3.5, 3.6, 3.7, 3.8 ]
 
-    container: python:${{ matrix.python-version }}
+    container: python:3.6
 
 
     services:
