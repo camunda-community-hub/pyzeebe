@@ -13,6 +13,7 @@ jobs:
     strategy:
       matrix:
         zeebe-version: [ "0.20.0", "0.21.0", "0.22.0", "0.23.0", "0.24.0" ]
+        python-version: [ 3.5, 3.6, 3.7, 3.8 ]
 
     services:
       zeebe:
@@ -22,10 +23,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.6
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
-          python-version: 3.6
+          python-version: ${{ matrix.python-version }}
+          zeebe-version: ${{ matrix.zeebe-version }}
       - name: Install pipenv
         uses: dschep/install-pipenv-action@v1
 

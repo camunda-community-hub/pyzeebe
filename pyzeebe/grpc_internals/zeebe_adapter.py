@@ -21,7 +21,7 @@ class ZeebeAdapter(object):
                 self._connection_uri = f'{hostname or "localhost"}:{port or 26500}'
             else:
                 self._connection_uri = os.getenv('ZEEBE_ADDRESS') or 'localhost:26500'
-            self._channel = grpc.insecure_channel(self._connection_uri)
+            self._channel = grpc.insecure_channel(self._connection_uri, options=(('grpc.enable_http_proxy', 0),))
 
         self.connected = False
         self.retrying_connection = True
