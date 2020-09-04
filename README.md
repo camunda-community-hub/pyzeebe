@@ -16,7 +16,7 @@ Zeebe version support:
 
 | Pyzeebe version | Tested Zeebe versions |
 |:---------------:|----------------|
-| 1.0.1           | 0.24.2         |
+| 1.1.0           | 0.23, 0.24         |
 
 ## Getting Started
 To install:
@@ -26,6 +26,8 @@ To install:
 ## Usage
 
 ### Worker
+
+The `ZeebeWorker` class uses threading to get and run jobs.
 
 ```python
 from pyzeebe import ZeebeWorker, Task, TaskStatusController, TaskContext
@@ -46,6 +48,16 @@ worker = ZeebeWorker(hostname='<zeebe_host>', port=26500) # Create a zeebe worke
 worker.add_task(task) # Add task to zeebe worker
 
 worker.work() # Now every time that a task with type example is called example_task will be called
+```
+
+Stop a worker:
+```python
+from threading import Event
+
+
+stop_event = Event() 
+zeebe_worker.work(stop_event=stop_event) # Worker will begin working
+stop_event.set() # Stops worker and all running jobs
 ```
 
 ### Client
