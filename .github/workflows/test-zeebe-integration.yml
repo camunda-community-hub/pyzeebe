@@ -8,13 +8,14 @@ on:
 
 jobs:
   test:
+    env:
+      ZEEBE_ADDRESS: "zeebe:26500"
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        zeebe-version: [ "0.20.0", "0.21.0", "0.22.0", "0.23.0", "0.24.0" ]
-        python-version: [ 3.5, 3.6, 3.7, 3.8 ]
+        zeebe-version: [ "0.20.3", "0.21.1", "0.22.5", "0.23.5", "0.24.2" ]
 
-    container: python:${{ matrix.python-version }}
+    container: python:3.6
 
 
     services:
@@ -25,9 +26,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Install pipenv
-        uses: dschep/install-pipenv-action@v1
-
       - name: Install dependencies
         run: |
           pip install pipenv
