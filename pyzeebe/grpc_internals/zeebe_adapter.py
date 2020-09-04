@@ -13,15 +13,15 @@ from pyzeebe.task.task_context import TaskContext
 
 class ZeebeAdapter(object):
     def __init__(self, hostname: str = None, port: int = None, channel: grpc.Channel = None, **kwargs):
-        self._connection_uri = f'{hostname}:{port}' or os.getenv('ZEEBE_ADDRESS') or 'localhost:26500'
         if channel:
             self._channel = channel
+            self.connection_uri = None
         else:
             if hostname or port:
-                self._connection_uri = f'{hostname or "localhost"}:{port or 26500}'
+                self.connection_uri = f'{hostname or "localhost"}:{port or 26500}'
             else:
-                self._connection_uri = os.getenv('ZEEBE_ADDRESS') or 'localhost:26500'
-            self._channel = grpc.insecure_channel(self._connection_uri)
+                self.connection_uri = os.getenv('ZEEBE_ADDRESS', 'localhost:26500')
+            self._channel = grpc.insecure_channel(self.connection_uri)
 
         self.connected = False
         self.retrying_connection = True
@@ -42,7 +42,7 @@ class ZeebeAdapter(object):
             logging.error('Failed to establish connection to Zeebe. Non recoverable')
             self.connected = False
             self.retrying_connection = False
-            raise ConnectionAbortedError(f'Lost connection to {self._connection_uri}')
+            raise ConnectionAbortedError(f'Lost connection to {self.connection_uri}')
 
     def activate_jobs(self, task_type: str, worker: str, timeout: int, max_jobs_to_activate: int,
                       variables_to_fetch: List[str], request_timeout: int) -> Generator[TaskContext, None, None]:

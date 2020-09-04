@@ -43,7 +43,7 @@ class ZeebeWorker(ZeebeDecoratorBase):
         logging.debug(f'Handling task {task}')
         while not stop_event.is_set() and self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection:
             if self.zeebe_adapter.retrying_connection:
-                logging.debug(f'Retrying connection to {self.zeebe_adapter._connection_uri}')
+                logging.debug(f'Retrying connection to {self.zeebe_adapter.connection_uri}')
                 continue
 
             self._handle_task_contexts(task)

@@ -71,6 +71,25 @@ def test_connectivity_shutdown():
         zeebe_adapter._check_connectivity(grpc.ChannelConnectivity.SHUTDOWN)
 
 
+def test_only_port():
+    port = randint(0, 10000)
+    zeebe_adapter = ZeebeAdapter(port=port)
+    assert zeebe_adapter.connection_uri == f'localhost:{port}'
+
+
+def test_only_host():
+    hostname = str(uuid4())
+    zeebe_adapter = ZeebeAdapter(hostname=hostname)
+    assert zeebe_adapter.connection_uri == f'{hostname}:26500'
+
+
+def test_host_and_port():
+    hostname = str(uuid4())
+    port = randint(0, 10000)
+    zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port)
+    assert zeebe_adapter.connection_uri == f'{hostname}:{port}'
+
+
 def test_activate_jobs(grpc_servicer):
     task_type = create_random_task_and_activate(grpc_servicer)
     active_jobs_count = randint(4, 100)
