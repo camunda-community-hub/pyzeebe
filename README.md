@@ -16,7 +16,7 @@ Zeebe version support:
 
 | Pyzeebe version | Tested Zeebe versions |
 |:---------------:|----------------|
-| 1.0.1           | 0.24.2         |
+| 1.1.0           | 0.23, 0.24         |
 
 ## Getting Started
 To install:
@@ -26,6 +26,8 @@ To install:
 ## Usage
 
 ### Worker
+
+The `ZeebeWorker` class uses threading to get and run jobs.
 
 ```python
 from pyzeebe import ZeebeWorker, Task, TaskStatusController, TaskContext
@@ -46,6 +48,43 @@ worker = ZeebeWorker(hostname='<zeebe_host>', port=26500) # Create a zeebe worke
 worker.add_task(task) # Add task to zeebe worker
 
 worker.work() # Now every time that a task with type example is called example_task will be called
+```
+
+Stop a worker:
+```python
+from threading import Event
+
+
+stop_event = Event() 
+zeebe_worker.work(stop_event=stop_event) # Worker will begin working
+stop_event.set() # Stops worker and all running jobs
+```
+
+### Client
+
+```python
+from pyzeebe import ZeebeClient
+
+# Create a zeebe client
+zeebe_client = ZeebeClient(hostname='localhost', port=26500)
+
+# Run a workflow
+workflow_instance_key = zeebe_client.run_workflow(bpmn_process_id='My zeebe workflow', variables={})
+
+# Run a workflow and receive the result
+workflow_result = zeebe_client.run_workflow_with_result(bpmn_process_id='My zeebe workflow',
+                                                        timeout=10000)  # Will wait 10000 milliseconds (10 seconds)
+
+# Deploy a bpmn workflow definition
+zeebe_client.deploy_workflow('workflow.bpmn')
+
+# Cancel a running workflow
+zeebe_client.cancel_workflow_instance(workflow_instance_key=12345)
+
+# Publish message
+zeebe_client.publish_message(name='message_name', correlation_key='some_id')
+
+
 ```
 
 ## Tests
