@@ -4,11 +4,25 @@ import os.path
 from typing import List, Generator, Dict
 
 import grpc
+from oauthlib import oauth2
 
 from pyzeebe.common.exceptions import *
 from pyzeebe.grpc_internals.zeebe_pb2 import *
 from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayStub
 from pyzeebe.task.task_context import TaskContext
+
+client = oauth2.BackendApplicationClient('pi1Fuv~iQUNuX8XjMor94yfZ3wUwRlb8')
+client.prepare_request_body(include_client_id=True)
+client.add_token()
+from requests_oauthlib import OAuth2Session
+
+session = OAuth2Session(client=client)
+access_token = session.post('https://login.cloud.camunda.io/oauth/token',
+                            data={'client_id': 'pi1Fuv~iQUNuX8XjMor94yfZ3wUwRlb8',
+                                  'client_secret': 'zXi8T.Pn1dICnEn-e3se2~ebYH4bHEFWU74GHRUUuYyFGk00mXRQVySJHEmRcXLU',
+                                  'audience': 'c91d2c57-cc2d-4c12-a5a1-af9b60afa751.zeebe.camunda.io'})
+session.token = access_token
+session.fetch_token()
 
 
 class ZeebeAdapter(object):
