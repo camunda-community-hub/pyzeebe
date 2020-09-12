@@ -14,7 +14,7 @@ setuptools.setup(
     url="https://github.com/JonatanMartens/pyzeebe",
     packages=setuptools.find_packages(exclude=("tests",)),
     install_requires=["grpcio~=1.31.0", "protobuf~=3.13.0"],
-    exclude=["*test", "tests", "*.bpmn"],
+    exclude=["*test.py", "tests", "*.bpmn"],
     keywords="zeebe workflow workflow-engine",
     license='MIT',
     classifiers=[
