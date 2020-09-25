@@ -10,6 +10,7 @@ from pyzeebe.common.exceptions import *
 from pyzeebe.common.gateway_mock import GatewayMock
 from pyzeebe.common.random_utils import RANDOM_RANGE, random_task_context
 from pyzeebe.credentials.camunda_cloud_credentials import CamundaCloudCredentials
+from pyzeebe.credentials.oauth_credentials import OAuthCredentials
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.grpc_internals.zeebe_pb2 import *
 from pyzeebe.task.task import Task
@@ -105,9 +106,22 @@ def test_credentials_connection_uri_gotten():
     cluster_id = str(uuid4())
     with patch('requests_oauthlib.OAuth2Session.post'):
         credentials = CamundaCloudCredentials(client_id, client_secret, cluster_id)
-        credentials.get_connection_uri()
     zeebe_adapter = ZeebeAdapter(credentials=credentials)
     assert zeebe_adapter.connection_uri == f'{cluster_id}.zeebe.camunda.io:443'
+
+
+def test_credentials_no_connection_uri():
+    hostname = str(uuid4())
+    port = randint(0, RANDOM_RANGE)
+    url = f"https://{str(uuid4())}/oauth/token"
+    client_id = str(uuid4())
+    client_secret = str(uuid4())
+    audience = str(uuid4())
+
+    with patch('requests_oauthlib.OAuth2Session.post'):
+        credentials = OAuthCredentials(url, client_id, client_secret, audience)
+    zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port, credentials=credentials)
+    assert zeebe_adapter.connection_uri == f"{hostname}:{port}"
 
 
 def test_activate_jobs(grpc_servicer):
