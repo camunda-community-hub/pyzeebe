@@ -1,4 +1,3 @@
-import logging
 from typing import Dict
 
 from pyzeebe import Task, TaskContext, TaskStatusController, ZeebeWorker, CamundaCloudCredentials
@@ -19,7 +18,7 @@ task = Task(task_type="test", task_handler=example_task, exception_handler=examp
 
 # Use decorators to add functionality before and after tasks. These will not fail the task
 def example_logging_task_decorator(task_context: TaskContext) -> TaskContext:
-    logging.info(task_context)
+    print(task_context)
     return task_context
 
 
