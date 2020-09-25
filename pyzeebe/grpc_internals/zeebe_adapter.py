@@ -49,8 +49,12 @@ class ZeebeAdapter(object):
             logging.debug('Connected to Zeebe')
             self.connected = True
             self.retrying_connection = False
-        elif value in [grpc.ChannelConnectivity.CONNECTING, grpc.ChannelConnectivity.TRANSIENT_FAILURE]:
-            logging.warning('No connection to Zeebe, recoverable. Reconnecting...')
+        elif value == grpc.ChannelConnectivity.CONNECTING:
+            logging.debug(f'Connecting to {self.connection_uri}.')
+            self.connected = False
+            self.retrying_connection = True
+        elif value == grpc.ChannelConnectivity.TRANSIENT_FAILURE:
+            logging.warning(f'Lost connection to {self.connection_uri} (recoverable). Retrying...')
             self.connected = False
             self.retrying_connection = True
         elif value == grpc.ChannelConnectivity.SHUTDOWN:
