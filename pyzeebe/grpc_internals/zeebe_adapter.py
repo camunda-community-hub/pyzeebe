@@ -32,9 +32,9 @@ class ZeebeAdapter(object):
         if credentials and credentials.get_connection_uri():
             return credentials.get_connection_uri()
         if hostname or port:
-            return f'{hostname or "localhost"}:{port or 26500}'
+            return f"{hostname or 'localhost'}:{port or 26500}"
         else:
-            return os.getenv('ZEEBE_ADDRESS', 'localhost:26500')
+            return os.getenv("ZEEBE_ADDRESS", "localhost:26500")
 
     @staticmethod
     def _create_channel(connection_uri: str, credentials: BaseCredentials = None):
@@ -46,22 +46,22 @@ class ZeebeAdapter(object):
     def _check_connectivity(self, value: grpc.ChannelConnectivity) -> None:
         logging.debug(f'Grpc channel connectivity changed to: {value}')
         if value in [grpc.ChannelConnectivity.READY, grpc.ChannelConnectivity.IDLE]:
-            logging.debug('Connected to Zeebe')
+            logging.debug(f"Connected to {self.connection_uri or 'zeebe'}")
             self.connected = True
             self.retrying_connection = False
         elif value == grpc.ChannelConnectivity.CONNECTING:
-            logging.debug(f'Connecting to {self.connection_uri}.')
+            logging.debug(f"Connecting to {self.connection_uri or 'zeebe'}.")
             self.connected = False
             self.retrying_connection = True
         elif value == grpc.ChannelConnectivity.TRANSIENT_FAILURE:
-            logging.warning(f'Lost connection to {self.connection_uri} (recoverable). Retrying...')
+            logging.warning(f"Lost connection to {self.connection_uri or 'zeebe'}. Retrying...")
             self.connected = False
             self.retrying_connection = True
         elif value == grpc.ChannelConnectivity.SHUTDOWN:
-            logging.error('Failed to establish connection to Zeebe. Non recoverable')
+            logging.error(f"Failed to establish connection to {self.connection_uri or 'zeebe'}. Non recoverable")
             self.connected = False
             self.retrying_connection = False
-            raise ConnectionAbortedError(f'Lost connection to {self.connection_uri}')
+            raise ConnectionAbortedError(f"Lost connection to {self.connection_uri or 'zeebe'}")
 
     def activate_jobs(self, task_type: str, worker: str, timeout: int, max_jobs_to_activate: int,
                       variables_to_fetch: List[str], request_timeout: int) -> Generator[TaskContext, None, None]:
@@ -72,7 +72,7 @@ class ZeebeAdapter(object):
                                         fetchVariable=variables_to_fetch, requestTimeout=request_timeout)):
                 for job in response.jobs:
                     context = self._create_task_context_from_job(job)
-                    logging.debug(f'Got job: {context} from zeebe')
+                    logging.debug(f"Got job: {context} from zeebe")
                     yield context
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
