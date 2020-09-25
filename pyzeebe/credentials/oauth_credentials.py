@@ -21,14 +21,13 @@ class OAuthCredentials(BaseCredentials):
     def get_access_token(url: str, client_id: str, client_secret: str, audience: str) -> str:
         client = oauth2.BackendApplicationClient(client_id)
         client.prepare_request_body(include_client_id=True)
-        session = OAuth2Session(client=client)
-
-        return session.post(url,
-                            data={
-                                "client_id": client_id,
-                                "client_secret": client_secret,
-                                "audience": audience
-                            }).json()["access_token"]
+        with OAuth2Session(client=client) as session:
+            return session.post(url,
+                                data={
+                                    "client_id": client_id,
+                                    "client_secret": client_secret,
+                                    "audience": audience
+                                }).json()["access_token"]
 
     def get_connection_uri(self) -> str:
         return None
