@@ -17,7 +17,8 @@ class ZeebeWorker(ZeebeDecoratorBase):
     """A zeebe worker that can connect to a zeebe instance and perform tasks."""
 
     def __init__(self, name: str = None, request_timeout: int = 0, hostname: str = None, port: int = None,
-                 credentials: BaseCredentials = None, before: List[TaskDecorator] = None,
+                 credentials: BaseCredentials = None, secure_connection: bool = False,
+                 before: List[TaskDecorator] = None,
                  after: List[TaskDecorator] = None):
         """
         Args:
@@ -29,7 +30,8 @@ class ZeebeWorker(ZeebeDecoratorBase):
             after (List[TaskDecorator]): Decorators to be performed after each task
         """
         super().__init__(before, after)
-        self.zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port, credentials=credentials)
+        self.zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port, credentials=credentials,
+                                          secure_connection=secure_connection)
         self.name = name or socket.gethostname()
         self.request_timeout = request_timeout
         self.tasks = []

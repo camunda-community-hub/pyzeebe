@@ -3,6 +3,9 @@ from pyzeebe import ZeebeClient, CamundaCloudCredentials
 # Create a zeebe client without credentials
 zeebe_client = ZeebeClient(hostname='localhost', port=26500)
 
+# Create a zeebe client with TLS
+zeebe_client = ZeebeClient(hostname='localhost', port=26500, secure_connection=True)
+
 # Create a zeebe client for camunda cloud
 camunda_cloud_credentials = CamundaCloudCredentials(client_id='<my_client_id>', client_secret='<my_client_secret>',
                                                     cluster_id='<my_cluster_id>')

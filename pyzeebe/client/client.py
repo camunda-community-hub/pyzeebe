@@ -8,8 +8,9 @@ from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 
 class ZeebeClient(object):
     def __init__(self, hostname: str = None, port: int = None, credentials: BaseCredentials = None,
-                 channel: grpc.Channel = None):
-        self.zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port, credentials=credentials, channel=channel)
+                 channel: grpc.Channel = None, secure_connection: bool = False):
+        self.zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port, credentials=credentials, channel=channel,
+                                          secure_connection=secure_connection)
 
     def run_workflow(self, bpmn_process_id: str, variables: Dict = None, version: int = -1) -> int:
         return self.zeebe_adapter.create_workflow_instance(bpmn_process_id=bpmn_process_id, variables=variables or {},
