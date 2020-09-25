@@ -32,9 +32,8 @@ worker = ZeebeWorker()
 worker = ZeebeWorker(secure_connection=True)
 
 # Connect to zeebe cluster in camunda cloud
-camunda_cloud_credentials = CamundaCloudCredentials(client_id='e1DLfuWCTWA2i.o3O0r9O6XxpIusU_fE',
-                                                    client_secret='u2uiX.pgo66faxYPvxTS8cZVksJqPyHwOlrorRorqiaUERXge~h0.1ddPzaBn1-N',
-                                                    cluster_id='f42b510c-9b75-4ff0-9bc4-c9eca41d3d36')
+camunda_cloud_credentials = CamundaCloudCredentials(client_id="<my_client_id>", client_secret="<my_client_secret>",
+                                                    cluster_id="<my_cluster_id>")
 worker = ZeebeWorker(credentials=camunda_cloud_credentials)
 
 # We can also use decorators on workers. These decorators will happen before all tasks
