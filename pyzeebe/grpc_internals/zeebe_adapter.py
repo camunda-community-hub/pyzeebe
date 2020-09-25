@@ -6,43 +6,65 @@ from typing import List, Generator, Dict
 import grpc
 
 from pyzeebe.common.exceptions import *
+from pyzeebe.credentials.base_credentials import BaseCredentials
 from pyzeebe.grpc_internals.zeebe_pb2 import *
 from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayStub
 from pyzeebe.task.task_context import TaskContext
 
 
 class ZeebeAdapter(object):
-    def __init__(self, hostname: str = None, port: int = None, channel: grpc.Channel = None, **kwargs):
+    def __init__(self, hostname: str = None, port: int = None, credentials: BaseCredentials = None,
+                 channel: grpc.Channel = None, secure_connection: bool = False):
         if channel:
-            self._channel = channel
             self.connection_uri = None
+            self._channel = channel
         else:
-            if hostname or port:
-                self.connection_uri = f'{hostname or "localhost"}:{port or 26500}'
-            else:
-                self.connection_uri = os.getenv('ZEEBE_ADDRESS', 'localhost:26500')
-            self._channel = grpc.insecure_channel(self.connection_uri)
+            self.connection_uri = self._get_connection_uri(hostname, port, credentials)
+            self._channel = self._create_channel(self.connection_uri, credentials, secure_connection)
 
+        self.secure_connection = secure_connection
         self.connected = False
         self.retrying_connection = True
         self._channel.subscribe(self._check_connectivity, try_to_connect=True)
         self.gateway_stub = GatewayStub(self._channel)
 
+    @staticmethod
+    def _get_connection_uri(hostname: str = None, port: int = None, credentials: BaseCredentials = None):
+        if credentials and credentials.get_connection_uri():
+            return credentials.get_connection_uri()
+        if hostname or port:
+            return f"{hostname or 'localhost'}:{port or 26500}"
+        else:
+            return os.getenv("ZEEBE_ADDRESS", "localhost:26500")
+
+    @staticmethod
+    def _create_channel(connection_uri: str, credentials: BaseCredentials = None, secure_connection: bool = False):
+        if credentials:
+            return grpc.secure_channel(connection_uri, credentials.grpc_credentials)
+        elif secure_connection:
+            return grpc.secure_channel(connection_uri, grpc.ssl_channel_credentials())
+        else:
+            return grpc.insecure_channel(connection_uri)
+
     def _check_connectivity(self, value: grpc.ChannelConnectivity) -> None:
         logging.debug(f'Grpc channel connectivity changed to: {value}')
         if value in [grpc.ChannelConnectivity.READY, grpc.ChannelConnectivity.IDLE]:
-            logging.debug('Connected to Zeebe')
+            logging.debug(f"Connected to {self.connection_uri or 'zeebe'}")
             self.connected = True
             self.retrying_connection = False
-        elif value in [grpc.ChannelConnectivity.CONNECTING, grpc.ChannelConnectivity.TRANSIENT_FAILURE]:
-            logging.warning('No connection to Zeebe, recoverable. Reconnecting...')
+        elif value == grpc.ChannelConnectivity.CONNECTING:
+            logging.debug(f"Connecting to {self.connection_uri or 'zeebe'}.")
+            self.connected = False
+            self.retrying_connection = True
+        elif value == grpc.ChannelConnectivity.TRANSIENT_FAILURE:
+            logging.warning(f"Lost connection to {self.connection_uri or 'zeebe'}. Retrying...")
             self.connected = False
             self.retrying_connection = True
         elif value == grpc.ChannelConnectivity.SHUTDOWN:
-            logging.error('Failed to establish connection to Zeebe. Non recoverable')
+            logging.error(f"Failed to establish connection to {self.connection_uri or 'zeebe'}. Non recoverable")
             self.connected = False
             self.retrying_connection = False
-            raise ConnectionAbortedError(f'Lost connection to {self.connection_uri}')
+            raise ConnectionAbortedError(f"Lost connection to {self.connection_uri or 'zeebe'}")
 
     def activate_jobs(self, task_type: str, worker: str, timeout: int, max_jobs_to_activate: int,
                       variables_to_fetch: List[str], request_timeout: int) -> Generator[TaskContext, None, None]:
@@ -53,7 +75,7 @@ class ZeebeAdapter(object):
                                         fetchVariable=variables_to_fetch, requestTimeout=request_timeout)):
                 for job in response.jobs:
                     context = self._create_task_context_from_job(job)
-                    logging.debug(f'Got job: {context} from zeebe')
+                    logging.debug(f"Got job: {context} from zeebe")
                     yield context
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):

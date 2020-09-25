@@ -4,6 +4,7 @@ from threading import Thread, Event
 from typing import List, Callable, Generator, Tuple
 
 from pyzeebe.common.exceptions import TaskNotFound
+from pyzeebe.credentials.base_credentials import BaseCredentials
 from pyzeebe.decorators.zeebe_decorator_base import ZeebeDecoratorBase
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.task.task import Task
@@ -16,7 +17,9 @@ class ZeebeWorker(ZeebeDecoratorBase):
     """A zeebe worker that can connect to a zeebe instance and perform tasks."""
 
     def __init__(self, name: str = None, request_timeout: int = 0, hostname: str = None, port: int = None,
-                 before: List[TaskDecorator] = None, after: List[TaskDecorator] = None):
+                 credentials: BaseCredentials = None, secure_connection: bool = False,
+                 before: List[TaskDecorator] = None,
+                 after: List[TaskDecorator] = None):
         """
         Args:
             hostname (str): Zeebe instance hostname
@@ -27,7 +30,8 @@ class ZeebeWorker(ZeebeDecoratorBase):
             after (List[TaskDecorator]): Decorators to be performed after each task
         """
         super().__init__(before, after)
-        self.zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port)
+        self.zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port, credentials=credentials,
+                                          secure_connection=secure_connection)
         self.name = name or socket.gethostname()
         self.request_timeout = request_timeout
         self.tasks = []
@@ -35,7 +39,7 @@ class ZeebeWorker(ZeebeDecoratorBase):
 
     def work(self, stop_event: Event = None):
         for task in self.tasks:
-            task_thread = Thread(target=self._handle_task, args=(task, stop_event))
+            task_thread = Thread(target=self._handle_task, args=(task, stop_event or Event()))
             self._task_threads.append(task_thread)
             task_thread.start()
 
