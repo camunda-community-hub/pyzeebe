@@ -11,8 +11,8 @@ class CamundaCloudCredentials(BaseCredentials):
         self.client_secret = client_secret
         self.cluster_id = cluster_id
 
-        access_token = self.get_access_token(client_id, client_secret, cluster_id)
-        token_credentials = grpc.access_token_call_credentials(access_token)
+        self.access_token = self.get_access_token(client_id, client_secret, cluster_id)
+        token_credentials = grpc.access_token_call_credentials(self.access_token)
         ssl_credentials = grpc.ssl_channel_credentials()
         self.grpc_credentials = grpc.composite_channel_credentials(ssl_credentials, token_credentials)
 
@@ -28,3 +28,6 @@ class CamundaCloudCredentials(BaseCredentials):
                                 'client_secret': client_secret,
                                 'audience': f'{cluster_id}.zeebe.camunda.io'
                             }).json()['access_token']
+
+    def get_connection_uri(self) -> str:
+        return f'{self.cluster_id}.zeebe.camunda.io:443'

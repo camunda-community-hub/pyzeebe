@@ -1,6 +1,6 @@
 from typing import Dict
 
-from pyzeebe import Task, TaskContext, TaskStatusController, ZeebeWorker
+from pyzeebe import Task, TaskContext, TaskStatusController, ZeebeWorker, CamundaCloudCredentials
 
 
 def example_task() -> Dict:
@@ -15,7 +15,13 @@ def example_exception_handler(exc: Exception, context: TaskContext, controller: 
 
 task = Task(task_type='test', task_handler=example_task, exception_handler=example_exception_handler)
 
-worker = ZeebeWorker()  # Will use environment variable ZEEBE_ADDRESS or localhost:26500
+# Will use environment variable ZEEBE_ADDRESS or localhost:26500
+worker = ZeebeWorker()
+
+# Connect to zeebe cluster in camunda cloud
+camunda_cloud_credentials = CamundaCloudCredentials(client_id='<my_client_id>', client_secret='<my_client_secret>',
+                                                    cluster_id='<my_cluster_id>')
+worker = ZeebeWorker(credentials=camunda_cloud_credentials)
 
 worker.add_task(task)
 

@@ -19,7 +19,7 @@ class ZeebeAdapter(object):
             self.connection_uri = None
             self._channel = channel
         else:
-            self.connection_uri = self._get_connection_uri(hostname, port)
+            self.connection_uri = self._get_connection_uri(hostname, port, credentials)
             self._channel = self._create_channel(self.connection_uri, credentials)
 
         self.connected = False
@@ -28,7 +28,9 @@ class ZeebeAdapter(object):
         self.gateway_stub = GatewayStub(self._channel)
 
     @staticmethod
-    def _get_connection_uri(hostname: str = None, port: int = None):
+    def _get_connection_uri(hostname: str = None, port: int = None, credentials: BaseCredentials = None):
+        if credentials and credentials.get_connection_uri():
+            return credentials.get_connection_uri()
         if hostname or port:
             return f'{hostname or "localhost"}:{port or 26500}'
         else:
