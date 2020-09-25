@@ -4,43 +4,42 @@ import os.path
 from typing import List, Generator, Dict
 
 import grpc
-from oauthlib import oauth2
 
 from pyzeebe.common.exceptions import *
+from pyzeebe.credentials.base_credentials import BaseCredentials
 from pyzeebe.grpc_internals.zeebe_pb2 import *
 from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayStub
 from pyzeebe.task.task_context import TaskContext
 
-client = oauth2.BackendApplicationClient('pi1Fuv~iQUNuX8XjMor94yfZ3wUwRlb8')
-client.prepare_request_body(include_client_id=True)
-client.add_token()
-from requests_oauthlib import OAuth2Session
-
-session = OAuth2Session(client=client)
-access_token = session.post('https://login.cloud.camunda.io/oauth/token',
-                            data={'client_id': 'pi1Fuv~iQUNuX8XjMor94yfZ3wUwRlb8',
-                                  'client_secret': 'zXi8T.Pn1dICnEn-e3se2~ebYH4bHEFWU74GHRUUuYyFGk00mXRQVySJHEmRcXLU',
-                                  'audience': 'c91d2c57-cc2d-4c12-a5a1-af9b60afa751.zeebe.camunda.io'})
-session.token = access_token
-session.fetch_token()
-
 
 class ZeebeAdapter(object):
-    def __init__(self, hostname: str = None, port: int = None, channel: grpc.Channel = None, **kwargs):
+    def __init__(self, hostname: str = None, port: int = None, credentials: BaseCredentials = None,
+                 channel: grpc.Channel = None):
         if channel:
-            self._channel = channel
             self.connection_uri = None
+            self._channel = channel
         else:
-            if hostname or port:
-                self.connection_uri = f'{hostname or "localhost"}:{port or 26500}'
-            else:
-                self.connection_uri = os.getenv('ZEEBE_ADDRESS', 'localhost:26500')
-            self._channel = grpc.insecure_channel(self.connection_uri)
+            self.connection_uri = self._get_connection_uri(hostname, port)
+            self._channel = self._create_channel(self.connection_uri, credentials)
 
         self.connected = False
         self.retrying_connection = True
         self._channel.subscribe(self._check_connectivity, try_to_connect=True)
         self.gateway_stub = GatewayStub(self._channel)
+
+    @staticmethod
+    def _get_connection_uri(hostname: str = None, port: int = None):
+        if hostname or port:
+            return f'{hostname or "localhost"}:{port or 26500}'
+        else:
+            return os.getenv('ZEEBE_ADDRESS', 'localhost:26500')
+
+    @staticmethod
+    def _create_channel(connection_uri: str, credentials: BaseCredentials = None):
+        if not credentials:
+            return grpc.insecure_channel(connection_uri)
+        else:
+            return grpc.secure_channel(connection_uri, credentials.grpc_credentials)
 
     def _check_connectivity(self, value: grpc.ChannelConnectivity) -> None:
         logging.debug(f'Grpc channel connectivity changed to: {value}')
