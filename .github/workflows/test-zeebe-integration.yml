@@ -33,4 +33,4 @@ jobs:
 
       - name: Run integration tests
         run: |
-          pipenv run pytest tests
+          pipenv run pytest tests.integration_tests

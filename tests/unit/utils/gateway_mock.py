@@ -6,12 +6,12 @@ from uuid import uuid4
 
 import grpc
 
-from pyzeebe.common.random_utils import RANDOM_RANGE, random_task_context
 from pyzeebe.grpc_internals.zeebe_pb2 import *
 from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayServicer
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_context import TaskContext
 from pyzeebe.task.task_status import TaskStatus
+from tests.unit.utils.random_utils import RANDOM_RANGE, random_task_context
 
 
 @patch("grpc.insecure_channel")

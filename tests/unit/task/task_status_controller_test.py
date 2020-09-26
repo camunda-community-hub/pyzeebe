@@ -3,9 +3,9 @@ from uuid import uuid4
 
 import pytest
 
-from pyzeebe.common.random_utils import random_task_context
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.task.task_status_controller import TaskStatusController
+from tests.unit.utils.random_utils import random_task_context
 
 task_status_controller: TaskStatusController
 

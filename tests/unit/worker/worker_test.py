@@ -6,11 +6,11 @@ from uuid import uuid4
 import pytest
 
 from pyzeebe.common.exceptions import TaskNotFound
-from pyzeebe.common.gateway_mock import GatewayMock
-from pyzeebe.common.random_utils import random_task_context
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_context import TaskContext
 from pyzeebe.worker.worker import ZeebeWorker
+from tests.unit.utils.gateway_mock import GatewayMock
+from tests.unit.utils.random_utils import random_task_context
 
 zeebe_worker: ZeebeWorker
 task: Task
@@ -68,7 +68,7 @@ def test_add_task():
 
 
 def test_before_task_decorator_called():
-    with patch("pyzeebe.worker.worker_test.decorator") as mock:
+    with patch("tests.unit.worker.worker_test.decorator") as mock:
         context = random_task_context(task)
         context.variables = {"x": str(uuid4())}
 
@@ -83,7 +83,7 @@ def test_before_task_decorator_called():
 
 
 def test_after_task_decorator_called():
-    with patch("pyzeebe.worker.worker_test.decorator") as mock:
+    with patch("tests.unit.worker.worker_test.decorator") as mock:
         context = random_task_context(task)
         context.variables = {"x": str(uuid4())}
 
@@ -122,7 +122,7 @@ def test_task_exception_handler_called():
     task.inner_function = task_handler
     task.exception_handler = exception_handler
 
-    with patch("pyzeebe.worker.worker_test.task.exception_handler") as mock:
+    with patch("tests.unit.worker.worker_test.task.exception_handler") as mock:
         zeebe_worker.add_task(task)
         task.handler(context)
         mock.assert_called()
@@ -213,7 +213,7 @@ def test_handle_one_job():
 
     with patch("pyzeebe.worker.worker.ZeebeWorker._get_task_contexts") as get_jobs_mock:
         get_jobs_mock.return_value = [context]
-        with patch("pyzeebe.worker.worker_test.task.handler") as task_handler_mock:
+        with patch("tests.unit.worker.worker_test.task.handler") as task_handler_mock:
             task_handler_mock.return_value = {"x": str(uuid4())}
             zeebe_worker._handle_task_contexts(task)
             task_handler_mock.assert_called_with(context)
@@ -224,7 +224,7 @@ def test_handle_no_job():
 
     with patch("pyzeebe.worker.worker.ZeebeWorker._get_task_contexts") as get_jobs_mock:
         get_jobs_mock.return_value = []
-        with patch("pyzeebe.worker.worker_test.task.handler") as task_handler_mock:
+        with patch("tests.unit.worker.worker_test.task.handler") as task_handler_mock:
             task_handler_mock.return_value = {"x": str(uuid4())}
             zeebe_worker._handle_task_contexts(task)
             with pytest.raises(AssertionError):
@@ -236,7 +236,7 @@ def test_handle_many_jobs():
 
     with patch("pyzeebe.worker.worker.ZeebeWorker._get_task_contexts") as get_jobs_mock:
         get_jobs_mock.return_value = [context]
-        with patch("pyzeebe.worker.worker_test.task.handler") as task_handler_mock:
+        with patch("tests.unit.worker.worker_test.task.handler") as task_handler_mock:
             task_handler_mock.return_value = {"x": str(uuid4())}
             zeebe_worker._handle_task_contexts(task)
             task_handler_mock.assert_called_with(context)

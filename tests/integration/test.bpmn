@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="WINDOWS-1252" standalone="yes"?>
+<definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:tns="http://bpmn.io/schema/bpmn" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:yaoqiang="http://bpmn.sourceforge.net" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" exporter="Zeebe Modeler" exporterVersion="0.9.1" expressionLanguage="http://www.w3.org/1999/XPath" id="Definitions_005122u" name="" targetNamespace="http://bpmn.io/schema/bpmn" typeLanguage="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://bpmn.sourceforge.net/schemas/BPMN20.xsd">
+  <bpmn:process id="test" isClosed="false" isExecutable="true" name="test" processType="None">
+    <bpmn:extensionElements>
+      <yaoqiang:description/>
+      <yaoqiang:pageFormat height="841.8897637795276" imageableHeight="831.8897637795276" imageableWidth="588.1102362204724" imageableX="5.0" imageableY="5.0" orientation="0" width="598.1102362204724"/>
+      <yaoqiang:page background="#FFFFFF" horizontalCount="1" verticalCount="1"/>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="StartEvent_1" isInterrupting="true" parallelMultiple="false">
+      <bpmn:outgoing>Flow_1o209vx</bpmn:outgoing>
+      <bpmn:outputSet/>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_1o209vx" sourceRef="StartEvent_1" targetRef="test-task"/>
+    <bpmn:serviceTask completionQuantity="1" id="test-task" implementation="##WebService" isForCompensation="false" name="test" startQuantity="1">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="test"/>
+        <zeebe:ioMapping>
+          <ioMapping>
+            <zeebe:input source="=input" target="input"/>
+            <zeebe:input source="=should_throw" target="should_throw"/>
+            <zeebe:output source="=output" target="output"/>
+          </ioMapping>
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1o209vx</bpmn:incoming>
+      <bpmn:outgoing>Flow_00xikey</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_1bh2p7v">
+      <bpmn:incoming>Flow_00xikey</bpmn:incoming>
+      <bpmn:inputSet/>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_00xikey" sourceRef="test-task" targetRef="Event_1bh2p7v"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Yaoqiang_Diagram-test" name="Untitled Diagram" resolution="96.0">
+    <bpmndi:BPMNPlane bpmnElement="test">
+      <bpmndi:BPMNShape bpmnElement="StartEvent_1" id="Yaoqiang-StartEvent_1">
+        <dc:Bounds height="32.0" width="32.0" x="179.0" y="99.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="19.84" width="6.0" x="192.0" y="139.08"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="test-task" id="Yaoqiang-test-task">
+        <dc:Bounds height="80.0" width="100.0" x="270.0" y="77.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="19.84" width="24.0" x="308.0" y="109.08"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="Event_1bh2p7v" id="Yaoqiang-Event_1bh2p7v">
+        <dc:Bounds height="32.0" width="32.0" x="432.0" y="99.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="19.84" width="6.0" x="445.0" y="139.08"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="Flow_1o209vx" id="Yaoqiang-Flow_1o209vx">
+        <di:waypoint x="211.0" y="115.0"/>
+        <di:waypoint x="270.0" y="117.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="19.84" width="6.0" x="237.5" y="106.08"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="Flow_00xikey" id="Yaoqiang-Flow_00xikey">
+        <di:waypoint x="370.0" y="117.0"/>
+        <di:waypoint x="432.0" y="115.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="19.84" width="6.0" x="398.0" y="106.08"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
