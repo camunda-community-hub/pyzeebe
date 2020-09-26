@@ -19,18 +19,18 @@ from pyzeebe.task.task_context import TaskContext
 zeebe_adapter: ZeebeAdapter
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def grpc_add_to_server():
     from pyzeebe.grpc_internals.zeebe_pb2_grpc import add_GatewayServicer_to_server
     return add_GatewayServicer_to_server
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def grpc_servicer():
     return GatewayMock()
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def grpc_stub_cls(grpc_channel):
     from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayStub
     return GatewayStub
@@ -76,26 +76,32 @@ def test_connectivity_shutdown():
 def test_only_port():
     port = randint(0, 10000)
     zeebe_adapter = ZeebeAdapter(port=port)
-    assert zeebe_adapter.connection_uri == f'localhost:{port}'
+    assert zeebe_adapter.connection_uri == f"localhost:{port}"
 
 
 def test_only_host():
     hostname = str(uuid4())
     zeebe_adapter = ZeebeAdapter(hostname=hostname)
-    assert zeebe_adapter.connection_uri == f'{hostname}:26500'
+    assert zeebe_adapter.connection_uri == f"{hostname}:26500"
 
 
 def test_host_and_port():
     hostname = str(uuid4())
     port = randint(0, 10000)
     zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port)
-    assert zeebe_adapter.connection_uri == f'{hostname}:{port}'
+    assert zeebe_adapter.connection_uri == f"{hostname}:{port}"
+
+
+def test_with_secure_connection():
+    with patch("grpc.secure_channel") as grpc_secure_channel_mock:
+        ZeebeAdapter(secure_connection=True)
+        grpc_secure_channel_mock.assert_called()
 
 
 def test_with_camunda_cloud_credentials():
-    with patch('requests_oauthlib.OAuth2Session.post'):
+    with patch("requests_oauthlib.OAuth2Session.post"):
         credentials = CamundaCloudCredentials(str(uuid4()), str(uuid4()), str(uuid4()))
-    with patch('grpc.secure_channel') as grpc_secure_channel_mock:
+    with patch("grpc.secure_channel") as grpc_secure_channel_mock:
         ZeebeAdapter(credentials=credentials)
         grpc_secure_channel_mock.assert_called()
 
@@ -104,10 +110,10 @@ def test_credentials_connection_uri_gotten():
     client_id = str(uuid4())
     client_secret = str(uuid4())
     cluster_id = str(uuid4())
-    with patch('requests_oauthlib.OAuth2Session.post'):
+    with patch("requests_oauthlib.OAuth2Session.post"):
         credentials = CamundaCloudCredentials(client_id, client_secret, cluster_id)
     zeebe_adapter = ZeebeAdapter(credentials=credentials)
-    assert zeebe_adapter.connection_uri == f'{cluster_id}.zeebe.camunda.io:443'
+    assert zeebe_adapter.connection_uri == f"{cluster_id}.zeebe.camunda.io:443"
 
 
 def test_credentials_no_connection_uri():
@@ -118,7 +124,7 @@ def test_credentials_no_connection_uri():
     client_secret = str(uuid4())
     audience = str(uuid4())
 
-    with patch('requests_oauthlib.OAuth2Session.post'):
+    with patch("requests_oauthlib.OAuth2Session.post"):
         credentials = OAuthCredentials(url, client_id, client_secret, audience)
     zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port, credentials=credentials)
     assert zeebe_adapter.connection_uri == f"{hostname}:{port}"
@@ -263,8 +269,8 @@ def get_first_active_job(task_type) -> TaskContext:
 
 
 def test_get_workflow_request_object():
-    with patch('builtins.open') as mock_open:
+    with patch("builtins.open") as mock_open:
         mock_open.return_value = BytesIO()
         file_path = str(uuid4())
         zeebe_adapter._get_workflow_request_object(file_path)
-        mock_open.assert_called_with(file_path, 'rb')
+        mock_open.assert_called_with(file_path, "rb")

@@ -37,56 +37,66 @@ class ZeebeWorker(ZeebeDecoratorBase):
         self.tasks = []
         self._task_threads: List[Thread] = []
 
-    def work(self, stop_event: Event = None):
+    def work(self, stop_event: Event = None) -> None:
         for task in self.tasks:
             task_thread = Thread(target=self._handle_task, args=(task, stop_event or Event()))
             self._task_threads.append(task_thread)
             task_thread.start()
 
-    def _handle_task(self, task: Task, stop_event: Event):
-        logging.debug(f'Handling task {task}')
+    def _handle_task(self, task: Task, stop_event: Event) -> None:
+        logging.debug(f"Handling task {task}")
         while not stop_event.is_set() and self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection:
             if self.zeebe_adapter.retrying_connection:
-                logging.debug(f'Retrying connection to {self.zeebe_adapter.connection_uri}')
+                logging.debug(f"Retrying connection to {self.zeebe_adapter.connection_uri or 'zeebe'}")
                 continue
 
             self._handle_task_contexts(task)
 
-    def _handle_task_contexts(self, task: Task):
+    def _handle_task_contexts(self, task: Task) -> None:
         for task_context in self._get_task_contexts(task):
             thread = Thread(target=task.handler, args=(task_context,))
-            logging.debug(f'Running job: {task_context}')
+            logging.debug(f"Running job: {task_context}")
             thread.start()
 
     def _get_task_contexts(self, task: Task) -> Generator[TaskContext, None, None]:
-        logging.debug(f'Activating jobs for task: {task}')
+        logging.debug(f"Activating jobs for task: {task}")
         return self.zeebe_adapter.activate_jobs(task_type=task.type, worker=self.name, timeout=task.timeout,
                                                 max_jobs_to_activate=task.max_jobs_to_activate,
                                                 variables_to_fetch=task.variables_to_fetch,
                                                 request_timeout=self.request_timeout)
 
     def add_task(self, task: Task) -> None:
-        task.handler = self._create_zeebe_task_handler(task)
+        task.handler = self._create_task_handler(task)
         self.tasks.append(task)
 
-    def _create_zeebe_task_handler(self, task: Task) -> Callable[[TaskContext], TaskContext]:
+    def _create_task_handler(self, task: Task) -> Callable[[TaskContext], TaskContext]:
         before_decorator_runner = self._create_before_decorator_runner(task)
         after_decorator_runner = self._create_after_decorator_runner(task)
 
-        def task_handler(context: TaskContext):
-            try:
-                context = before_decorator_runner(context)
-                context.variables = task.inner_function(**context.variables)
-                context = after_decorator_runner(context)
-                logging.debug(f'Completing job: {context}')
-                self.zeebe_adapter.complete_job(job_key=context.key, variables=context.variables)
-                return context
-            except Exception as e:
-                logging.debug(f'Failed job: {context}. Error: {e}.')
-                task.exception_handler(e, context, TaskStatusController(context, self.zeebe_adapter))
-                return e
+        def task_handler(context: TaskContext) -> TaskContext:
+            context = before_decorator_runner(context)
+            context = self.run_task_inner_function(task, context)
+            context = after_decorator_runner(context)
+            self.complete_job(context)
+            return context
 
         return task_handler
+
+    def run_task_inner_function(self, task: Task, context: TaskContext) -> TaskContext:
+        try:
+            context.variables = task.inner_function(**context.variables)
+        except Exception as e:
+            logging.debug(f"Failed job: {context}. Error: {e}.")
+            task.exception_handler(e, context, TaskStatusController(context, self.zeebe_adapter))
+        finally:
+            return context
+
+    def complete_job(self, context: TaskContext) -> None:
+        try:
+            logging.debug(f"Completing job: {context}")
+            self.zeebe_adapter.complete_job(job_key=context.key, variables=context.variables)
+        except Exception as e:
+            logging.error(f"Failed to complete job: {context}. Error: {e}")
 
     def _create_before_decorator_runner(self, task: Task) -> Callable[[TaskContext], TaskContext]:
         decorators = task._before.copy()
@@ -102,10 +112,18 @@ class ZeebeWorker(ZeebeDecoratorBase):
     def _create_decorator_runner(decorators: List[TaskDecorator]) -> Callable[[TaskContext], TaskContext]:
         def decorator_runner(context: TaskContext):
             for decorator in decorators:
-                context = decorator(context)
+                context = ZeebeWorker._run_decorator(decorator, context)
             return context
 
         return decorator_runner
+
+    @staticmethod
+    def _run_decorator(decorator: TaskDecorator, context: TaskContext) -> TaskContext:
+        try:
+            return decorator(context)
+        except Exception as e:
+            logging.warning(f"Failed to run decorator {decorator}. Error: {e}")
+            return context
 
     def remove_task(self, task_type: str) -> Task:
         task_index = self._get_task_index(task_type)

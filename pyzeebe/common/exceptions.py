@@ -5,14 +5,14 @@ class TaskNotFound(Exception):
 class WorkflowNotFound(Exception):
     def __init__(self, bpmn_process_id: str, version: int):
         super().__init__(
-            f'Workflow definition: {bpmn_process_id}  with {version} was not found')
+            f"Workflow definition: {bpmn_process_id}  with {version} was not found")
         self.bpmn_process_id = bpmn_process_id
         self.version = version
 
 
 class WorkflowInstanceNotFound(Exception):
     def __init__(self, workflow_instance_key: int):
-        super().__init__(f'Workflow instance key: {workflow_instance_key} was not found')
+        super().__init__(f"Workflow instance key: {workflow_instance_key} was not found")
         self.workflow_instance_key = workflow_instance_key
 
 
