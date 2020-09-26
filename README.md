@@ -90,7 +90,7 @@ zeebe_client.publish_message(name="message_name", correlation_key="some_id")
 ## Tests
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install pyzeebe
  
-`pytest .`
+`pytest tests/unit`
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
