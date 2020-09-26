@@ -24,9 +24,9 @@ class TaskContext(object):
         self.status = status
 
     def __repr__(self):
-        return str({'jobKey': self.key, 'taskType': self.type, 'workflowInstanceKey': self.workflow_instance_key,
-                    'bpmnProcessId': self.bpmn_process_id,
-                    'workflowDefinitionVersion': self.workflow_definition_version, 'workflowKey': self.workflow_key,
-                    'elementId': self.element_id, 'elementInstanceKey': self.element_instance_key,
-                    'customHeaders': self.custom_headers, 'worker': self.worker, 'retries': self.retries,
-                    'deadline': self.deadline, 'variables': self.variables})
+        return str({"jobKey": self.key, "taskType": self.type, "workflowInstanceKey": self.workflow_instance_key,
+                    "bpmnProcessId": self.bpmn_process_id,
+                    "workflowDefinitionVersion": self.workflow_definition_version, "workflowKey": self.workflow_key,
+                    "elementId": self.element_id, "elementInstanceKey": self.element_instance_key,
+                    "customHeaders": self.custom_headers, "worker": self.worker, "retries": self.retries,
+                    "deadline": self.deadline, "variables": self.variables})

@@ -15,70 +15,70 @@ class GatewayStub(object):
             channel: A grpc.Channel.
         """
         self.ActivateJobs = channel.unary_stream(
-                '/gateway_protocol.Gateway/ActivateJobs',
-                request_serializer=zeebe__pb2.ActivateJobsRequest.SerializeToString,
-                response_deserializer=zeebe__pb2.ActivateJobsResponse.FromString,
-                )
+            "/gateway_protocol.Gateway/ActivateJobs",
+            request_serializer=zeebe__pb2.ActivateJobsRequest.SerializeToString,
+            response_deserializer=zeebe__pb2.ActivateJobsResponse.FromString,
+        )
         self.CancelWorkflowInstance = channel.unary_unary(
-                '/gateway_protocol.Gateway/CancelWorkflowInstance',
-                request_serializer=zeebe__pb2.CancelWorkflowInstanceRequest.SerializeToString,
-                response_deserializer=zeebe__pb2.CancelWorkflowInstanceResponse.FromString,
-                )
+            "/gateway_protocol.Gateway/CancelWorkflowInstance",
+            request_serializer=zeebe__pb2.CancelWorkflowInstanceRequest.SerializeToString,
+            response_deserializer=zeebe__pb2.CancelWorkflowInstanceResponse.FromString,
+        )
         self.CompleteJob = channel.unary_unary(
-                '/gateway_protocol.Gateway/CompleteJob',
-                request_serializer=zeebe__pb2.CompleteJobRequest.SerializeToString,
-                response_deserializer=zeebe__pb2.CompleteJobResponse.FromString,
-                )
+            "/gateway_protocol.Gateway/CompleteJob",
+            request_serializer=zeebe__pb2.CompleteJobRequest.SerializeToString,
+            response_deserializer=zeebe__pb2.CompleteJobResponse.FromString,
+        )
         self.CreateWorkflowInstance = channel.unary_unary(
-                '/gateway_protocol.Gateway/CreateWorkflowInstance',
-                request_serializer=zeebe__pb2.CreateWorkflowInstanceRequest.SerializeToString,
-                response_deserializer=zeebe__pb2.CreateWorkflowInstanceResponse.FromString,
-                )
+            "/gateway_protocol.Gateway/CreateWorkflowInstance",
+            request_serializer=zeebe__pb2.CreateWorkflowInstanceRequest.SerializeToString,
+            response_deserializer=zeebe__pb2.CreateWorkflowInstanceResponse.FromString,
+        )
         self.CreateWorkflowInstanceWithResult = channel.unary_unary(
-                '/gateway_protocol.Gateway/CreateWorkflowInstanceWithResult',
-                request_serializer=zeebe__pb2.CreateWorkflowInstanceWithResultRequest.SerializeToString,
-                response_deserializer=zeebe__pb2.CreateWorkflowInstanceWithResultResponse.FromString,
-                )
+            "/gateway_protocol.Gateway/CreateWorkflowInstanceWithResult",
+            request_serializer=zeebe__pb2.CreateWorkflowInstanceWithResultRequest.SerializeToString,
+            response_deserializer=zeebe__pb2.CreateWorkflowInstanceWithResultResponse.FromString,
+        )
         self.DeployWorkflow = channel.unary_unary(
-                '/gateway_protocol.Gateway/DeployWorkflow',
-                request_serializer=zeebe__pb2.DeployWorkflowRequest.SerializeToString,
-                response_deserializer=zeebe__pb2.DeployWorkflowResponse.FromString,
-                )
+            "/gateway_protocol.Gateway/DeployWorkflow",
+            request_serializer=zeebe__pb2.DeployWorkflowRequest.SerializeToString,
+            response_deserializer=zeebe__pb2.DeployWorkflowResponse.FromString,
+        )
         self.FailJob = channel.unary_unary(
-                '/gateway_protocol.Gateway/FailJob',
-                request_serializer=zeebe__pb2.FailJobRequest.SerializeToString,
-                response_deserializer=zeebe__pb2.FailJobResponse.FromString,
-                )
+            "/gateway_protocol.Gateway/FailJob",
+            request_serializer=zeebe__pb2.FailJobRequest.SerializeToString,
+            response_deserializer=zeebe__pb2.FailJobResponse.FromString,
+        )
         self.ThrowError = channel.unary_unary(
-                '/gateway_protocol.Gateway/ThrowError',
-                request_serializer=zeebe__pb2.ThrowErrorRequest.SerializeToString,
-                response_deserializer=zeebe__pb2.ThrowErrorResponse.FromString,
-                )
+            "/gateway_protocol.Gateway/ThrowError",
+            request_serializer=zeebe__pb2.ThrowErrorRequest.SerializeToString,
+            response_deserializer=zeebe__pb2.ThrowErrorResponse.FromString,
+        )
         self.PublishMessage = channel.unary_unary(
-                '/gateway_protocol.Gateway/PublishMessage',
-                request_serializer=zeebe__pb2.PublishMessageRequest.SerializeToString,
-                response_deserializer=zeebe__pb2.PublishMessageResponse.FromString,
-                )
+            "/gateway_protocol.Gateway/PublishMessage",
+            request_serializer=zeebe__pb2.PublishMessageRequest.SerializeToString,
+            response_deserializer=zeebe__pb2.PublishMessageResponse.FromString,
+        )
         self.ResolveIncident = channel.unary_unary(
-                '/gateway_protocol.Gateway/ResolveIncident',
-                request_serializer=zeebe__pb2.ResolveIncidentRequest.SerializeToString,
-                response_deserializer=zeebe__pb2.ResolveIncidentResponse.FromString,
-                )
+            "/gateway_protocol.Gateway/ResolveIncident",
+            request_serializer=zeebe__pb2.ResolveIncidentRequest.SerializeToString,
+            response_deserializer=zeebe__pb2.ResolveIncidentResponse.FromString,
+        )
         self.SetVariables = channel.unary_unary(
-                '/gateway_protocol.Gateway/SetVariables',
-                request_serializer=zeebe__pb2.SetVariablesRequest.SerializeToString,
-                response_deserializer=zeebe__pb2.SetVariablesResponse.FromString,
-                )
+            "/gateway_protocol.Gateway/SetVariables",
+            request_serializer=zeebe__pb2.SetVariablesRequest.SerializeToString,
+            response_deserializer=zeebe__pb2.SetVariablesResponse.FromString,
+        )
         self.Topology = channel.unary_unary(
-                '/gateway_protocol.Gateway/Topology',
-                request_serializer=zeebe__pb2.TopologyRequest.SerializeToString,
-                response_deserializer=zeebe__pb2.TopologyResponse.FromString,
-                )
+            "/gateway_protocol.Gateway/Topology",
+            request_serializer=zeebe__pb2.TopologyRequest.SerializeToString,
+            response_deserializer=zeebe__pb2.TopologyResponse.FromString,
+        )
         self.UpdateJobRetries = channel.unary_unary(
-                '/gateway_protocol.Gateway/UpdateJobRetries',
-                request_serializer=zeebe__pb2.UpdateJobRetriesRequest.SerializeToString,
-                response_deserializer=zeebe__pb2.UpdateJobRetriesResponse.FromString,
-                )
+            "/gateway_protocol.Gateway/UpdateJobRetries",
+            request_serializer=zeebe__pb2.UpdateJobRetriesRequest.SerializeToString,
+            response_deserializer=zeebe__pb2.UpdateJobRetriesResponse.FromString,
+        )
 
 
 class GatewayServicer(object):
@@ -97,8 +97,8 @@ class GatewayServicer(object):
         - maxJobsToActivate is less than 1
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
     def CancelWorkflowInstance(self, request, context):
         """
@@ -109,8 +109,8 @@ class GatewayServicer(object):
         - no workflow instance exists with the given key
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
     def CompleteJob(self, request, context):
         """
@@ -126,8 +126,8 @@ class GatewayServicer(object):
         the job can be activated again and completed.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
     def CreateWorkflowInstance(self, request, context):
         """
@@ -152,16 +152,16 @@ class GatewayServicer(object):
         JSON document where the root node is an object.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
     def CreateWorkflowInstanceWithResult(self, request, context):
         """
         Behaves similarly to `rpc CreateWorkflowInstance`, except that a successful response is received when the workflow completes successfully.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
     def DeployWorkflow(self, request, context):
         """
@@ -173,12 +173,12 @@ class GatewayServicer(object):
         - no resources given.
         - if at least one resource is invalid. A resource is considered invalid if:
         - it is not a BPMN or YAML file (currently detected through the file extension)
-        - the resource data is not deserializable (e.g. detected as BPMN, but it's broken XML)
+        - the resource data is not deserializable (e.g. detected as BPMN, but it"s broken XML)
         - the workflow is invalid (e.g. an event-based gateway has an outgoing sequence flow to a task)
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
     def FailJob(self, request, context):
         """
@@ -196,8 +196,8 @@ class GatewayServicer(object):
         - the job is already in a failed state, i.e. ran out of retries
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
     def ThrowError(self, request, context):
         """
@@ -211,8 +211,8 @@ class GatewayServicer(object):
         - the job is not in an activated state
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
     def PublishMessage(self, request, context):
         """
@@ -224,8 +224,8 @@ class GatewayServicer(object):
         - a message with the same ID was previously published (and is still alive)
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
     def ResolveIncident(self, request, context):
         """
@@ -238,8 +238,8 @@ class GatewayServicer(object):
         - no incident with the given key exists
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
     def SetVariables(self, request, context):
         """
@@ -254,16 +254,16 @@ class GatewayServicer(object):
         be JSON documents where the root node is an object.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
     def Topology(self, request, context):
         """
         Obtains the current topology of the cluster the gateway is part of.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
     def UpdateJobRetries(self, request, context):
         """
@@ -278,80 +278,80 @@ class GatewayServicer(object):
         - retries is not greater than 0
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
 
 
 def add_GatewayServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'ActivateJobs': grpc.unary_stream_rpc_method_handler(
-                    servicer.ActivateJobs,
-                    request_deserializer=zeebe__pb2.ActivateJobsRequest.FromString,
-                    response_serializer=zeebe__pb2.ActivateJobsResponse.SerializeToString,
-            ),
-            'CancelWorkflowInstance': grpc.unary_unary_rpc_method_handler(
-                    servicer.CancelWorkflowInstance,
-                    request_deserializer=zeebe__pb2.CancelWorkflowInstanceRequest.FromString,
-                    response_serializer=zeebe__pb2.CancelWorkflowInstanceResponse.SerializeToString,
-            ),
-            'CompleteJob': grpc.unary_unary_rpc_method_handler(
-                    servicer.CompleteJob,
-                    request_deserializer=zeebe__pb2.CompleteJobRequest.FromString,
-                    response_serializer=zeebe__pb2.CompleteJobResponse.SerializeToString,
-            ),
-            'CreateWorkflowInstance': grpc.unary_unary_rpc_method_handler(
-                    servicer.CreateWorkflowInstance,
-                    request_deserializer=zeebe__pb2.CreateWorkflowInstanceRequest.FromString,
-                    response_serializer=zeebe__pb2.CreateWorkflowInstanceResponse.SerializeToString,
-            ),
-            'CreateWorkflowInstanceWithResult': grpc.unary_unary_rpc_method_handler(
-                    servicer.CreateWorkflowInstanceWithResult,
-                    request_deserializer=zeebe__pb2.CreateWorkflowInstanceWithResultRequest.FromString,
-                    response_serializer=zeebe__pb2.CreateWorkflowInstanceWithResultResponse.SerializeToString,
-            ),
-            'DeployWorkflow': grpc.unary_unary_rpc_method_handler(
-                    servicer.DeployWorkflow,
-                    request_deserializer=zeebe__pb2.DeployWorkflowRequest.FromString,
-                    response_serializer=zeebe__pb2.DeployWorkflowResponse.SerializeToString,
-            ),
-            'FailJob': grpc.unary_unary_rpc_method_handler(
-                    servicer.FailJob,
-                    request_deserializer=zeebe__pb2.FailJobRequest.FromString,
-                    response_serializer=zeebe__pb2.FailJobResponse.SerializeToString,
-            ),
-            'ThrowError': grpc.unary_unary_rpc_method_handler(
-                    servicer.ThrowError,
-                    request_deserializer=zeebe__pb2.ThrowErrorRequest.FromString,
-                    response_serializer=zeebe__pb2.ThrowErrorResponse.SerializeToString,
-            ),
-            'PublishMessage': grpc.unary_unary_rpc_method_handler(
-                    servicer.PublishMessage,
-                    request_deserializer=zeebe__pb2.PublishMessageRequest.FromString,
-                    response_serializer=zeebe__pb2.PublishMessageResponse.SerializeToString,
-            ),
-            'ResolveIncident': grpc.unary_unary_rpc_method_handler(
-                    servicer.ResolveIncident,
-                    request_deserializer=zeebe__pb2.ResolveIncidentRequest.FromString,
-                    response_serializer=zeebe__pb2.ResolveIncidentResponse.SerializeToString,
-            ),
-            'SetVariables': grpc.unary_unary_rpc_method_handler(
-                    servicer.SetVariables,
-                    request_deserializer=zeebe__pb2.SetVariablesRequest.FromString,
-                    response_serializer=zeebe__pb2.SetVariablesResponse.SerializeToString,
-            ),
-            'Topology': grpc.unary_unary_rpc_method_handler(
-                    servicer.Topology,
-                    request_deserializer=zeebe__pb2.TopologyRequest.FromString,
-                    response_serializer=zeebe__pb2.TopologyResponse.SerializeToString,
-            ),
-            'UpdateJobRetries': grpc.unary_unary_rpc_method_handler(
-                    servicer.UpdateJobRetries,
-                    request_deserializer=zeebe__pb2.UpdateJobRetriesRequest.FromString,
-                    response_serializer=zeebe__pb2.UpdateJobRetriesResponse.SerializeToString,
-            ),
+        "ActivateJobs": grpc.unary_stream_rpc_method_handler(
+            servicer.ActivateJobs,
+            request_deserializer=zeebe__pb2.ActivateJobsRequest.FromString,
+            response_serializer=zeebe__pb2.ActivateJobsResponse.SerializeToString,
+        ),
+        "CancelWorkflowInstance": grpc.unary_unary_rpc_method_handler(
+            servicer.CancelWorkflowInstance,
+            request_deserializer=zeebe__pb2.CancelWorkflowInstanceRequest.FromString,
+            response_serializer=zeebe__pb2.CancelWorkflowInstanceResponse.SerializeToString,
+        ),
+        "CompleteJob": grpc.unary_unary_rpc_method_handler(
+            servicer.CompleteJob,
+            request_deserializer=zeebe__pb2.CompleteJobRequest.FromString,
+            response_serializer=zeebe__pb2.CompleteJobResponse.SerializeToString,
+        ),
+        "CreateWorkflowInstance": grpc.unary_unary_rpc_method_handler(
+            servicer.CreateWorkflowInstance,
+            request_deserializer=zeebe__pb2.CreateWorkflowInstanceRequest.FromString,
+            response_serializer=zeebe__pb2.CreateWorkflowInstanceResponse.SerializeToString,
+        ),
+        "CreateWorkflowInstanceWithResult": grpc.unary_unary_rpc_method_handler(
+            servicer.CreateWorkflowInstanceWithResult,
+            request_deserializer=zeebe__pb2.CreateWorkflowInstanceWithResultRequest.FromString,
+            response_serializer=zeebe__pb2.CreateWorkflowInstanceWithResultResponse.SerializeToString,
+        ),
+        "DeployWorkflow": grpc.unary_unary_rpc_method_handler(
+            servicer.DeployWorkflow,
+            request_deserializer=zeebe__pb2.DeployWorkflowRequest.FromString,
+            response_serializer=zeebe__pb2.DeployWorkflowResponse.SerializeToString,
+        ),
+        "FailJob": grpc.unary_unary_rpc_method_handler(
+            servicer.FailJob,
+            request_deserializer=zeebe__pb2.FailJobRequest.FromString,
+            response_serializer=zeebe__pb2.FailJobResponse.SerializeToString,
+        ),
+        "ThrowError": grpc.unary_unary_rpc_method_handler(
+            servicer.ThrowError,
+            request_deserializer=zeebe__pb2.ThrowErrorRequest.FromString,
+            response_serializer=zeebe__pb2.ThrowErrorResponse.SerializeToString,
+        ),
+        "PublishMessage": grpc.unary_unary_rpc_method_handler(
+            servicer.PublishMessage,
+            request_deserializer=zeebe__pb2.PublishMessageRequest.FromString,
+            response_serializer=zeebe__pb2.PublishMessageResponse.SerializeToString,
+        ),
+        "ResolveIncident": grpc.unary_unary_rpc_method_handler(
+            servicer.ResolveIncident,
+            request_deserializer=zeebe__pb2.ResolveIncidentRequest.FromString,
+            response_serializer=zeebe__pb2.ResolveIncidentResponse.SerializeToString,
+        ),
+        "SetVariables": grpc.unary_unary_rpc_method_handler(
+            servicer.SetVariables,
+            request_deserializer=zeebe__pb2.SetVariablesRequest.FromString,
+            response_serializer=zeebe__pb2.SetVariablesResponse.SerializeToString,
+        ),
+        "Topology": grpc.unary_unary_rpc_method_handler(
+            servicer.Topology,
+            request_deserializer=zeebe__pb2.TopologyRequest.FromString,
+            response_serializer=zeebe__pb2.TopologyResponse.SerializeToString,
+        ),
+        "UpdateJobRetries": grpc.unary_unary_rpc_method_handler(
+            servicer.UpdateJobRetries,
+            request_deserializer=zeebe__pb2.UpdateJobRetriesRequest.FromString,
+            response_serializer=zeebe__pb2.UpdateJobRetriesResponse.SerializeToString,
+        ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'gateway_protocol.Gateway', rpc_method_handlers)
+        "gateway_protocol.Gateway", rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
@@ -370,11 +370,12 @@ class Gateway(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/gateway_protocol.Gateway/ActivateJobs',
-            zeebe__pb2.ActivateJobsRequest.SerializeToString,
-            zeebe__pb2.ActivateJobsResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+        return grpc.experimental.unary_stream(request, target, "/gateway_protocol.Gateway/ActivateJobs",
+                                              zeebe__pb2.ActivateJobsRequest.SerializeToString,
+                                              zeebe__pb2.ActivateJobsResponse.FromString,
+                                              options, channel_credentials,
+                                              insecure, call_credentials, compression, wait_for_ready, timeout,
+                                              metadata)
 
     @staticmethod
     def CancelWorkflowInstance(request,
@@ -387,11 +388,11 @@ class Gateway(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/gateway_protocol.Gateway/CancelWorkflowInstance',
-            zeebe__pb2.CancelWorkflowInstanceRequest.SerializeToString,
-            zeebe__pb2.CancelWorkflowInstanceResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+        return grpc.experimental.unary_unary(request, target, "/gateway_protocol.Gateway/CancelWorkflowInstance",
+                                             zeebe__pb2.CancelWorkflowInstanceRequest.SerializeToString,
+                                             zeebe__pb2.CancelWorkflowInstanceResponse.FromString,
+                                             options, channel_credentials,
+                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def CompleteJob(request,
@@ -404,11 +405,11 @@ class Gateway(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/gateway_protocol.Gateway/CompleteJob',
-            zeebe__pb2.CompleteJobRequest.SerializeToString,
-            zeebe__pb2.CompleteJobResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+        return grpc.experimental.unary_unary(request, target, "/gateway_protocol.Gateway/CompleteJob",
+                                             zeebe__pb2.CompleteJobRequest.SerializeToString,
+                                             zeebe__pb2.CompleteJobResponse.FromString,
+                                             options, channel_credentials,
+                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def CreateWorkflowInstance(request,
@@ -421,11 +422,11 @@ class Gateway(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/gateway_protocol.Gateway/CreateWorkflowInstance',
-            zeebe__pb2.CreateWorkflowInstanceRequest.SerializeToString,
-            zeebe__pb2.CreateWorkflowInstanceResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+        return grpc.experimental.unary_unary(request, target, "/gateway_protocol.Gateway/CreateWorkflowInstance",
+                                             zeebe__pb2.CreateWorkflowInstanceRequest.SerializeToString,
+                                             zeebe__pb2.CreateWorkflowInstanceResponse.FromString,
+                                             options, channel_credentials,
+                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def CreateWorkflowInstanceWithResult(request,
@@ -438,11 +439,12 @@ class Gateway(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/gateway_protocol.Gateway/CreateWorkflowInstanceWithResult',
-            zeebe__pb2.CreateWorkflowInstanceWithResultRequest.SerializeToString,
-            zeebe__pb2.CreateWorkflowInstanceWithResultResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+        return grpc.experimental.unary_unary(request, target,
+                                             "/gateway_protocol.Gateway/CreateWorkflowInstanceWithResult",
+                                             zeebe__pb2.CreateWorkflowInstanceWithResultRequest.SerializeToString,
+                                             zeebe__pb2.CreateWorkflowInstanceWithResultResponse.FromString,
+                                             options, channel_credentials,
+                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def DeployWorkflow(request,
@@ -455,11 +457,11 @@ class Gateway(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/gateway_protocol.Gateway/DeployWorkflow',
-            zeebe__pb2.DeployWorkflowRequest.SerializeToString,
-            zeebe__pb2.DeployWorkflowResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+        return grpc.experimental.unary_unary(request, target, "/gateway_protocol.Gateway/DeployWorkflow",
+                                             zeebe__pb2.DeployWorkflowRequest.SerializeToString,
+                                             zeebe__pb2.DeployWorkflowResponse.FromString,
+                                             options, channel_credentials,
+                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def FailJob(request,
@@ -472,11 +474,11 @@ class Gateway(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/gateway_protocol.Gateway/FailJob',
-            zeebe__pb2.FailJobRequest.SerializeToString,
-            zeebe__pb2.FailJobResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+        return grpc.experimental.unary_unary(request, target, "/gateway_protocol.Gateway/FailJob",
+                                             zeebe__pb2.FailJobRequest.SerializeToString,
+                                             zeebe__pb2.FailJobResponse.FromString,
+                                             options, channel_credentials,
+                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def ThrowError(request,
@@ -489,11 +491,11 @@ class Gateway(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/gateway_protocol.Gateway/ThrowError',
-            zeebe__pb2.ThrowErrorRequest.SerializeToString,
-            zeebe__pb2.ThrowErrorResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+        return grpc.experimental.unary_unary(request, target, "/gateway_protocol.Gateway/ThrowError",
+                                             zeebe__pb2.ThrowErrorRequest.SerializeToString,
+                                             zeebe__pb2.ThrowErrorResponse.FromString,
+                                             options, channel_credentials,
+                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def PublishMessage(request,
@@ -506,11 +508,11 @@ class Gateway(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/gateway_protocol.Gateway/PublishMessage',
-            zeebe__pb2.PublishMessageRequest.SerializeToString,
-            zeebe__pb2.PublishMessageResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+        return grpc.experimental.unary_unary(request, target, "/gateway_protocol.Gateway/PublishMessage",
+                                             zeebe__pb2.PublishMessageRequest.SerializeToString,
+                                             zeebe__pb2.PublishMessageResponse.FromString,
+                                             options, channel_credentials,
+                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def ResolveIncident(request,
@@ -523,11 +525,11 @@ class Gateway(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/gateway_protocol.Gateway/ResolveIncident',
-            zeebe__pb2.ResolveIncidentRequest.SerializeToString,
-            zeebe__pb2.ResolveIncidentResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+        return grpc.experimental.unary_unary(request, target, "/gateway_protocol.Gateway/ResolveIncident",
+                                             zeebe__pb2.ResolveIncidentRequest.SerializeToString,
+                                             zeebe__pb2.ResolveIncidentResponse.FromString,
+                                             options, channel_credentials,
+                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def SetVariables(request,
@@ -540,11 +542,11 @@ class Gateway(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/gateway_protocol.Gateway/SetVariables',
-            zeebe__pb2.SetVariablesRequest.SerializeToString,
-            zeebe__pb2.SetVariablesResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+        return grpc.experimental.unary_unary(request, target, "/gateway_protocol.Gateway/SetVariables",
+                                             zeebe__pb2.SetVariablesRequest.SerializeToString,
+                                             zeebe__pb2.SetVariablesResponse.FromString,
+                                             options, channel_credentials,
+                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def Topology(request,
@@ -557,11 +559,11 @@ class Gateway(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/gateway_protocol.Gateway/Topology',
-            zeebe__pb2.TopologyRequest.SerializeToString,
-            zeebe__pb2.TopologyResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+        return grpc.experimental.unary_unary(request, target, "/gateway_protocol.Gateway/Topology",
+                                             zeebe__pb2.TopologyRequest.SerializeToString,
+                                             zeebe__pb2.TopologyResponse.FromString,
+                                             options, channel_credentials,
+                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def UpdateJobRetries(request,
@@ -574,8 +576,8 @@ class Gateway(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/gateway_protocol.Gateway/UpdateJobRetries',
-            zeebe__pb2.UpdateJobRetriesRequest.SerializeToString,
-            zeebe__pb2.UpdateJobRetriesResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+        return grpc.experimental.unary_unary(request, target, "/gateway_protocol.Gateway/UpdateJobRetries",
+                                             zeebe__pb2.UpdateJobRetriesRequest.SerializeToString,
+                                             zeebe__pb2.UpdateJobRetriesResponse.FromString,
+                                             options, channel_credentials,
+                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

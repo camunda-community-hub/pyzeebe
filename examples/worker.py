@@ -43,5 +43,5 @@ worker.after(example_logging_task_decorator)
 # Add task to worker
 worker.add_task(task)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     worker.work()

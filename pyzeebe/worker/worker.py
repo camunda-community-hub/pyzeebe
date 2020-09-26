@@ -44,10 +44,10 @@ class ZeebeWorker(ZeebeDecoratorBase):
             task_thread.start()
 
     def _handle_task(self, task: Task, stop_event: Event):
-        logging.debug(f'Handling task {task}')
+        logging.debug(f"Handling task {task}")
         while not stop_event.is_set() and self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection:
             if self.zeebe_adapter.retrying_connection:
-                logging.debug(f'Retrying connection to {self.zeebe_adapter.connection_uri}')
+                logging.debug(f"Retrying connection to {self.zeebe_adapter.connection_uri or 'zeebe'}")
                 continue
 
             self._handle_task_contexts(task)
@@ -55,11 +55,11 @@ class ZeebeWorker(ZeebeDecoratorBase):
     def _handle_task_contexts(self, task: Task):
         for task_context in self._get_task_contexts(task):
             thread = Thread(target=task.handler, args=(task_context,))
-            logging.debug(f'Running job: {task_context}')
+            logging.debug(f"Running job: {task_context}")
             thread.start()
 
     def _get_task_contexts(self, task: Task) -> Generator[TaskContext, None, None]:
-        logging.debug(f'Activating jobs for task: {task}')
+        logging.debug(f"Activating jobs for task: {task}")
         return self.zeebe_adapter.activate_jobs(task_type=task.type, worker=self.name, timeout=task.timeout,
                                                 max_jobs_to_activate=task.max_jobs_to_activate,
                                                 variables_to_fetch=task.variables_to_fetch,
@@ -78,11 +78,11 @@ class ZeebeWorker(ZeebeDecoratorBase):
                 context = before_decorator_runner(context)
                 context.variables = task.inner_function(**context.variables)
                 context = after_decorator_runner(context)
-                logging.debug(f'Completing job: {context}')
+                logging.debug(f"Completing job: {context}")
                 self.zeebe_adapter.complete_job(job_key=context.key, variables=context.variables)
                 return context
             except Exception as e:
-                logging.debug(f'Failed job: {context}. Error: {e}.')
+                logging.debug(f"Failed job: {context}. Error: {e}.")
                 task.exception_handler(e, context, TaskStatusController(context, self.zeebe_adapter))
                 return e
 

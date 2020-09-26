@@ -33,18 +33,18 @@ The `ZeebeWorker` class uses threading to get and run jobs.
 from pyzeebe import ZeebeWorker, Task, TaskStatusController, TaskContext
 
 def example_task(input: str):
-    return {'output': f'Hello world, {input}!'}
+    return {"output": f"Hello world, {input}!"}
 
 def on_error(exception: Exception, context: TaskContext, task_status_controller: TaskStatusController):
     """
     on_error will be called when the task fails
     """ 
     print(exception)
-    task_status_controller.error(f'Failed to handle task {context.type}. Error: {str(exception)}')
+    task_status_controller.error(f"Failed to handle task {context.type}. Error: {str(exception)}")
 
-task = Task(type='example', task_handler=example_task, exception_handler=on_error) # Create task object from example_task
+task = Task(type="example", task_handler=example_task, exception_handler=on_error) # Create task object from example_task
 
-worker = ZeebeWorker(hostname='<zeebe_host>', port=26500) # Create a zeebe worker
+worker = ZeebeWorker(hostname="<zeebe_host>", port=26500) # Create a zeebe worker
 worker.add_task(task) # Add task to zeebe worker
 
 worker.work() # Now every time that a task with type example is called example_task will be called
@@ -66,24 +66,23 @@ stop_event.set() # Stops worker and all running jobs
 from pyzeebe import ZeebeClient
 
 # Create a zeebe client
-zeebe_client = ZeebeClient(hostname='localhost', port=26500)
+zeebe_client = ZeebeClient(hostname="localhost", port=26500)
 
 # Run a workflow
-workflow_instance_key = zeebe_client.run_workflow(bpmn_process_id='My zeebe workflow', variables={})
+workflow_instance_key = zeebe_client.run_workflow(bpmn_process_id="My zeebe workflow", variables={})
 
 # Run a workflow and receive the result
-workflow_result = zeebe_client.run_workflow_with_result(bpmn_process_id='My zeebe workflow',
+workflow_result = zeebe_client.run_workflow_with_result(bpmn_process_id="My zeebe workflow",
                                                         timeout=10000)  # Will wait 10000 milliseconds (10 seconds)
 
 # Deploy a bpmn workflow definition
-zeebe_client.deploy_workflow('workflow.bpmn')
+zeebe_client.deploy_workflow("workflow.bpmn")
 
 # Cancel a running workflow
 zeebe_client.cancel_workflow_instance(workflow_instance_key=12345)
 
 # Publish message
-zeebe_client.publish_message(name='message_name', correlation_key='some_id')
-
+zeebe_client.publish_message(name="message_name", correlation_key="some_id")
 
 ```
 

@@ -11,18 +11,18 @@ from pyzeebe.common.random_utils import RANDOM_RANGE
 zeebe_client: ZeebeClient
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def grpc_add_to_server():
     from pyzeebe.grpc_internals.zeebe_pb2_grpc import add_GatewayServicer_to_server
     return add_GatewayServicer_to_server
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def grpc_servicer():
     return GatewayMock()
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def grpc_stub_cls(grpc_channel):
     from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayStub
     return GatewayStub

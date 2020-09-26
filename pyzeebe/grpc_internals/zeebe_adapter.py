@@ -47,7 +47,7 @@ class ZeebeAdapter(object):
             return grpc.insecure_channel(connection_uri)
 
     def _check_connectivity(self, value: grpc.ChannelConnectivity) -> None:
-        logging.debug(f'Grpc channel connectivity changed to: {value}')
+        logging.debug(f"Grpc channel connectivity changed to: {value}")
         if value in [grpc.ChannelConnectivity.READY, grpc.ChannelConnectivity.IDLE]:
             logging.debug(f"Connected to {self.connection_uri or 'zeebe'}")
             self.connected = True
@@ -201,7 +201,7 @@ class ZeebeAdapter(object):
 
     @staticmethod
     def _get_workflow_request_object(workflow_file_path: str) -> WorkflowRequestObject:
-        with open(workflow_file_path, 'rb') as file:
+        with open(workflow_file_path, "rb") as file:
             return WorkflowRequestObject(name=os.path.split(workflow_file_path)[-1],
                                          definition=file.read())
 

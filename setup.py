@@ -16,11 +16,11 @@ setuptools.setup(
     install_requires=["grpcio~=1.31.0", "protobuf~=3.13.0", "oauthlib~=3.1.0", "requests-oauthlib~=1.3.0"],
     exclude=["*test.py", "tests", "*.bpmn"],
     keywords="zeebe workflow workflow-engine",
-    license='MIT',
+    license="MIT",
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.5',
+    python_requires=">=3.5",
 )

@@ -14,7 +14,7 @@ from pyzeebe.task.task_context import TaskContext
 from pyzeebe.task.task_status import TaskStatus
 
 
-@patch('grpc.insecure_channel')
+@patch("grpc.insecure_channel")
 def mock_channel():
     pass
 
@@ -96,7 +96,7 @@ class GatewayMock(GatewayServicer):
 
     def CreateWorkflowInstance(self, request, context):
         if request.bpmnProcessId in self.deployed_workflows.keys():
-            for task in self.deployed_workflows[request.bpmnProcessId]['tasks']:
+            for task in self.deployed_workflows[request.bpmnProcessId]["tasks"]:
                 task_context = random_task_context(task)
                 self.active_jobs[task_context.key] = task_context
             return CreateWorkflowInstanceResponse(workflowKey=randint(0, RANDOM_RANGE),
@@ -131,5 +131,5 @@ class GatewayMock(GatewayServicer):
         return PublishMessageResponse()
 
     def mock_deploy_workflow(self, bpmn_process_id: str, version: int, tasks: List[Task]):
-        self.deployed_workflows[bpmn_process_id] = {'bpmn_process_id': bpmn_process_id, 'version': version,
-                                                    'tasks': tasks}
+        self.deployed_workflows[bpmn_process_id] = {"bpmn_process_id": bpmn_process_id, "version": version,
+                                                    "tasks": tasks}

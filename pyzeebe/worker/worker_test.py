@@ -20,18 +20,18 @@ def decorator(context: TaskContext) -> TaskContext:
     return context
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def grpc_add_to_server():
     from pyzeebe.grpc_internals.zeebe_pb2_grpc import add_GatewayServicer_to_server
     return add_GatewayServicer_to_server
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def grpc_servicer():
     return GatewayMock()
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def grpc_stub_cls(grpc_channel):
     from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayStub
     return GatewayStub
@@ -53,42 +53,42 @@ def test_add_task():
     assert zeebe_worker.get_task(task.type).handler is not None
 
     variable = str(uuid4())
-    assert task.inner_function(variable) == {'x': variable}
+    assert task.inner_function(variable) == {"x": variable}
 
     assert callable(task.handler)
     context = random_task_context(task)
-    context.variables = {'x': str(uuid4())}
-    with patch('pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job') as mock:
+    context.variables = {"x": str(uuid4())}
+    with patch("pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job") as mock:
         assert isinstance(task.handler(context), TaskContext)
         mock.assert_called_with(job_key=context.key, variables=context.variables)
 
 
 def test_before_task_decorator_called():
-    with patch('pyzeebe.worker.worker_test.decorator') as mock:
+    with patch("pyzeebe.worker.worker_test.decorator") as mock:
         context = random_task_context(task)
-        context.variables = {'x': str(uuid4())}
+        context.variables = {"x": str(uuid4())}
 
         mock.return_value = context
 
         task.before(decorator)
         zeebe_worker.add_task(task)
-        with patch('pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job') as grpc_mock:
+        with patch("pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job") as grpc_mock:
             assert isinstance(task.handler(context), TaskContext)
             grpc_mock.assert_called_with(job_key=context.key, variables=context.variables)
         mock.assert_called_with(context)
 
 
 def test_after_task_decorator_called():
-    with patch('pyzeebe.worker.worker_test.decorator') as mock:
+    with patch("pyzeebe.worker.worker_test.decorator") as mock:
         context = random_task_context(task)
-        context.variables = {'x': str(uuid4())}
+        context.variables = {"x": str(uuid4())}
 
         mock.return_value = context
 
         task.after(decorator)
         zeebe_worker.add_task(task)
 
-        with patch('pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job') as grpc_mock:
+        with patch("pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job") as grpc_mock:
             assert isinstance(task.handler(context), TaskContext)
             grpc_mock.assert_called_with(job_key=context.key, variables=context.variables)
         mock.assert_called_with(context)
@@ -102,12 +102,12 @@ def test_task_exception_handler_called():
         pass
 
     context = random_task_context(task)
-    context.variables = {'x': str(uuid4())}
+    context.variables = {"x": str(uuid4())}
 
     task.inner_function = task_handler
     task.exception_handler = exception_handler
 
-    with patch('pyzeebe.worker.worker_test.task.exception_handler') as mock:
+    with patch("pyzeebe.worker.worker_test.task.exception_handler") as mock:
         zeebe_worker.add_task(task)
         task.handler(context)
         mock.assert_called()
@@ -188,7 +188,7 @@ def test_add_constructor_after_decorator():
 def test_create_before_decorator_runner():
     task.before(decorator)
     context = random_task_context(task)
-    context.variables = {'x': str(uuid4())}
+    context.variables = {"x": str(uuid4())}
     decorators = zeebe_worker._create_before_decorator_runner(task)
     assert isinstance(decorators(context), TaskContext)
 
@@ -196,10 +196,10 @@ def test_create_before_decorator_runner():
 def test_handle_one_job():
     context = random_task_context(task)
 
-    with patch('pyzeebe.worker.worker.ZeebeWorker._get_task_contexts') as get_jobs_mock:
+    with patch("pyzeebe.worker.worker.ZeebeWorker._get_task_contexts") as get_jobs_mock:
         get_jobs_mock.return_value = [context]
-        with patch('pyzeebe.worker.worker_test.task.handler') as task_handler_mock:
-            task_handler_mock.return_value = {'x': str(uuid4())}
+        with patch("pyzeebe.worker.worker_test.task.handler") as task_handler_mock:
+            task_handler_mock.return_value = {"x": str(uuid4())}
             zeebe_worker._handle_task_contexts(task)
             task_handler_mock.assert_called_with(context)
 
@@ -207,10 +207,10 @@ def test_handle_one_job():
 def test_handle_no_job():
     context = random_task_context(task)
 
-    with patch('pyzeebe.worker.worker.ZeebeWorker._get_task_contexts') as get_jobs_mock:
+    with patch("pyzeebe.worker.worker.ZeebeWorker._get_task_contexts") as get_jobs_mock:
         get_jobs_mock.return_value = []
-        with patch('pyzeebe.worker.worker_test.task.handler') as task_handler_mock:
-            task_handler_mock.return_value = {'x': str(uuid4())}
+        with patch("pyzeebe.worker.worker_test.task.handler") as task_handler_mock:
+            task_handler_mock.return_value = {"x": str(uuid4())}
             zeebe_worker._handle_task_contexts(task)
             with pytest.raises(AssertionError):
                 task_handler_mock.assert_called_with(context)
@@ -219,10 +219,10 @@ def test_handle_no_job():
 def test_handle_many_jobs():
     context = random_task_context(task)
 
-    with patch('pyzeebe.worker.worker.ZeebeWorker._get_task_contexts') as get_jobs_mock:
+    with patch("pyzeebe.worker.worker.ZeebeWorker._get_task_contexts") as get_jobs_mock:
         get_jobs_mock.return_value = [context]
-        with patch('pyzeebe.worker.worker_test.task.handler') as task_handler_mock:
-            task_handler_mock.return_value = {'x': str(uuid4())}
+        with patch("pyzeebe.worker.worker_test.task.handler") as task_handler_mock:
+            task_handler_mock.return_value = {"x": str(uuid4())}
             zeebe_worker._handle_task_contexts(task)
             task_handler_mock.assert_called_with(context)
 
