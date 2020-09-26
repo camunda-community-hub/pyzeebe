@@ -29,7 +29,7 @@ class ZeebeAdapter(object):
         self.gateway_stub = GatewayStub(self._channel)
 
     @staticmethod
-    def _get_connection_uri(hostname: str = None, port: int = None, credentials: BaseCredentials = None):
+    def _get_connection_uri(hostname: str = None, port: int = None, credentials: BaseCredentials = None) -> str:
         if credentials and credentials.get_connection_uri():
             return credentials.get_connection_uri()
         if hostname or port:
@@ -38,7 +38,8 @@ class ZeebeAdapter(object):
             return os.getenv("ZEEBE_ADDRESS", "localhost:26500")
 
     @staticmethod
-    def _create_channel(connection_uri: str, credentials: BaseCredentials = None, secure_connection: bool = False):
+    def _create_channel(connection_uri: str, credentials: BaseCredentials = None,
+                        secure_connection: bool = False) -> grpc.Channel:
         if credentials:
             return grpc.secure_channel(connection_uri, credentials.grpc_credentials)
         elif secure_connection:

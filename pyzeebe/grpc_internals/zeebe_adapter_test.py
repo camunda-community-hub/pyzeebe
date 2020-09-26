@@ -92,6 +92,12 @@ def test_host_and_port():
     assert zeebe_adapter.connection_uri == f"{hostname}:{port}"
 
 
+def test_with_secure_connection():
+    with patch("grpc.secure_channel") as grpc_secure_channel_mock:
+        ZeebeAdapter(secure_connection=True)
+        grpc_secure_channel_mock.assert_called()
+
+
 def test_with_camunda_cloud_credentials():
     with patch("requests_oauthlib.OAuth2Session.post"):
         credentials = CamundaCloudCredentials(str(uuid4()), str(uuid4()), str(uuid4()))
