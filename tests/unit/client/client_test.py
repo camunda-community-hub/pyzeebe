@@ -5,8 +5,8 @@ import pytest
 
 from pyzeebe.client.client import ZeebeClient
 from pyzeebe.common.exceptions import WorkflowNotFound
-from pyzeebe.common.gateway_mock import GatewayMock
-from pyzeebe.common.random_utils import RANDOM_RANGE
+from tests.unit.utils.gateway_mock import GatewayMock
+from tests.unit.utils.random_utils import RANDOM_RANGE
 
 zeebe_client: ZeebeClient
 
