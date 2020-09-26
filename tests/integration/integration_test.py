@@ -40,7 +40,8 @@ def setup():
 
     zeebe_client = ZeebeClient()
     try:
-        zeebe_client.deploy_workflow(os.path.join("tests", "test.bpmn"))
+        integration_tests_path = os.path.join("tests", "integration")
+        zeebe_client.deploy_workflow(os.path.join(integration_tests_path, "test.bpmn"))
     except FileNotFoundError:
         zeebe_client.deploy_workflow("test.bpmn")
 
