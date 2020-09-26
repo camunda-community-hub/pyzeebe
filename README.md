@@ -1,5 +1,6 @@
 [![Coverage Status](https://coveralls.io/repos/github/JonatanMartens/pyzeebe/badge.svg?branch=master)](https://coveralls.io/github/JonatanMartens/pyzeebe?branch=master)
-![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/JonatanMartens/pyzeebe/Test%20pyzeebe/master)
+![Test pyzeebe](https://github.com/JonatanMartens/pyzeebe/workflows/Test%20pyzeebe/badge.svg)
+![Integration test pyzeebe](https://github.com/JonatanMartens/pyzeebe/workflows/Integration%20test%20pyzeebe/badge.svg)
 ![GitHub issues](https://img.shields.io/github/issues-raw/JonatanMartens/pyzeebe)
 ![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/JonatanMartens/pyzeebe)
 ![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed-raw/JonatanMartens/pyzeebe)
