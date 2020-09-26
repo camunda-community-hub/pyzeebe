@@ -20,6 +20,6 @@ class Task(ZeebeDecoratorBase):
         self.variables_to_fetch = variables_to_fetch or []
         self.handler: Callable[[TaskContext], TaskContext] = None
 
-    def __repr__(self):
-        return str({'type': self.type, 'timeout': self.timeout, 'max_jobs_to_activate': self.max_jobs_to_activate,
-                    'variables_to_fetch': self.variables_to_fetch})
+    def __repr__(self) -> str:
+        return str({"type": self.type, "timeout": self.timeout, "max_jobs_to_activate": self.max_jobs_to_activate,
+                    "variables_to_fetch": self.variables_to_fetch})
