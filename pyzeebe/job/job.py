@@ -1,13 +1,13 @@
 from typing import Dict
 
-from pyzeebe.task.task_status import TaskStatus
+from pyzeebe.job.job_status import JobStatus
 
 
-class TaskContext(object):
+class Job(object):
     def __init__(self, key: int, _type: str, workflow_instance_key: int, bpmn_process_id: str,
                  workflow_definition_version: int, workflow_key: int, element_id: str, element_instance_key: int,
                  custom_headers: Dict, worker: str, retries: int, deadline: int, variables: Dict,
-                 status: TaskStatus = TaskStatus.Running):
+                 status: JobStatus = JobStatus.Running):
         self.key = key
         self.type = _type
         self.workflow_instance_key = workflow_instance_key

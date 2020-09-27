@@ -31,12 +31,12 @@ To install:
 The `ZeebeWorker` class uses threading to get and run jobs.
 
 ```python
-from pyzeebe import ZeebeWorker, Task, TaskStatusController, TaskContext
+from pyzeebe import ZeebeWorker, Task, JobStatusController, Job
 
 def example_task(input: str):
     return {"output": f"Hello world, {input}!"}
 
-def on_error(exception: Exception, context: TaskContext, task_status_controller: TaskStatusController):
+def on_error(exception: Exception, context: Job, task_status_controller: JobStatusController):
     """
     on_error will be called when the task fails
     """ 

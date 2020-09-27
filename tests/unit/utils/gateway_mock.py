@@ -8,9 +8,9 @@ import grpc
 
 from pyzeebe.grpc_internals.zeebe_pb2 import *
 from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayServicer
+from pyzeebe.job.job import Job
+from pyzeebe.job.job_status import JobStatus
 from pyzeebe.task.task import Task
-from pyzeebe.task.task_context import TaskContext
-from pyzeebe.task.task_status import TaskStatus
 from tests.unit.utils.random_utils import RANDOM_RANGE, random_task_context
 
 
@@ -24,7 +24,7 @@ class GatewayMock(GatewayServicer):
 
     def __init__(self):
         self.deployed_workflows = {}
-        self.active_jobs: Dict[int, TaskContext] = {}
+        self.active_jobs: Dict[int, Job] = {}
 
     def ActivateJobs(self, request, context):
         if not request.type:
@@ -62,7 +62,7 @@ class GatewayMock(GatewayServicer):
     def CompleteJob(self, request, context):
         if request.jobKey in self.active_jobs.keys():
             active_job = self.active_jobs.get(request.jobKey)
-            self.handle_job(active_job, TaskStatus.Completed, context)
+            self.handle_job(active_job, JobStatus.Completed, context)
             return CompleteJobResponse()
         else:
             context.set_code(grpc.StatusCode.NOT_FOUND)
@@ -71,7 +71,7 @@ class GatewayMock(GatewayServicer):
     def FailJob(self, request, context):
         if request.jobKey in self.active_jobs.keys():
             active_job = self.active_jobs.get(request.jobKey)
-            self.handle_job(active_job, TaskStatus.Failed, context)
+            self.handle_job(active_job, JobStatus.Failed, context)
             return FailJobResponse()
         else:
             context.set_code(grpc.StatusCode.NOT_FOUND)
@@ -80,15 +80,15 @@ class GatewayMock(GatewayServicer):
     def ThrowError(self, request, context):
         if request.jobKey in self.active_jobs.keys():
             active_job = self.active_jobs.get(request.jobKey)
-            self.handle_job(active_job, TaskStatus.ErrorThrown, context)
+            self.handle_job(active_job, JobStatus.ErrorThrown, context)
             return CompleteJobResponse()
         else:
             context.set_code(grpc.StatusCode.NOT_FOUND)
             return CompleteJobResponse()
 
     @staticmethod
-    def handle_job(job: TaskContext, status_on_deactivate: TaskStatus, context):
-        if job.status != TaskStatus.Running:
+    def handle_job(job: Job, status_on_deactivate: JobStatus, context):
+        if job.status != JobStatus.Running:
             context.set_code(grpc.StatusCode.FAILED_PRECONDITION)
         else:
             job.status = status_on_deactivate

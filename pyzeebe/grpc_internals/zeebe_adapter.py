@@ -9,7 +9,7 @@ from pyzeebe.common.exceptions import *
 from pyzeebe.credentials.base_credentials import BaseCredentials
 from pyzeebe.grpc_internals.zeebe_pb2 import *
 from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayStub
-from pyzeebe.task.task_context import TaskContext
+from pyzeebe.job.job import Job
 
 
 class ZeebeAdapter(object):
@@ -68,7 +68,7 @@ class ZeebeAdapter(object):
             raise ConnectionAbortedError(f"Lost connection to {self.connection_uri or 'zeebe'}")
 
     def activate_jobs(self, task_type: str, worker: str, timeout: int, max_jobs_to_activate: int,
-                      variables_to_fetch: List[str], request_timeout: int) -> Generator[TaskContext, None, None]:
+                      variables_to_fetch: List[str], request_timeout: int) -> Generator[Job, None, None]:
         try:
             for response in self.gateway_stub.ActivateJobs(
                     ActivateJobsRequest(type=task_type, worker=worker, timeout=timeout,
@@ -85,19 +85,19 @@ class ZeebeAdapter(object):
                 self._common_zeebe_grpc_errors(rpc_error)
 
     @staticmethod
-    def _create_task_context_from_job(job) -> TaskContext:
-        return TaskContext(key=job.key, _type=job.type,
-                           workflow_instance_key=job.workflowInstanceKey,
-                           bpmn_process_id=job.bpmnProcessId,
-                           workflow_definition_version=job.workflowDefinitionVersion,
-                           workflow_key=job.workflowKey,
-                           element_id=job.elementId,
-                           element_instance_key=job.elementInstanceKey,
-                           custom_headers=json.loads(job.customHeaders),
-                           worker=job.worker,
-                           retries=job.retries,
-                           deadline=job.deadline,
-                           variables=json.loads(job.variables))
+    def _create_task_context_from_job(job) -> Job:
+        return Job(key=job.key, _type=job.type,
+                   workflow_instance_key=job.workflowInstanceKey,
+                   bpmn_process_id=job.bpmnProcessId,
+                   workflow_definition_version=job.workflowDefinitionVersion,
+                   workflow_key=job.workflowKey,
+                   element_id=job.elementId,
+                   element_instance_key=job.elementInstanceKey,
+                   custom_headers=json.loads(job.customHeaders),
+                   worker=job.worker,
+                   retries=job.retries,
+                   deadline=job.deadline,
+                   variables=json.loads(job.variables))
 
     def complete_job(self, job_key: int, variables: Dict) -> CompleteJobResponse:
         try:

@@ -5,8 +5,8 @@ from uuid import uuid4
 import pytest
 
 from pyzeebe.common.exceptions import TaskNotFound
+from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
-from pyzeebe.task.task_context import TaskContext
 from pyzeebe.worker.worker import ZeebeWorker
 from tests.unit.utils.gateway_mock import GatewayMock
 from tests.unit.utils.random_utils import random_task_context
@@ -15,11 +15,11 @@ zeebe_worker: ZeebeWorker
 task: Task
 
 
-def decorator(context: TaskContext) -> TaskContext:
+def decorator(context: Job) -> Job:
     return context
 
 
-def failing_decorator(context: TaskContext) -> TaskContext:
+def failing_decorator(context: Job) -> Job:
     raise Exception()
 
 
@@ -62,7 +62,7 @@ def test_add_task():
     context = random_task_context(task)
     context.variables = {"x": str(uuid4())}
     with patch("pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job") as mock:
-        assert isinstance(task.handler(context), TaskContext)
+        assert isinstance(task.handler(context), Job)
         mock.assert_called_with(job_key=context.key, variables=context.variables)
 
 
@@ -76,7 +76,7 @@ def test_before_task_decorator_called():
         task.before(decorator)
         zeebe_worker.add_task(task)
         with patch("pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job") as grpc_mock:
-            assert isinstance(task.handler(context), TaskContext)
+            assert isinstance(task.handler(context), Job)
             grpc_mock.assert_called_with(job_key=context.key, variables=context.variables)
         mock.assert_called_with(context)
 
@@ -92,7 +92,7 @@ def test_after_task_decorator_called():
         zeebe_worker.add_task(task)
 
         with patch("pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job") as grpc_mock:
-            assert isinstance(task.handler(context), TaskContext)
+            assert isinstance(task.handler(context), Job)
             grpc_mock.assert_called_with(job_key=context.key, variables=context.variables)
         mock.assert_called_with(context)
 
@@ -104,7 +104,7 @@ def test_decorator_failed():
     zeebe_worker.after(failing_decorator)
     zeebe_worker.add_task(task)
     with patch("pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job") as grpc_mock:
-        assert isinstance(task.handler(context), TaskContext)
+        assert isinstance(task.handler(context), Job)
         grpc_mock.assert_called_with(job_key=context.key, variables=context.variables)
 
 
@@ -204,7 +204,7 @@ def test_create_before_decorator_runner():
     context = random_task_context(task)
     context.variables = {"x": str(uuid4())}
     decorators = zeebe_worker._create_before_decorator_runner(task)
-    assert isinstance(decorators(context), TaskContext)
+    assert isinstance(decorators(context), Job)
 
 
 def test_handle_one_job():

@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import pytest
 
-from pyzeebe import Task, ZeebeWorker, ZeebeClient, exceptions, TaskContext, TaskStatusController
+from pyzeebe import Task, ZeebeWorker, ZeebeClient, exceptions, Job, JobStatusController
 
 
 def task_handler(should_throw: bool, input: str) -> Dict:
@@ -15,7 +15,7 @@ def task_handler(should_throw: bool, input: str) -> Dict:
         return {"output": input + str(uuid4())}
 
 
-def exception_handler(exc: Exception, context: TaskContext, controller: TaskStatusController) -> None:
+def exception_handler(exc: Exception, context: Job, controller: JobStatusController) -> None:
     controller.error(f"Failed to run task {context.type}. Reason: {exc}")
 
 

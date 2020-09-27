@@ -11,8 +11,8 @@ from pyzeebe.credentials.camunda_cloud_credentials import CamundaCloudCredential
 from pyzeebe.credentials.oauth_credentials import OAuthCredentials
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.grpc_internals.zeebe_pb2 import *
+from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
-from pyzeebe.task.task_context import TaskContext
 from tests.unit.utils.gateway_mock import GatewayMock
 from tests.unit.utils.random_utils import RANDOM_RANGE, random_task_context
 
@@ -140,7 +140,7 @@ def test_activate_jobs(grpc_servicer):
     for job in zeebe_adapter.activate_jobs(task_type=task_type, worker=str(uuid4()), timeout=randint(10, 100),
                                            request_timeout=100, max_jobs_to_activate=1, variables_to_fetch=[]):
         counter += 1
-        assert isinstance(job, TaskContext)
+        assert isinstance(job, Job)
     assert counter == active_jobs_count + 1
 
 
@@ -263,7 +263,7 @@ def create_random_task_and_activate(grpc_servicer, task_type: str = None) -> str
     return mock_task_type
 
 
-def get_first_active_job(task_type) -> TaskContext:
+def get_first_active_job(task_type) -> Job:
     return next(zeebe_adapter.activate_jobs(task_type=task_type, max_jobs_to_activate=1, request_timeout=10,
                                             timeout=100, variables_to_fetch=[], worker=str(uuid4())))
 

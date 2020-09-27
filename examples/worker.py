@@ -1,13 +1,13 @@
 from typing import Dict
 
-from pyzeebe import Task, TaskContext, TaskStatusController, ZeebeWorker, CamundaCloudCredentials
+from pyzeebe import Task, TaskContext, JobStatusController, ZeebeWorker, CamundaCloudCredentials
 
 
 def example_task() -> Dict:
     return {"output": f"Hello world, test!"}
 
 
-def example_exception_handler(exc: Exception, context: TaskContext, controller: TaskStatusController) -> None:
+def example_exception_handler(exc: Exception, context: TaskContext, controller: JobStatusController) -> None:
     print(exc)
     print(context)
     controller.error(f"Failed to run task {context.type}. Reason: {exc}")
