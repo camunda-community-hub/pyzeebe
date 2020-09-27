@@ -75,23 +75,26 @@ class ZeebeWorker(ZeebeDecoratorBase):
 
         def task_handler(context: TaskContext) -> TaskContext:
             context = before_decorator_runner(context)
-            context = self.run_task_inner_function(task, context)
+            context, task_succeeded = self._run_task_inner_function(task, context)
             context = after_decorator_runner(context)
-            self.complete_job(context)
+            if task_succeeded:
+                self._complete_job(context)
             return context
 
         return task_handler
 
-    def run_task_inner_function(self, task: Task, context: TaskContext) -> TaskContext:
+    def _run_task_inner_function(self, task: Task, context: TaskContext) -> Tuple[TaskContext, bool]:
+        task_succeeded = False
         try:
             context.variables = task.inner_function(**context.variables)
+            task_succeeded = True
         except Exception as e:
             logging.debug(f"Failed job: {context}. Error: {e}.")
             task.exception_handler(e, context, TaskStatusController(context, self.zeebe_adapter))
         finally:
-            return context
+            return context, task_succeeded
 
-    def complete_job(self, context: TaskContext) -> None:
+    def _complete_job(self, context: TaskContext) -> None:
         try:
             logging.debug(f"Completing job: {context}")
             self.zeebe_adapter.complete_job(job_key=context.key, variables=context.variables)
