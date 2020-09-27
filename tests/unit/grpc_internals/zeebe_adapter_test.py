@@ -14,7 +14,7 @@ from pyzeebe.grpc_internals.zeebe_pb2 import *
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
 from tests.unit.utils.gateway_mock import GatewayMock
-from tests.unit.utils.random_utils import RANDOM_RANGE, random_task_context
+from tests.unit.utils.random_utils import RANDOM_RANGE, random_job
 
 zeebe_adapter: ZeebeAdapter
 
@@ -258,8 +258,8 @@ def create_random_task_and_activate(grpc_servicer, task_type: str = None) -> str
     else:
         mock_task_type = str(uuid4())
     task = Task(task_type=mock_task_type, task_handler=lambda x: x, exception_handler=lambda x: x)
-    task_context = random_task_context(task)
-    grpc_servicer.active_jobs[task_context.key] = task_context
+    job = random_job(task)
+    grpc_servicer.active_jobs[job.key] = job
     return mock_task_type
 
 

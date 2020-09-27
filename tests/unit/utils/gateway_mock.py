@@ -11,7 +11,7 @@ from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayServicer
 from pyzeebe.job.job import Job
 from pyzeebe.job.job_status import JobStatus
 from pyzeebe.task.task import Task
-from tests.unit.utils.random_utils import RANDOM_RANGE, random_task_context
+from tests.unit.utils.random_utils import RANDOM_RANGE, random_job
 
 
 @patch("grpc.insecure_channel")
@@ -97,8 +97,8 @@ class GatewayMock(GatewayServicer):
     def CreateWorkflowInstance(self, request, context):
         if request.bpmnProcessId in self.deployed_workflows.keys():
             for task in self.deployed_workflows[request.bpmnProcessId]["tasks"]:
-                task_context = random_task_context(task)
-                self.active_jobs[task_context.key] = task_context
+                job = random_job(task)
+                self.active_jobs[job.key] = job
             return CreateWorkflowInstanceResponse(workflowKey=randint(0, RANDOM_RANGE),
                                                   bpmnProcessId=request.bpmnProcessId,
                                                   version=request.version, workflowInstanceKey=randint(0, RANDOM_RANGE))

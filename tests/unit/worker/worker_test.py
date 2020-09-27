@@ -9,7 +9,7 @@ from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
 from pyzeebe.worker.worker import ZeebeWorker
 from tests.unit.utils.gateway_mock import GatewayMock
-from tests.unit.utils.random_utils import random_task_context
+from tests.unit.utils.random_utils import random_job
 
 zeebe_worker: ZeebeWorker
 task: Task
@@ -55,7 +55,7 @@ def test_add_task():
     assert task.inner_function(variable) == {"x": variable}
 
     assert callable(task.handler)
-    job = random_task_context(task=task)
+    job = random_job(task=task)
     job.variables = {"x": str(uuid4())}
     with patch("pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job") as mock:
         assert isinstance(task.handler(job), Job)
@@ -64,7 +64,7 @@ def test_add_task():
 
 def test_before_task_decorator_called():
     with patch("tests.unit.worker.worker_test.decorator") as mock:
-        job = random_task_context(task=task)
+        job = random_job(task=task)
         job.variables = {"x": str(uuid4())}
 
         mock.return_value = job
@@ -79,7 +79,7 @@ def test_before_task_decorator_called():
 
 def test_after_task_decorator_called():
     with patch("tests.unit.worker.worker_test.decorator") as mock:
-        job = random_task_context(task=task)
+        job = random_job(task=task)
         job.variables = {"x": str(uuid4())}
 
         mock.return_value = job
@@ -94,7 +94,7 @@ def test_after_task_decorator_called():
 
 
 def test_decorator_failed():
-    job = random_task_context(task=task)
+    job = random_job(task=task)
 
     with patch("tests.unit.worker.worker_test.decorator") as decorator_mock:
         decorator_mock.side_effect = Exception()
@@ -113,7 +113,7 @@ def test_task_exception_handler_called():
     def exception_handler(e, job, status_setter):
         pass
 
-    job = random_task_context(task=task)
+    job = random_job(task=task)
     job.variables = {"x": str(uuid4())}
 
     task.inner_function = task_handler
@@ -199,14 +199,14 @@ def test_add_constructor_after_decorator():
 
 def test_create_before_decorator_runner():
     task.before(decorator)
-    job = random_task_context(task=task)
+    job = random_job(task=task)
     job.variables = {"x": str(uuid4())}
     decorators = zeebe_worker._create_before_decorator_runner(task)
     assert isinstance(decorators(job), Job)
 
 
 def test_handle_one_job():
-    job = random_task_context(task=task)
+    job = random_job(task=task)
 
     with patch("pyzeebe.worker.worker.ZeebeWorker._get_jobs") as get_jobs_mock:
         get_jobs_mock.return_value = [job]
@@ -217,7 +217,7 @@ def test_handle_one_job():
 
 
 def test_handle_no_job():
-    job = random_task_context(task=task)
+    job = random_job(task=task)
 
     with patch("pyzeebe.worker.worker.ZeebeWorker._get_jobs") as get_jobs_mock:
         get_jobs_mock.return_value = []
@@ -229,7 +229,7 @@ def test_handle_no_job():
 
 
 def test_handle_many_jobs():
-    job = random_task_context(task=task)
+    job = random_job(task=task)
 
     with patch("pyzeebe.worker.worker.ZeebeWorker._get_jobs") as get_jobs_mock:
         get_jobs_mock.return_value = [job]

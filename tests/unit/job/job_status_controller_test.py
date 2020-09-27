@@ -5,7 +5,7 @@ import pytest
 
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job_status_controller import JobStatusController
-from tests.unit.utils.random_utils import random_task_context
+from tests.unit.utils.random_utils import random_job
 
 task_status_controller: JobStatusController
 
@@ -14,9 +14,9 @@ task_status_controller: JobStatusController
 def run_around_tests():
     zeebe_adapter = ZeebeAdapter()
     global task_status_controller
-    task_status_controller = JobStatusController(random_task_context(), zeebe_adapter)
+    task_status_controller = JobStatusController(random_job(), zeebe_adapter)
     yield
-    task_status_controller = JobStatusController(random_task_context(), zeebe_adapter)
+    task_status_controller = JobStatusController(random_job(), zeebe_adapter)
 
 
 def test_success():

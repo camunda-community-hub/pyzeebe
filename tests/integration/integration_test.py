@@ -15,8 +15,8 @@ def task_handler(should_throw: bool, input: str) -> Dict:
         return {"output": input + str(uuid4())}
 
 
-def exception_handler(exc: Exception, context: Job, controller: JobStatusController) -> None:
-    controller.error(f"Failed to run task {context.type}. Reason: {exc}")
+def exception_handler(exc: Exception, job: Job, controller: JobStatusController) -> None:
+    controller.error(f"Failed to run task {job.type}. Reason: {exc}")
 
 
 task = Task("test", task_handler, exception_handler)
