@@ -3,9 +3,9 @@ from pyzeebe.job.job import Job
 
 
 class JobStatusController(object):
-    def __init__(self, context: Job, zeebe_adapter: ZeebeAdapter):
+    def __init__(self, job: Job, zeebe_adapter: ZeebeAdapter):
         self.zeebe_adapter = zeebe_adapter
-        self.job = context
+        self.job = job
 
     def success(self) -> None:
         self.zeebe_adapter.complete_job(job_key=self.job.key, variables=self.job.variables)
