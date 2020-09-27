@@ -19,10 +19,6 @@ def decorator(context: Job) -> Job:
     return context
 
 
-def failing_decorator(context: Job) -> Job:
-    raise Exception()
-
-
 @pytest.fixture(scope="module")
 def grpc_add_to_server():
     from pyzeebe.grpc_internals.zeebe_pb2_grpc import add_GatewayServicer_to_server
@@ -100,12 +96,14 @@ def test_after_task_decorator_called():
 def test_decorator_failed():
     context = random_task_context(task)
 
-    zeebe_worker.before(failing_decorator)
-    zeebe_worker.after(failing_decorator)
-    zeebe_worker.add_task(task)
-    with patch("pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job") as grpc_mock:
+    with patch("tests.unit.worker.worker_test.decorator") as decorator_mock:
+        decorator_mock.side_effect = Exception()
+        zeebe_worker.before(decorator)
+        zeebe_worker.after(decorator)
+        zeebe_worker.add_task(task)
+
         assert isinstance(task.handler(context), Job)
-        grpc_mock.assert_called_with(job_key=context.key, variables=context.variables)
+        assert decorator_mock.call_count == 2
 
 
 def test_task_exception_handler_called():
