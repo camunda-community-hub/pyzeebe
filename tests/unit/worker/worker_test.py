@@ -287,3 +287,16 @@ def test_router_after_decorator():
             grpc_mock.assert_called_with(job_key=job.key, variables=job.variables)
 
         assert mock.call_count == 3
+
+
+def test_router_non_dict_task():
+    with patch("pyzeebe.worker.task_handler.ZeebeTaskHandler._single_value_function_to_dict") as single_value_mock:
+        task_type = str(uuid4())
+        variable_name = str(uuid4())
+
+        @zeebe_worker.task(task_type=task_type, single_value=True, variable_name=variable_name)
+        def task_fn(x):
+            return {"x": x}
+
+        single_value_mock.assert_called_with(variable_name=variable_name, fn=task_fn)
+    assert len(zeebe_worker.tasks) == 1

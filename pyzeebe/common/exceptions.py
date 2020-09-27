@@ -75,3 +75,9 @@ class ZeebeGatewayUnavailable(Exception):
 
 class ZeebeInternalError(Exception):
     pass
+
+
+class NoVariableNameGiven(Exception):
+    def __init__(self, task_type: str):
+        super().__init__(f"No variable name given for single_value task {task_type}")
+        self.task_type = task_type

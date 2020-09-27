@@ -2,12 +2,11 @@ from typing import Callable, List, Dict
 
 from pyzeebe.decorators.zeebe_decorator_base import ZeebeDecoratorBase
 from pyzeebe.job.job import Job
-from pyzeebe.job.job_status_controller import JobStatusController
+from pyzeebe.task.exception_handler import ExceptionHandler
 
 
 class Task(ZeebeDecoratorBase):
-    def __init__(self, task_type: str, task_handler: Callable[..., Dict],
-                 exception_handler: Callable[[Exception, Job, JobStatusController], None],
+    def __init__(self, task_type: str, task_handler: Callable[..., Dict], exception_handler: ExceptionHandler,
                  timeout: int = 10000, max_jobs_to_activate: int = 32, variables_to_fetch: List[str] = None,
                  before: List = None, after: List = None):
         super().__init__(before=before, after=after)

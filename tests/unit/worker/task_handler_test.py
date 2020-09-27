@@ -1,11 +1,13 @@
+from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
 
-from pyzeebe.common.exceptions import TaskNotFound
+from pyzeebe.common.exceptions import TaskNotFound, NoVariableNameGiven
+from pyzeebe.job.job_status_controller import JobStatusController
 from pyzeebe.task.task import Task
-from pyzeebe.worker.task_handler import ZeebeTaskHandler
-from tests.unit.utils.random_utils import randint
+from pyzeebe.worker.task_handler import ZeebeTaskHandler, default_exception_handler
+from tests.unit.utils.random_utils import randint, random_job
 
 zeebe_task_handler: ZeebeTaskHandler
 task: Task
@@ -67,3 +69,50 @@ def test_remove_task_from_many():
 def test_remove_fake_task():
     with pytest.raises(TaskNotFound):
         zeebe_task_handler.remove_task(str(uuid4()))
+
+
+def test_add_dict_task():
+    with patch("tests.unit.worker.task_handler_test.zeebe_task_handler._dict_task") as dict_task_mock:
+        @zeebe_task_handler.task(task_type=str(uuid4()))
+        def dict_task():
+            return {}
+
+        dict_task_mock.assert_called()
+
+
+def test_add_non_dict_task():
+    with patch("tests.unit.worker.task_handler_test.zeebe_task_handler._non_dict_task") as non_dict_task_mock:
+        @zeebe_task_handler.task(task_type=str(uuid4()), single_value=True, variable_name=str(uuid4()))
+        def non_dict_task():
+            return True
+
+        non_dict_task_mock.assert_called()
+
+
+def test_add_non_dict_task_without_variable_name():
+    with pytest.raises(NoVariableNameGiven):
+        @zeebe_task_handler.task(task_type=str(uuid4()), single_value=True)
+        def non_dict_task():
+            return True
+
+
+def test_fn_to_dict():
+    variable_name = str(uuid4())
+
+    def no_dict_fn(x):
+        return x + 1
+
+    dict_fn = zeebe_task_handler._single_value_function_to_dict(fn=no_dict_fn, variable_name=variable_name)
+
+    variable = randint(0, 1000)
+    assert dict_fn(variable) == {variable_name: variable + 1}
+
+
+def test_default_exception_handler():
+    with patch("logging.warning") as logging_mock:
+        with patch("pyzeebe.job.job_status_controller.JobStatusController.failure") as failure_mock:
+            job = random_job()
+            default_exception_handler(Exception(), job, JobStatusController(job=job, zeebe_adapter=None))
+
+            failure_mock.assert_called()
+        logging_mock.assert_called()

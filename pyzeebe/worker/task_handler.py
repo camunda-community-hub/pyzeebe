@@ -2,10 +2,11 @@ import logging
 from abc import abstractmethod
 from typing import Tuple, List, Callable
 
-from pyzeebe.common.exceptions import TaskNotFound
+from pyzeebe.common.exceptions import TaskNotFound, NoVariableNameGiven
 from pyzeebe.decorators.zeebe_decorator_base import ZeebeDecoratorBase
 from pyzeebe.job.job import Job
 from pyzeebe.job.job_status_controller import JobStatusController
+from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_decorator import TaskDecorator
 
@@ -25,11 +26,46 @@ class ZeebeTaskHandler(ZeebeDecoratorBase):
         super().__init__(before, after)
         self.tasks: List[Task] = []
 
+    def task(self, task_type: str, exception_handler: ExceptionHandler = default_exception_handler,
+             before: List[TaskDecorator] = None, after: List[TaskDecorator] = None, single_value: bool = False,
+             variable_name: str = None):
+        """Decorator to create a task
+        Args:
+            task_type (str):
+            exception_handler (ExceptionHandler):
+            before (List[TaskDecorator]):
+            after (List[TaskDecorator]):
+            single_value (bool): Does the function return a value that is not a dictionary
+            variable_name (str): If single_value then this will be the variable name given to zeebe:
+                                    { <variable_name>: <function_return_value> }
+        """
+        if single_value and not variable_name:
+            raise NoVariableNameGiven(task_type=task_type)
+
+        elif single_value and variable_name:
+            return self._non_dict_task(task_type=task_type, variable_name=variable_name,
+                                       exception_handler=exception_handler, before=before, after=after)
+
+        else:
+            return self._dict_task(task_type=task_type, exception_handler=exception_handler, before=before, after=after)
+
     @abstractmethod
-    def task(self, task_type: str, exception_handler: Callable[
-        [Exception, Job, JobStatusController], None] = default_exception_handler,
-             before: List[TaskDecorator] = None, after: List[TaskDecorator] = None):
-        pass
+    def _dict_task(self, task_type: str, exception_handler: ExceptionHandler = default_exception_handler,
+                   before: List[TaskDecorator] = None, after: List[TaskDecorator] = None):
+        raise NotImplemented()
+
+    @abstractmethod
+    def _non_dict_task(self, task_type: str, variable_name: str,
+                       exception_handler: ExceptionHandler = default_exception_handler,
+                       before: List[TaskDecorator] = None, after: List[TaskDecorator] = None):
+        raise NotImplemented()
+
+    @staticmethod
+    def _single_value_function_to_dict(variable_name: str, fn: Callable):
+        def inner_fn(*args, **kwargs):
+            return {variable_name: fn(*args, **kwargs)}
+
+        return inner_fn
 
     def remove_task(self, task_type: str) -> Task:
         task_index = self._get_task_index(task_type)

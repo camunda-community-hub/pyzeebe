@@ -7,14 +7,11 @@ from pyzeebe.credentials.base_credentials import BaseCredentials
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job
 from pyzeebe.job.job_status_controller import JobStatusController
+from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_decorator import TaskDecorator
-from pyzeebe.worker.task_handler import ZeebeTaskHandler
+from pyzeebe.worker.task_handler import ZeebeTaskHandler, default_exception_handler
 from pyzeebe.worker.task_router import ZeebeTaskRouter
-
-
-def default_exception_handler(e: Exception, job: Job, controller: JobStatusController) -> None:
-    controller.failure(f"Failed job. Error: {e}")
 
 
 class ZeebeWorker(ZeebeTaskHandler):
@@ -77,12 +74,25 @@ class ZeebeWorker(ZeebeTaskHandler):
                                                 variables_to_fetch=task.variables_to_fetch,
                                                 request_timeout=self.request_timeout)
 
-    def task(self, task_type: str, exception_handler: Callable[
-        [Exception, Job, JobStatusController], None] = default_exception_handler,
-             before: List[TaskDecorator] = None, after: List[TaskDecorator] = None):
+    def _dict_task(self, task_type: str, exception_handler: ExceptionHandler = default_exception_handler,
+                   before: List[TaskDecorator] = None, after: List[TaskDecorator] = None):
         def wrapper(fn: Callable[..., Dict]):
             task = Task(task_type=task_type, task_handler=fn, exception_handler=exception_handler, before=before,
                         after=after)
+            self._add_task(task)
+            return fn
+
+        return wrapper
+
+    def _non_dict_task(self, task_type: str, variable_name: str,
+                       exception_handler: ExceptionHandler = default_exception_handler,
+                       before: List[TaskDecorator] = None, after: List[TaskDecorator] = None):
+        def wrapper(fn: Callable[..., Dict]):
+            dict_fn = self._single_value_function_to_dict(variable_name=variable_name, fn=fn)
+
+            task = Task(task_type=task_type, task_handler=dict_fn, exception_handler=exception_handler, before=before,
+                        after=after)
+
             self._add_task(task)
             return fn
 

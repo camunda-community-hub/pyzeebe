@@ -3,12 +3,6 @@ from typing import Dict
 from pyzeebe import Job, JobStatusController, ZeebeWorker, CamundaCloudCredentials
 
 
-def example_exception_handler(exc: Exception, job: Job, controller: JobStatusController) -> None:
-    print(exc)
-    print(job)
-    controller.error(f"Failed to run task {job.type}. Reason: {exc}")
-
-
 # Use decorators to add functionality before and after tasks. These will not fail the task
 def example_logging_task_decorator(job: Job) -> Job:
     print(job)
@@ -26,15 +20,43 @@ camunda_cloud_credentials = CamundaCloudCredentials(client_id="<my_client_id>", 
                                                     cluster_id="<my_cluster_id>")
 worker = ZeebeWorker(credentials=camunda_cloud_credentials)
 
-# We can also use decorators on workers. These decorators will happen before all tasks
+# Decorators allow us to add functionality before and after each job
 worker.before(example_logging_task_decorator)
 worker.after(example_logging_task_decorator)
 
 
-@worker.task(task_type="test", exception_handler=example_exception_handler,
-             before=[example_logging_task_decorator], after=[example_logging_task_decorator])
+# Create a task like this:
+@worker.task(task_type="test")
 def example_task() -> Dict:
     return {"output": f"Hello world, test!"}
+
+
+# Create a task that will return a single value (not a dict) like this:
+@worker.task(task_type="add_one", single_value=True, variable_name="y")  # This task will return to zeebe: { y: x + 1 }
+def add_one(x) -> int:
+    return x + 1
+
+
+# Define a custom exception_handler for a task like so:
+def example_exception_handler(exception: Exception, job: Job, controller: JobStatusController) -> None:
+    print(exception)
+    print(job)
+    controller.failure(f"Failed to run task {job.type}. Reason: {exception}")
+
+
+@worker.task(task_type="exception_task", exception_handler=example_exception_handler)
+def exception_task():
+    raise Exception("Oh no!")
+
+
+# We can also add decorators to tasks.
+# The order of the decorators will be as follows:
+# Worker decorators -> Task decorators -> Task -> Task decorators -> Worker decorators
+# Here is how:
+@worker.task(task_type="decorator_task", before=[example_logging_task_decorator],
+             after=[example_logging_task_decorator])
+def decorator_task() -> Dict:
+    return {"output": "Hello world, test!"}
 
 
 if __name__ == "__main__":
