@@ -1,10 +1,6 @@
 from typing import Dict
 
-from pyzeebe import Task, Job, JobStatusController, ZeebeWorker, CamundaCloudCredentials
-
-
-def example_task() -> Dict:
-    return {"output": f"Hello world, test!"}
+from pyzeebe import Job, JobStatusController, ZeebeWorker, CamundaCloudCredentials
 
 
 def example_exception_handler(exc: Exception, job: Job, controller: JobStatusController) -> None:
@@ -13,17 +9,11 @@ def example_exception_handler(exc: Exception, job: Job, controller: JobStatusCon
     controller.error(f"Failed to run task {job.type}. Reason: {exc}")
 
 
-task = Task(task_type="test", task_handler=example_task, exception_handler=example_exception_handler)
-
-
 # Use decorators to add functionality before and after tasks. These will not fail the task
 def example_logging_task_decorator(job: Job) -> Job:
     print(job)
     return job
 
-
-task.before(example_logging_task_decorator)
-task.after(example_logging_task_decorator)
 
 # Will use environment variable ZEEBE_ADDRESS or localhost:26500 and NOT use TLS
 worker = ZeebeWorker()
@@ -40,8 +30,12 @@ worker = ZeebeWorker(credentials=camunda_cloud_credentials)
 worker.before(example_logging_task_decorator)
 worker.after(example_logging_task_decorator)
 
-# Add task to worker
-worker.add_task(task)
+
+@worker.task(task_type="test", exception_handler=example_exception_handler,
+             before=[example_logging_task_decorator], after=[example_logging_task_decorator])
+def example_task() -> Dict:
+    return {"output": f"Hello world, test!"}
+
 
 if __name__ == "__main__":
     worker.work()

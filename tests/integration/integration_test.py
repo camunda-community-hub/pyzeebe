@@ -5,9 +5,17 @@ from uuid import uuid4
 
 import pytest
 
-from pyzeebe import Task, ZeebeWorker, ZeebeClient, exceptions, Job, JobStatusController
+from pyzeebe import ZeebeWorker, ZeebeClient, exceptions, Job, JobStatusController
+
+zeebe_client: ZeebeClient
+zeebe_worker = ZeebeWorker()
 
 
+def exception_handler(exc: Exception, job: Job, controller: JobStatusController) -> None:
+    controller.error(f"Failed to run task {job.type}. Reason: {exc}")
+
+
+@zeebe_worker.task(task_type="test", exception_handler=exception_handler)
 def task_handler(should_throw: bool, input: str) -> Dict:
     if should_throw:
         raise Exception("Error thrown")
@@ -15,28 +23,11 @@ def task_handler(should_throw: bool, input: str) -> Dict:
         return {"output": input + str(uuid4())}
 
 
-def exception_handler(exc: Exception, job: Job, controller: JobStatusController) -> None:
-    controller.error(f"Failed to run task {job.type}. Reason: {exc}")
-
-
-task = Task("test", task_handler, exception_handler)
-
-zeebe_client: ZeebeClient
-zeebe_worker: ZeebeWorker
-
-
-def run_worker():
-    global zeebe_worker
-    zeebe_worker = ZeebeWorker()
-    zeebe_worker.add_task(task)
-    zeebe_worker.work()
-
-
 @pytest.fixture(scope="module", autouse=True)
 def setup():
     global zeebe_client, zeebe_worker
 
-    t = Thread(target=run_worker)
+    t = Thread(target=zeebe_worker.work)
     t.start()
 
     zeebe_client = ZeebeClient()
@@ -48,6 +39,7 @@ def setup():
 
     yield zeebe_client
     zeebe_worker.stop()
+    t.join()
 
 
 def test_run_workflow():

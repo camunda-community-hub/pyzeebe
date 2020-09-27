@@ -47,7 +47,7 @@ def run_around_tests():
 
 
 def test_add_task():
-    zeebe_worker.add_task(task)
+    zeebe_worker._add_task(task)
     assert len(zeebe_worker.tasks) == 1
     assert zeebe_worker.get_task(task.type).handler is not None
 
@@ -70,7 +70,7 @@ def test_before_task_decorator_called():
         mock.return_value = job
 
         task.before(decorator)
-        zeebe_worker.add_task(task)
+        zeebe_worker._add_task(task)
         with patch("pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job") as grpc_mock:
             assert isinstance(task.handler(job), Job)
             grpc_mock.assert_called_with(job_key=job.key, variables=job.variables)
@@ -85,7 +85,7 @@ def test_after_task_decorator_called():
         mock.return_value = job
 
         task.after(decorator)
-        zeebe_worker.add_task(task)
+        zeebe_worker._add_task(task)
 
         with patch("pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job") as grpc_mock:
             assert isinstance(task.handler(job), Job)
@@ -100,7 +100,7 @@ def test_decorator_failed():
         decorator_mock.side_effect = Exception()
         zeebe_worker.before(decorator)
         zeebe_worker.after(decorator)
-        zeebe_worker.add_task(task)
+        zeebe_worker._add_task(task)
 
         assert isinstance(task.handler(job), Job)
         assert decorator_mock.call_count == 2
@@ -120,22 +120,22 @@ def test_task_exception_handler_called():
     task.exception_handler = exception_handler
 
     with patch("tests.unit.worker.worker_test.task.exception_handler") as mock:
-        zeebe_worker.add_task(task)
+        zeebe_worker._add_task(task)
         task.handler(job)
         mock.assert_called()
 
 
 def test_remove_task():
-    zeebe_worker.add_task(task)
+    zeebe_worker._add_task(task)
     assert zeebe_worker.remove_task(task.type) is not None
     assert task not in zeebe_worker.tasks
 
 
 def test_remove_task_from_many():
-    zeebe_worker.add_task(task)
+    zeebe_worker._add_task(task)
 
     for i in range(0, randint(0, 100)):
-        zeebe_worker.add_task(Task(str(uuid4()), lambda x: x, lambda x: x))
+        zeebe_worker._add_task(Task(str(uuid4()), lambda x: x, lambda x: x))
     assert zeebe_worker.remove_task(task.type) is not None
     assert task not in zeebe_worker.tasks
 
@@ -151,21 +151,21 @@ def test_get_fake_task():
 
 
 def test_get_task():
-    zeebe_worker.add_task(task)
+    zeebe_worker._add_task(task)
     found_task = zeebe_worker.get_task(task.type)
     assert isinstance(found_task, Task)
     assert found_task == task
 
 
 def test_get_task_index():
-    zeebe_worker.add_task(task)
+    zeebe_worker._add_task(task)
     index = zeebe_worker._get_task_index(task.type)
     assert isinstance(index, int)
     assert zeebe_worker.tasks[index] == task
 
 
 def test_get_task_and_index():
-    zeebe_worker.add_task(task)
+    zeebe_worker._add_task(task)
     found_task, index = zeebe_worker._get_task_and_index(task.type)
     assert isinstance(index, int)
     assert zeebe_worker.tasks[index] == task

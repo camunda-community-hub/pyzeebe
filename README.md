@@ -31,10 +31,8 @@ To install:
 The `ZeebeWorker` class uses threading to get and run jobs.
 
 ```python
-from pyzeebe import ZeebeWorker, Task, JobStatusController, Job
+from pyzeebe import ZeebeWorker, JobStatusController, Job
 
-def example_task(input: str):
-    return {"output": f"Hello world, {input}!"}
 
 def on_error(exception: Exception, job: Job, task_status_controller: JobStatusController):
     """
@@ -43,10 +41,14 @@ def on_error(exception: Exception, job: Job, task_status_controller: JobStatusCo
     print(exception)
     task_status_controller.error(f"Failed to handle job {job}. Error: {str(exception)}")
 
-task = Task(type="example", task_handler=example_task, exception_handler=on_error) # Create task object from example_task
+
 
 worker = ZeebeWorker(hostname="<zeebe_host>", port=26500) # Create a zeebe worker
-worker.add_task(task) # Add task to zeebe worker
+
+@worker.task(task_type="example", exception_handler=on_error)
+def example_task(input: str):
+    return {"output": f"Hello world, {input}!"}
+
 
 worker.work() # Now every time that a task with type example is called example_task will be called
 ```

@@ -1,7 +1,7 @@
 import logging
 import socket
 from threading import Thread, Event
-from typing import List, Callable, Generator, Tuple
+from typing import List, Callable, Generator, Tuple, Dict
 
 from pyzeebe.common.exceptions import TaskNotFound
 from pyzeebe.credentials.base_credentials import BaseCredentials
@@ -11,6 +11,10 @@ from pyzeebe.job.job import Job
 from pyzeebe.job.job_status_controller import JobStatusController
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_decorator import TaskDecorator
+
+
+def default_exception_handler(e: Exception, job: Job, controller: JobStatusController) -> None:
+    controller.failure(f"Failed job. Error: {e}")
 
 
 class ZeebeWorker(ZeebeDecoratorBase):
@@ -55,7 +59,7 @@ class ZeebeWorker(ZeebeDecoratorBase):
         logging.debug(f"Handling task {task}")
         while not self.stop_event.is_set() and self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection:
             if self.zeebe_adapter.retrying_connection:
-                logging.warning(f"Retrying connection to {self.zeebe_adapter.connection_uri or 'zeebe'}")
+                logging.info(f"Retrying connection to {self.zeebe_adapter.connection_uri or 'zeebe'}")
                 continue
 
             self._handle_jobs(task)
@@ -73,7 +77,18 @@ class ZeebeWorker(ZeebeDecoratorBase):
                                                 variables_to_fetch=task.variables_to_fetch,
                                                 request_timeout=self.request_timeout)
 
-    def add_task(self, task: Task) -> None:
+    def task(self, task_type: str, exception_handler: Callable[
+        [Exception, Job, JobStatusController], None] = default_exception_handler,
+             before: List[TaskDecorator] = None, after: List[TaskDecorator] = None):
+        def wrapper(fn: Callable[..., Dict]):
+            task = Task(task_type=task_type, task_handler=fn, exception_handler=exception_handler, before=before,
+                        after=after)
+            self._add_task(task)
+            return task.handler
+
+        return wrapper
+
+    def _add_task(self, task: Task) -> None:
         task.handler = self._create_task_handler(task)
         self.tasks.append(task)
 
