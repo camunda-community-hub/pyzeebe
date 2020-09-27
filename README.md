@@ -53,12 +53,8 @@ worker.work() # Now every time that a task with type example is called example_t
 
 Stop a worker:
 ```python
-from threading import Event
-
-
-stop_event = Event() 
-zeebe_worker.work(stop_event=stop_event) # Worker will begin working
-stop_event.set() # Stops worker and all running jobs
+zeebe_worker.work() # Worker will begin working
+zeebe_worker.stop() # Stops worker after all running jobs have been completed 
 ```
 
 ### Client
