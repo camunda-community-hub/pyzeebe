@@ -102,7 +102,7 @@ class ZeebeWorker(ZeebeDecoratorBase):
         finally:
             return context, task_succeeded
 
-    def complete_job(self, context: Job) -> None:
+    def _complete_job(self, context: Job) -> None:
         try:
             logging.debug(f"Completing job: {context}")
             self.zeebe_adapter.complete_job(job_key=context.key, variables=context.variables)
