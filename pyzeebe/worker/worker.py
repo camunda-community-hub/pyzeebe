@@ -58,15 +58,15 @@ class ZeebeWorker(ZeebeDecoratorBase):
                 logging.warning(f"Retrying connection to {self.zeebe_adapter.connection_uri or 'zeebe'}")
                 continue
 
-            self._handle_task_contexts(task)
+            self._handle_jobs(task)
 
-    def _handle_task_contexts(self, task: Task) -> None:
-        for task_context in self._get_task_contexts(task):
+    def _handle_jobs(self, task: Task) -> None:
+        for task_context in self._get_jobs(task):
             thread = Thread(target=task.handler, args=(task_context,))
             logging.debug(f"Running job: {task_context}")
             thread.start()
 
-    def _get_task_contexts(self, task: Task) -> Generator[Job, None, None]:
+    def _get_jobs(self, task: Task) -> Generator[Job, None, None]:
         logging.debug(f"Activating jobs for task: {task}")
         return self.zeebe_adapter.activate_jobs(task_type=task.type, worker=self.name, timeout=task.timeout,
                                                 max_jobs_to_activate=task.max_jobs_to_activate,
@@ -81,33 +81,33 @@ class ZeebeWorker(ZeebeDecoratorBase):
         before_decorator_runner = self._create_before_decorator_runner(task)
         after_decorator_runner = self._create_after_decorator_runner(task)
 
-        def task_handler(context: Job) -> Job:
-            context = before_decorator_runner(context)
-            context, task_succeeded = self._run_task_inner_function(task, context)
-            context = after_decorator_runner(context)
+        def task_handler(job: Job) -> Job:
+            job = before_decorator_runner(job)
+            job, task_succeeded = self._run_task_inner_function(task, job)
+            job = after_decorator_runner(job)
             if task_succeeded:
-                self._complete_job(context)
-            return context
+                self._complete_job(job)
+            return job
 
         return task_handler
 
-    def _run_task_inner_function(self, task: Task, context: Job) -> Tuple[Job, bool]:
+    def _run_task_inner_function(self, task: Task, job: Job) -> Tuple[Job, bool]:
         task_succeeded = False
         try:
-            context.variables = task.inner_function(**context.variables)
+            job.variables = task.inner_function(**job.variables)
             task_succeeded = True
         except Exception as e:
-            logging.debug(f"Failed job: {context}. Error: {e}.")
-            task.exception_handler(e, context, JobStatusController(context, self.zeebe_adapter))
+            logging.debug(f"Failed job: {job}. Error: {e}.")
+            task.exception_handler(e, job, JobStatusController(job, self.zeebe_adapter))
         finally:
-            return context, task_succeeded
+            return job, task_succeeded
 
-    def _complete_job(self, context: Job) -> None:
+    def _complete_job(self, job: Job) -> None:
         try:
-            logging.debug(f"Completing job: {context}")
-            self.zeebe_adapter.complete_job(job_key=context.key, variables=context.variables)
+            logging.debug(f"Completing job: {job}")
+            self.zeebe_adapter.complete_job(job_key=job.key, variables=job.variables)
         except Exception as e:
-            logging.warning(f"Failed to complete job: {context}. Error: {e}")
+            logging.warning(f"Failed to complete job: {job}. Error: {e}")
 
     def _create_before_decorator_runner(self, task: Task) -> Callable[[Job], Job]:
         decorators = task._before.copy()
@@ -121,20 +121,20 @@ class ZeebeWorker(ZeebeDecoratorBase):
 
     @staticmethod
     def _create_decorator_runner(decorators: List[TaskDecorator]) -> Callable[[Job], Job]:
-        def decorator_runner(context: Job):
+        def decorator_runner(job: Job):
             for decorator in decorators:
-                context = ZeebeWorker._run_decorator(decorator, context)
-            return context
+                job = ZeebeWorker._run_decorator(decorator, job)
+            return job
 
         return decorator_runner
 
     @staticmethod
-    def _run_decorator(decorator: TaskDecorator, context: Job) -> Job:
+    def _run_decorator(decorator: TaskDecorator, job: Job) -> Job:
         try:
-            return decorator(context)
+            return decorator(job)
         except Exception as e:
             logging.warning(f"Failed to run decorator {decorator}. Error: {e}")
-            return context
+            return job
 
     def remove_task(self, task_type: str) -> Task:
         task_index = self._get_task_index(task_type)
