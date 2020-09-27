@@ -36,12 +36,12 @@ from pyzeebe import ZeebeWorker, Task, JobStatusController, Job
 def example_task(input: str):
     return {"output": f"Hello world, {input}!"}
 
-def on_error(exception: Exception, context: Job, task_status_controller: JobStatusController):
+def on_error(exception: Exception, job: Job, task_status_controller: JobStatusController):
     """
     on_error will be called when the task fails
     """ 
     print(exception)
-    task_status_controller.error(f"Failed to handle task {context.type}. Error: {str(exception)}")
+    task_status_controller.error(f"Failed to handle job {job}. Error: {str(exception)}")
 
 task = Task(type="example", task_handler=example_task, exception_handler=on_error) # Create task object from example_task
 
