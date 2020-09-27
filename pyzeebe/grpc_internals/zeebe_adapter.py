@@ -75,9 +75,9 @@ class ZeebeAdapter(object):
                                         maxJobsToActivate=max_jobs_to_activate,
                                         fetchVariable=variables_to_fetch, requestTimeout=request_timeout)):
                 for job in response.jobs:
-                    context = self._create_task_context_from_job(job)
-                    logging.debug(f"Got job: {context} from zeebe")
-                    yield context
+                    job = self._create_job_from_response(job)
+                    logging.debug(f"Got job: {job} from zeebe")
+                    yield job
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
                 raise ActivateJobsRequestInvalid(task_type, worker, timeout, max_jobs_to_activate)
@@ -85,19 +85,19 @@ class ZeebeAdapter(object):
                 self._common_zeebe_grpc_errors(rpc_error)
 
     @staticmethod
-    def _create_task_context_from_job(job) -> Job:
-        return Job(key=job.key, _type=job.type,
-                   workflow_instance_key=job.workflowInstanceKey,
-                   bpmn_process_id=job.bpmnProcessId,
-                   workflow_definition_version=job.workflowDefinitionVersion,
-                   workflow_key=job.workflowKey,
-                   element_id=job.elementId,
-                   element_instance_key=job.elementInstanceKey,
-                   custom_headers=json.loads(job.customHeaders),
-                   worker=job.worker,
-                   retries=job.retries,
-                   deadline=job.deadline,
-                   variables=json.loads(job.variables))
+    def _create_job_from_response(response) -> Job:
+        return Job(key=response.key, _type=response.type,
+                   workflow_instance_key=response.workflowInstanceKey,
+                   bpmn_process_id=response.bpmnProcessId,
+                   workflow_definition_version=response.workflowDefinitionVersion,
+                   workflow_key=response.workflowKey,
+                   element_id=response.elementId,
+                   element_instance_key=response.elementInstanceKey,
+                   custom_headers=json.loads(response.customHeaders),
+                   worker=response.worker,
+                   retries=response.retries,
+                   deadline=response.deadline,
+                   variables=json.loads(response.variables))
 
     def complete_job(self, job_key: int, variables: Dict) -> CompleteJobResponse:
         try:
