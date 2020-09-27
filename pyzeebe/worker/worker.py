@@ -84,7 +84,7 @@ class ZeebeWorker(ZeebeDecoratorBase):
             task = Task(task_type=task_type, task_handler=fn, exception_handler=exception_handler, before=before,
                         after=after)
             self._add_task(task)
-            return task.handler
+            return fn
 
         return wrapper
 

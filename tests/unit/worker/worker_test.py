@@ -46,6 +46,34 @@ def run_around_tests():
     task = Task(str(uuid4()), lambda x: {"x": x}, lambda x, y, z: x)
 
 
+def test_add_task_through_decorator():
+    task_type = str(uuid4())
+
+    @zeebe_worker.task(task_type=task_type)
+    def example_test_task(x):
+        return {"x": x}
+
+    assert len(zeebe_worker.tasks) == 1
+    assert zeebe_worker.get_task(task_type).handler is not None
+
+    variable = str(uuid4())
+    assert example_test_task(variable) == {"x": variable}
+
+    global task
+    task = zeebe_worker.get_task(task_type)
+    assert task is not None
+
+    variable = str(uuid4())
+    assert task.inner_function(variable) == {"x": variable}
+
+    assert callable(task.handler)
+    job = random_job(task=task)
+    job.variables = {"x": str(uuid4())}
+    with patch("pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job") as mock:
+        assert isinstance(task.handler(job), Job)
+        mock.assert_called_with(job_key=job.key, variables=job.variables)
+
+
 def test_add_task():
     zeebe_worker._add_task(task)
     assert len(zeebe_worker.tasks) == 1
