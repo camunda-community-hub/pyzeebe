@@ -61,9 +61,9 @@ class ZeebeWorker(ZeebeDecoratorBase):
             self._handle_jobs(task)
 
     def _handle_jobs(self, task: Task) -> None:
-        for task_context in self._get_jobs(task):
-            thread = Thread(target=task.handler, args=(task_context,))
-            logging.debug(f"Running job: {task_context}")
+        for job in self._get_jobs(task):
+            thread = Thread(target=task.handler, args=(job,))
+            logging.debug(f"Running job: {job}")
             thread.start()
 
     def _get_jobs(self, task: Task) -> Generator[Job, None, None]:
