@@ -34,20 +34,28 @@ class ZeebeWorker(ZeebeDecoratorBase):
                                           secure_connection=secure_connection)
         self.name = name or socket.gethostname()
         self.request_timeout = request_timeout
-        self.tasks = []
-        self._task_threads: List[Thread] = []
+        self.tasks: List[Task] = []
+        self.stop_event = Event()
 
-    def work(self, stop_event: Event = None) -> None:
+    def work(self) -> None:
+        """
+        Start the worker. The worker will poll zeebe for jobs of each task in a different thread.
+        """
         for task in self.tasks:
-            task_thread = Thread(target=self._handle_task, args=(task, stop_event or Event()))
-            self._task_threads.append(task_thread)
+            task_thread = Thread(target=self._handle_task, args=(task,))
             task_thread.start()
 
-    def _handle_task(self, task: Task, stop_event: Event) -> None:
+    def stop(self):
+        """
+        Stop the worker. This will wait for all tasks to complete before stopping
+        """
+        self.stop_event.set()
+
+    def _handle_task(self, task: Task) -> None:
         logging.debug(f"Handling task {task}")
-        while not stop_event.is_set() and self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection:
+        while not self.stop_event.is_set() and self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection:
             if self.zeebe_adapter.retrying_connection:
-                logging.debug(f"Retrying connection to {self.zeebe_adapter.connection_uri or 'zeebe'}")
+                logging.warning(f"Retrying connection to {self.zeebe_adapter.connection_uri or 'zeebe'}")
                 continue
 
             self._handle_task_contexts(task)
@@ -96,7 +104,7 @@ class ZeebeWorker(ZeebeDecoratorBase):
             logging.debug(f"Completing job: {context}")
             self.zeebe_adapter.complete_job(job_key=context.key, variables=context.variables)
         except Exception as e:
-            logging.error(f"Failed to complete job: {context}. Error: {e}")
+            logging.warning(f"Failed to complete job: {context}. Error: {e}")
 
     def _create_before_decorator_runner(self, task: Task) -> Callable[[TaskContext], TaskContext]:
         decorators = task._before.copy()

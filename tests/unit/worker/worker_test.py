@@ -1,5 +1,4 @@
 from random import randint
-from threading import Event
 from unittest.mock import patch
 from uuid import uuid4
 
@@ -243,6 +242,5 @@ def test_handle_many_jobs():
 
 
 def test_stop_worker():
-    stop_event = Event()
-    zeebe_worker.work(stop_event=stop_event)
-    stop_event.set()
+    zeebe_worker.work()
+    zeebe_worker.stop()

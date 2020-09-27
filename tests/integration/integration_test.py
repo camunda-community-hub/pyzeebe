@@ -1,5 +1,5 @@
 import os
-from threading import Thread, Event
+from threading import Thread
 from typing import Dict
 from uuid import uuid4
 
@@ -22,20 +22,21 @@ def exception_handler(exc: Exception, context: TaskContext, controller: TaskStat
 task = Task("test", task_handler, exception_handler)
 
 zeebe_client: ZeebeClient
+zeebe_worker: ZeebeWorker
 
 
-def run_worker(stop_event):
+def run_worker():
+    global zeebe_worker
     zeebe_worker = ZeebeWorker()
     zeebe_worker.add_task(task)
-    zeebe_worker.work(stop_event)
+    zeebe_worker.work()
 
 
 @pytest.fixture(scope="module", autouse=True)
 def setup():
-    global zeebe_client
+    global zeebe_client, zeebe_worker
 
-    stop_event = Event()
-    t = Thread(target=run_worker, args=(stop_event,))
+    t = Thread(target=run_worker)
     t.start()
 
     zeebe_client = ZeebeClient()
@@ -46,7 +47,7 @@ def setup():
         zeebe_client.deploy_workflow("test.bpmn")
 
     yield zeebe_client
-    stop_event.set()
+    zeebe_worker.stop()
 
 
 def test_run_workflow():
