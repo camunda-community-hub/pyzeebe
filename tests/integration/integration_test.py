@@ -25,7 +25,7 @@ def task_handler(should_throw: bool, input: str) -> Dict:
 
 @pytest.fixture(scope="module", autouse=True)
 def setup():
-    global zeebe_client, zeebe_worker
+    global zeebe_client, task_handler
 
     t = Thread(target=zeebe_worker.work)
     t.start()

@@ -3,21 +3,21 @@ import socket
 from threading import Thread, Event
 from typing import List, Callable, Generator, Tuple, Dict
 
-from pyzeebe.common.exceptions import TaskNotFound
 from pyzeebe.credentials.base_credentials import BaseCredentials
-from pyzeebe.decorators.zeebe_decorator_base import ZeebeDecoratorBase
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job
 from pyzeebe.job.job_status_controller import JobStatusController
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_decorator import TaskDecorator
+from pyzeebe.worker.task_handler import ZeebeTaskHandler
+from pyzeebe.worker.task_router import ZeebeTaskRouter
 
 
 def default_exception_handler(e: Exception, job: Job, controller: JobStatusController) -> None:
     controller.failure(f"Failed job. Error: {e}")
 
 
-class ZeebeWorker(ZeebeDecoratorBase):
+class ZeebeWorker(ZeebeTaskHandler):
     """A zeebe worker that can connect to a zeebe instance and perform tasks."""
 
     def __init__(self, name: str = None, request_timeout: int = 0, hostname: str = None, port: int = None,
@@ -151,18 +151,11 @@ class ZeebeWorker(ZeebeDecoratorBase):
             logging.warning(f"Failed to run decorator {decorator}. Error: {e}")
             return job
 
-    def remove_task(self, task_type: str) -> Task:
-        task_index = self._get_task_index(task_type)
-        return self.tasks.pop(task_index)
-
-    def get_task(self, task_type: str) -> Task:
-        return self._get_task_and_index(task_type)[0]
-
-    def _get_task_index(self, task_type: str) -> int:
-        return self._get_task_and_index(task_type)[-1]
-
-    def _get_task_and_index(self, task_type: str) -> Tuple[Task, int]:
-        for index, task in enumerate(self.tasks):
-            if task.type == task_type:
-                return task, index
-        raise TaskNotFound(f"Could not find task {task_type}")
+    def include_router(self, router: ZeebeTaskRouter):
+        """
+        Adds all router's tasks to the worker.
+        Decorator order:
+            Worker -> Router -> Task -> fn -> Task -> Router -> Worker
+        """
+        for task in router.tasks:
+            self._add_task(task)
