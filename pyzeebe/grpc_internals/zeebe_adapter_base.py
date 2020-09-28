@@ -22,7 +22,7 @@ class ZeebeAdapterBase(object):
         self.connected = False
         self.retrying_connection = True
         self._channel.subscribe(self._check_connectivity, try_to_connect=True)
-        self.gateway_stub = GatewayStub(self._channel)
+        self._gateway_stub = GatewayStub(self._channel)
 
     @staticmethod
     def _get_connection_uri(hostname: str = None, port: int = None, credentials: BaseCredentials = None) -> str:

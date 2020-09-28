@@ -81,7 +81,7 @@ def test_activate_jobs_common_errors_called(grpc_servicer):
     error = grpc.RpcError()
     error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
 
-    zeebe_job_adapter.gateway_stub.ActivateJobs = MagicMock(side_effect=error)
+    zeebe_job_adapter._gateway_stub.ActivateJobs = MagicMock(side_effect=error)
     jobs = zeebe_job_adapter.activate_jobs(task_type=str(uuid4()), worker=str(uuid4()), timeout=randint(10, 100),
                                            request_timeout=100, max_jobs_to_activate=0, variables_to_fetch=[])
     for job in jobs:
@@ -95,7 +95,7 @@ def test_throw_error_common_errors_called(grpc_servicer):
     error = grpc.RpcError()
     error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
 
-    zeebe_job_adapter.gateway_stub.ActivateJobs = MagicMock(side_effect=error)
+    zeebe_job_adapter._gateway_stub.ActivateJobs = MagicMock(side_effect=error)
 
     zeebe_job_adapter.zeebe_job_adapter.activate_jobs(task_type=str(uuid4()), worker=str(uuid4()),
                                                       timeout=randint(10, 100),
@@ -130,7 +130,7 @@ def test_complete_job_common_errors_called(grpc_servicer):
     error = grpc.RpcError()
     error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
 
-    zeebe_job_adapter.gateway_stub.CompleteJob = MagicMock(side_effect=error)
+    zeebe_job_adapter._gateway_stub.CompleteJob = MagicMock(side_effect=error)
 
     task_type = create_random_task_and_activate(grpc_servicer)
     job = get_first_active_job(task_type)
@@ -164,7 +164,7 @@ def test_fail_job_common_errors_called(grpc_servicer):
     error = grpc.RpcError()
     error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
 
-    zeebe_job_adapter.gateway_stub.FailJob = MagicMock(side_effect=error)
+    zeebe_job_adapter._gateway_stub.FailJob = MagicMock(side_effect=error)
 
     task_type = create_random_task_and_activate(grpc_servicer)
     job = get_first_active_job(task_type)
@@ -198,7 +198,7 @@ def test_throw_error_common_errors_called(grpc_servicer):
     error = grpc.RpcError()
     error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
 
-    zeebe_job_adapter.gateway_stub.ThrowError = MagicMock(side_effect=error)
+    zeebe_job_adapter._gateway_stub.ThrowError = MagicMock(side_effect=error)
 
     task_type = create_random_task_and_activate(grpc_servicer)
     job = get_first_active_job(task_type)

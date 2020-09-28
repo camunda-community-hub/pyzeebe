@@ -59,7 +59,7 @@ def test_publish_message_common_errors_called():
     error = grpc.RpcError()
     error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
 
-    zeebe_message_adapter.gateway_stub.PublishMessage = MagicMock(side_effect=error)
+    zeebe_message_adapter._gateway_stub.PublishMessage = MagicMock(side_effect=error)
     zeebe_message_adapter.publish_message(name=str(uuid4()), variables={}, correlation_key=str(uuid4()),
                                           time_to_live_in_milliseconds=randint(0, RANDOM_RANGE))
 

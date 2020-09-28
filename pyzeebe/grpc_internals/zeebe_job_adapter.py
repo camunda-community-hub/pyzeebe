@@ -14,7 +14,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
     def activate_jobs(self, task_type: str, worker: str, timeout: int, max_jobs_to_activate: int,
                       variables_to_fetch: List[str], request_timeout: int) -> Generator[Job, None, None]:
         try:
-            for response in self.gateway_stub.ActivateJobs(
+            for response in self._gateway_stub.ActivateJobs(
                     ActivateJobsRequest(type=task_type, worker=worker, timeout=timeout,
                                         maxJobsToActivate=max_jobs_to_activate,
                                         fetchVariable=variables_to_fetch, requestTimeout=request_timeout)):
@@ -45,7 +45,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
 
     def complete_job(self, job_key: int, variables: Dict) -> CompleteJobResponse:
         try:
-            return self.gateway_stub.CompleteJob(CompleteJobRequest(jobKey=job_key, variables=json.dumps(variables)))
+            return self._gateway_stub.CompleteJob(CompleteJobRequest(jobKey=job_key, variables=json.dumps(variables)))
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
                 raise JobNotFound(job_key=job_key)
@@ -56,7 +56,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
 
     def fail_job(self, job_key: int, message: str) -> FailJobResponse:
         try:
-            return self.gateway_stub.FailJob(FailJobRequest(jobKey=job_key, errorMessage=message))
+            return self._gateway_stub.FailJob(FailJobRequest(jobKey=job_key, errorMessage=message))
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
                 raise JobNotFound(job_key=job_key)
@@ -67,7 +67,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
 
     def throw_error(self, job_key: int, message: str) -> ThrowErrorResponse:
         try:
-            return self.gateway_stub.ThrowError(
+            return self._gateway_stub.ThrowError(
                 ThrowErrorRequest(jobKey=job_key, errorMessage=message))
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):

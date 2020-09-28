@@ -33,7 +33,7 @@ def test_create_workflow_instance_common_errors_called(grpc_servicer):
     error = grpc.RpcError()
     error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
 
-    zeebe_workflow_adapter.gateway_stub.CreateWorkflowInstance = MagicMock(side_effect=error)
+    zeebe_workflow_adapter._gateway_stub.CreateWorkflowInstance = MagicMock(side_effect=error)
 
     zeebe_workflow_adapter.create_workflow_instance(bpmn_process_id=str(uuid4()), variables={},
                                                     version=randint(0, 10))
@@ -57,7 +57,7 @@ def test_create_workflow_instance_with_result_common_errors_called():
     error = grpc.RpcError()
     error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
 
-    zeebe_workflow_adapter.gateway_stub.CreateWorkflowInstanceWithResult = MagicMock(side_effect=error)
+    zeebe_workflow_adapter._gateway_stub.CreateWorkflowInstanceWithResult = MagicMock(side_effect=error)
 
     zeebe_workflow_adapter.create_workflow_instance_with_result(bpmn_process_id=str(uuid4()), variables={},
                                                                 version=randint(0, 10), timeout=0,
@@ -80,7 +80,7 @@ def test_cancel_workflow_instance_already_cancelled():
     error = grpc.RpcError()
     error._state = GRPCStatusCode(grpc.StatusCode.NOT_FOUND)
 
-    zeebe_workflow_adapter.gateway_stub.CancelWorkflowInstance = MagicMock(side_effect=error)
+    zeebe_workflow_adapter._gateway_stub.CancelWorkflowInstance = MagicMock(side_effect=error)
 
     with pytest.raises(WorkflowInstanceNotFound):
         zeebe_workflow_adapter.cancel_workflow_instance(workflow_instance_key=randint(0, RANDOM_RANGE))
@@ -91,7 +91,7 @@ def test_cancel_workflow_instance_common_errors_called():
     error = grpc.RpcError()
     error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
 
-    zeebe_workflow_adapter.gateway_stub.CancelWorkflowInstance = MagicMock(side_effect=error)
+    zeebe_workflow_adapter._gateway_stub.CancelWorkflowInstance = MagicMock(side_effect=error)
 
     zeebe_workflow_adapter.cancel_workflow_instance(workflow_instance_key=randint(0, RANDOM_RANGE))
 
@@ -105,7 +105,7 @@ def test_deploy_workflow_workflow_invalid(grpc_servicer):
         error = grpc.RpcError()
         error._state = GRPCStatusCode(grpc.StatusCode.INVALID_ARGUMENT)
 
-        zeebe_workflow_adapter.gateway_stub.DeployWorkflow = MagicMock(side_effect=error)
+        zeebe_workflow_adapter._gateway_stub.DeployWorkflow = MagicMock(side_effect=error)
 
         with pytest.raises(WorkflowInvalid):
             zeebe_workflow_adapter.deploy_workflow()
@@ -119,7 +119,7 @@ def test_deploy_workflow_common_errors_called(grpc_servicer):
         error = grpc.RpcError()
         error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
 
-        zeebe_workflow_adapter.gateway_stub.DeployWorkflow = MagicMock(side_effect=error)
+        zeebe_workflow_adapter._gateway_stub.DeployWorkflow = MagicMock(side_effect=error)
 
         zeebe_workflow_adapter.deploy_workflow()
 

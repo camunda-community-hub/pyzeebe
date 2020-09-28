@@ -12,7 +12,7 @@ from pyzeebe.grpc_internals.zeebe_pb2 import *
 class ZeebeWorkflowAdapter(ZeebeAdapterBase):
     def create_workflow_instance(self, bpmn_process_id: str, version: int, variables: Dict) -> int:
         try:
-            response = self.gateway_stub.CreateWorkflowInstance(
+            response = self._gateway_stub.CreateWorkflowInstance(
                 CreateWorkflowInstanceRequest(bpmnProcessId=bpmn_process_id, version=version,
                                               variables=json.dumps(variables)))
             return response.workflowInstanceKey
@@ -22,7 +22,7 @@ class ZeebeWorkflowAdapter(ZeebeAdapterBase):
     def create_workflow_instance_with_result(self, bpmn_process_id: str, version: int, variables: Dict,
                                              timeout: int, variables_to_fetch) -> Dict:
         try:
-            response = self.gateway_stub.CreateWorkflowInstanceWithResult(
+            response = self._gateway_stub.CreateWorkflowInstanceWithResult(
                 CreateWorkflowInstanceWithResultRequest(
                     request=CreateWorkflowInstanceRequest(bpmnProcessId=bpmn_process_id, version=version,
                                                           variables=json.dumps(variables)),
@@ -45,7 +45,7 @@ class ZeebeWorkflowAdapter(ZeebeAdapterBase):
 
     def cancel_workflow_instance(self, workflow_instance_key: int) -> None:
         try:
-            self.gateway_stub.CancelWorkflowInstance(
+            self._gateway_stub.CancelWorkflowInstance(
                 CancelWorkflowInstanceRequest(workflowInstanceKey=workflow_instance_key))
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
@@ -55,7 +55,7 @@ class ZeebeWorkflowAdapter(ZeebeAdapterBase):
 
     def deploy_workflow(self, *workflow_file_path: str) -> DeployWorkflowResponse:
         try:
-            return self.gateway_stub.DeployWorkflow(
+            return self._gateway_stub.DeployWorkflow(
                 DeployWorkflowRequest(workflows=map(self._get_workflow_request_object, workflow_file_path)))
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
