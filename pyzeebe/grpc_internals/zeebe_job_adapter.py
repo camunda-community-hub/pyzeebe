@@ -6,8 +6,9 @@ import grpc
 
 from pyzeebe.common.exceptions import JobNotFound, JobAlreadyDeactivated, ActivateJobsRequestInvalid
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
-from pyzeebe.grpc_internals.zeebe_pb2 import (ActivateJobsRequest, CompleteJobRequest, CompleteJobResponse,
-                                              FailJobRequest, FailJobResponse, ThrowErrorRequest, ThrowErrorResponse)
+from pyzeebe.grpc_internals.zeebe_pb2 import (ActivateJobsRequest, CompleteJobRequest,
+                                              CompleteJobResponse, FailJobRequest, FailJobResponse, ThrowErrorRequest,
+                                              ThrowErrorResponse)
 from pyzeebe.job.job import Job
 
 
@@ -19,8 +20,8 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
                     ActivateJobsRequest(type=task_type, worker=worker, timeout=timeout,
                                         maxJobsToActivate=max_jobs_to_activate,
                                         fetchVariable=variables_to_fetch, requestTimeout=request_timeout)):
-                for job in response.jobs:
-                    job = self._create_job_from_response(job)
+                for raw_job in response.jobs:
+                    job = self._create_job_from_raw_job(raw_job)
                     logging.debug(f"Got job: {job} from zeebe")
                     yield job
         except grpc.RpcError as rpc_error:
@@ -29,7 +30,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 
-    def _create_job_from_response(self, response) -> Job:
+    def _create_job_from_raw_job(self, response) -> Job:
         return Job(key=response.key, _type=response.type,
                    workflow_instance_key=response.workflowInstanceKey,
                    bpmn_process_id=response.bpmnProcessId,
