@@ -109,7 +109,7 @@ def test_fn_to_dict():
 
 def test_default_exception_handler():
     with patch("logging.warning") as logging_mock:
-        with patch("pyzeebe.job.job.Job.failure") as failure_mock:
+        with patch("pyzeebe.job.job.Job.set_failure_status") as failure_mock:
             failure_mock.return_value = None
             job = random_job()
             default_exception_handler(Exception(), job)

@@ -34,7 +34,6 @@ class ZeebeWorker(ZeebeTaskHandler):
                                           secure_connection=secure_connection)
         self.name = name or socket.gethostname()
         self.request_timeout = request_timeout
-        self.tasks: List[Task] = []
         self.stop_event = Event()
 
     def work(self) -> None:
