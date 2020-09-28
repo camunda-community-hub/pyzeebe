@@ -1,4 +1,5 @@
-from unittest.mock import patch
+from threading import Thread
+from unittest.mock import patch, MagicMock
 from uuid import uuid4
 
 import pytest
@@ -218,6 +219,14 @@ def test_handle_many_jobs():
             task_handler_mock.assert_called_with(job)
 
 
+def test_work_thread_start_called():
+    Thread.start = MagicMock()
+    zeebe_worker._add_task(task)
+    zeebe_worker.work()
+    zeebe_worker.stop()
+    Thread.start.assert_called_once()
+
+
 def test_stop_worker():
     zeebe_worker.work()
     zeebe_worker.stop()
@@ -300,3 +309,13 @@ def test_router_non_dict_task():
 
         single_value_mock.assert_called_with(variable_name=variable_name, fn=task_fn)
     assert len(zeebe_worker.tasks) == 1
+
+
+def test_get_jobs():
+    zeebe_worker.zeebe_adapter.activate_jobs = MagicMock()
+    zeebe_worker._get_jobs(task)
+    zeebe_worker.zeebe_adapter.activate_jobs.assert_called_with(task_type=task.type, worker=zeebe_worker.name,
+                                                                timeout=task.timeout,
+                                                                max_jobs_to_activate=task.max_jobs_to_activate,
+                                                                variables_to_fetch=task.variables_to_fetch,
+                                                                request_timeout=zeebe_worker.request_timeout)

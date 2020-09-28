@@ -119,6 +119,19 @@ def test_cancel_workflow_instance_common_errors_called():
     zeebe_workflow_adapter._common_zeebe_grpc_errors.assert_called()
 
 
+def test_deploy_workflow_workflow_invalid(grpc_servicer):
+    with patch("builtins.open") as mock_open:
+        mock_open.return_value = BytesIO()
+
+        error = grpc.RpcError()
+        error._state = GRPCStatusCode(grpc.StatusCode.INVALID_ARGUMENT)
+
+        zeebe_workflow_adapter.gateway_stub.DeployWorkflow = MagicMock(side_effect=error)
+
+        with pytest.raises(WorkflowInvalid):
+            zeebe_workflow_adapter.deploy_workflow()
+
+
 def test_deploy_workflow_common_errors_called(grpc_servicer):
     with patch("builtins.open") as mock_open:
         mock_open.return_value = BytesIO()

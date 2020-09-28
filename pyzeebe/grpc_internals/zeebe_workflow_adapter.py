@@ -54,7 +54,6 @@ class ZeebeWorkflowAdapter(ZeebeAdapterBase):
                 self._common_zeebe_grpc_errors(rpc_error)
 
     def deploy_workflow(self, *workflow_file_path: str) -> DeployWorkflowResponse:
-
         try:
             return self.gateway_stub.DeployWorkflow(
                 DeployWorkflowRequest(workflows=map(self._get_workflow_request_object, workflow_file_path)))

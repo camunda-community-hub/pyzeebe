@@ -1,4 +1,5 @@
 from random import randint
+from unittest.mock import MagicMock
 from uuid import uuid4
 
 import pytest
@@ -49,11 +50,11 @@ def test_run_workflow_with_result(grpc_servicer):
     assert isinstance(zeebe_client.run_workflow(bpmn_process_id=bpmn_process_id, variables={}, version=version), int)
 
 
-def test_deploy_workflow(grpc_servicer):
-    bpmn_process_id = str(uuid4())
-    version = randint(0, 10)
-    grpc_servicer.mock_deploy_workflow(bpmn_process_id, version, [])
-    assert bpmn_process_id in grpc_servicer.deployed_workflows.keys()
+def test_deploy_workflow():
+    zeebe_client.zeebe_adapter.deploy_workflow = MagicMock()
+    file_path = str(uuid4())
+    zeebe_client.deploy_workflow(file_path)
+    zeebe_client.zeebe_adapter.deploy_workflow.assert_called_with(file_path)
 
 
 def test_run_non_existent_workflow():
