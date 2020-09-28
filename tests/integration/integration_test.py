@@ -5,14 +5,14 @@ from uuid import uuid4
 
 import pytest
 
-from pyzeebe import ZeebeWorker, ZeebeClient, exceptions, Job, JobStatusController
+from pyzeebe import ZeebeWorker, ZeebeClient, exceptions, Job
 
 zeebe_client: ZeebeClient
 zeebe_worker = ZeebeWorker()
 
 
-def exception_handler(exc: Exception, job: Job, controller: JobStatusController) -> None:
-    controller.error(f"Failed to run task {job.type}. Reason: {exc}")
+def exception_handler(exc: Exception, job: Job) -> None:
+    job.set_error_status(f"Failed to run task {job.type}. Reason: {exc}")
 
 
 @zeebe_worker.task(task_type="test", exception_handler=exception_handler)

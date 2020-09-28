@@ -5,15 +5,14 @@ from typing import Tuple, List, Callable
 from pyzeebe.common.exceptions import TaskNotFound, NoVariableNameGiven
 from pyzeebe.decorators.zeebe_decorator_base import ZeebeDecoratorBase
 from pyzeebe.job.job import Job
-from pyzeebe.job.job_status_controller import JobStatusController
 from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_decorator import TaskDecorator
 
 
-def default_exception_handler(e: Exception, job: Job, controller: JobStatusController) -> None:
+def default_exception_handler(e: Exception, job: Job) -> None:
     logging.warning(f"Task type: {job.type} - failed job {job}. Error: {e}.")
-    controller.failure(f"Failed job. Error: {e}")
+    job.set_failure_status(f"Failed job. Error: {e}")
 
 
 class ZeebeTaskHandler(ZeebeDecoratorBase):

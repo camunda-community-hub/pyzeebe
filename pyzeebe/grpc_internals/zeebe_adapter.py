@@ -84,8 +84,7 @@ class ZeebeAdapter(object):
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 
-    @staticmethod
-    def _create_job_from_response(response) -> Job:
+    def _create_job_from_response(self, response) -> Job:
         return Job(key=response.key, _type=response.type,
                    workflow_instance_key=response.workflowInstanceKey,
                    bpmn_process_id=response.bpmnProcessId,
@@ -97,7 +96,8 @@ class ZeebeAdapter(object):
                    worker=response.worker,
                    retries=response.retries,
                    deadline=response.deadline,
-                   variables=json.loads(response.variables))
+                   variables=json.loads(response.variables),
+                   zeebe_adapter=self)
 
     def complete_job(self, job_key: int, variables: Dict) -> CompleteJobResponse:
         try:

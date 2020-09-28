@@ -31,15 +31,15 @@ To install:
 The `ZeebeWorker` class uses threading to get and run jobs.
 
 ```python
-from pyzeebe import ZeebeWorker, JobStatusController, Job
+from pyzeebe import ZeebeWorker, Job
 
 
-def on_error(exception: Exception, job: Job, task_status_controller: JobStatusController):
+def on_error(exception: Exception, job: Job):
     """
     on_error will be called when the task fails
     """ 
     print(exception)
-    task_status_controller.error(f"Failed to handle job {job}. Error: {str(exception)}")
+    job.set_error_status(f"Failed to handle job {job}. Error: {str(exception)}")
 
 
 

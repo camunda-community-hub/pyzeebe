@@ -6,7 +6,6 @@ from typing import List, Callable, Generator, Tuple, Dict
 from pyzeebe.credentials.base_credentials import BaseCredentials
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job
-from pyzeebe.job.job_status_controller import JobStatusController
 from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_decorator import TaskDecorator
@@ -123,7 +122,7 @@ class ZeebeWorker(ZeebeTaskHandler):
             task_succeeded = True
         except Exception as e:
             logging.debug(f"Failed job: {job}. Error: {e}.")
-            task.exception_handler(e, job, JobStatusController(job, self.zeebe_adapter))
+            task.exception_handler(e, job)
         finally:
             return job, task_succeeded
 
@@ -161,7 +160,7 @@ class ZeebeWorker(ZeebeTaskHandler):
             logging.warning(f"Failed to run decorator {decorator}. Error: {e}")
             return job
 
-    def include_router(self, router: ZeebeTaskRouter):
+    def include_router(self, router: ZeebeTaskRouter) -> None:
         """
         Adds all router's tasks to the worker.
         Decorator order:

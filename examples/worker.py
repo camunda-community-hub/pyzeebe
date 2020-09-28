@@ -1,6 +1,6 @@
 from typing import Dict
 
-from pyzeebe import Job, JobStatusController, ZeebeWorker, CamundaCloudCredentials
+from pyzeebe import Job, ZeebeWorker, CamundaCloudCredentials
 
 
 # Use decorators to add functionality before and after tasks. These will not fail the task
@@ -38,10 +38,10 @@ def add_one(x) -> int:
 
 
 # Define a custom exception_handler for a task like so:
-def example_exception_handler(exception: Exception, job: Job, controller: JobStatusController) -> None:
+def example_exception_handler(exception: Exception, job: Job) -> None:
     print(exception)
     print(job)
-    controller.failure(f"Failed to run task {job.type}. Reason: {exception}")
+    job.set_failure_status(f"Failed to run task {job.type}. Reason: {exception}")
 
 
 @worker.task(task_type="exception_task", exception_handler=example_exception_handler)
