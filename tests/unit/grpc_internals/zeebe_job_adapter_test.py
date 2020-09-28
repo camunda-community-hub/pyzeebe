@@ -2,16 +2,12 @@ from random import randint
 from unittest.mock import MagicMock
 from uuid import uuid4
 
-import grpc
-import pytest
-
 from pyzeebe.common.exceptions import *
 from pyzeebe.grpc_internals.zeebe_job_adapter import ZeebeJobAdapter
 from pyzeebe.grpc_internals.zeebe_pb2 import *
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
-from tests.unit.utils.gateway_mock import GatewayMock
-from tests.unit.utils.grpc_utils import GRPCStatusCode
+from tests.unit.utils.grpc_utils import *
 from tests.unit.utils.random_utils import RANDOM_RANGE, random_job
 
 zeebe_job_adapter: ZeebeJobAdapter
@@ -31,23 +27,6 @@ def create_random_task_and_activate(grpc_servicer, task_type: str = None) -> str
 def get_first_active_job(task_type) -> Job:
     return next(zeebe_job_adapter.activate_jobs(task_type=task_type, max_jobs_to_activate=1, request_timeout=10,
                                                 timeout=100, variables_to_fetch=[], worker=str(uuid4())))
-
-
-@pytest.fixture(scope="module")
-def grpc_add_to_server():
-    from pyzeebe.grpc_internals.zeebe_pb2_grpc import add_GatewayServicer_to_server
-    return add_GatewayServicer_to_server
-
-
-@pytest.fixture(scope="module")
-def grpc_servicer():
-    return GatewayMock()
-
-
-@pytest.fixture(scope="module")
-def grpc_stub_cls(grpc_channel):
-    from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayStub
-    return GatewayStub
 
 
 @pytest.fixture(autouse=True)

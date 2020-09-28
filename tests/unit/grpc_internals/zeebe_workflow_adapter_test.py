@@ -3,33 +3,12 @@ from random import randint
 from unittest.mock import patch, MagicMock
 from uuid import uuid4
 
-import grpc
-import pytest
-
 from pyzeebe.common.exceptions import *
 from pyzeebe.grpc_internals.zeebe_workflow_adapter import ZeebeWorkflowAdapter
-from tests.unit.utils.gateway_mock import GatewayMock
-from tests.unit.utils.grpc_utils import GRPCStatusCode
+from tests.unit.utils.grpc_utils import *
 from tests.unit.utils.random_utils import RANDOM_RANGE
 
 zeebe_workflow_adapter: ZeebeWorkflowAdapter
-
-
-@pytest.fixture(scope="module")
-def grpc_add_to_server():
-    from pyzeebe.grpc_internals.zeebe_pb2_grpc import add_GatewayServicer_to_server
-    return add_GatewayServicer_to_server
-
-
-@pytest.fixture(scope="module")
-def grpc_servicer():
-    return GatewayMock()
-
-
-@pytest.fixture(scope="module")
-def grpc_stub_cls(grpc_channel):
-    from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayStub
-    return GatewayStub
 
 
 @pytest.fixture(autouse=True)

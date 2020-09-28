@@ -2,13 +2,11 @@ from threading import Thread
 from unittest.mock import patch, MagicMock
 from uuid import uuid4
 
-import pytest
-
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_router import ZeebeTaskRouter
 from pyzeebe.worker.worker import ZeebeWorker
-from tests.unit.utils.gateway_mock import GatewayMock
+from tests.unit.utils.grpc_utils import *
 from tests.unit.utils.random_utils import random_job
 
 zeebe_worker: ZeebeWorker
@@ -17,23 +15,6 @@ task: Task
 
 def decorator(job: Job) -> Job:
     return job
-
-
-@pytest.fixture(scope="module")
-def grpc_add_to_server():
-    from pyzeebe.grpc_internals.zeebe_pb2_grpc import add_GatewayServicer_to_server
-    return add_GatewayServicer_to_server
-
-
-@pytest.fixture(scope="module")
-def grpc_servicer():
-    return GatewayMock()
-
-
-@pytest.fixture(scope="module")
-def grpc_stub_cls(grpc_channel):
-    from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayStub
-    return GatewayStub
 
 
 @pytest.fixture(autouse=True)
