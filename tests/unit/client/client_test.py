@@ -6,7 +6,6 @@ import pytest
 from pyzeebe.client.client import ZeebeClient
 from pyzeebe.common.exceptions import WorkflowNotFound
 from tests.unit.utils.gateway_mock import GatewayMock
-from tests.unit.utils.random_utils import RANDOM_RANGE
 
 zeebe_client: ZeebeClient
 
@@ -67,8 +66,12 @@ def test_run_non_existent_workflow_with_result():
         zeebe_client.run_workflow_with_result(bpmn_process_id=str(uuid4()))
 
 
-def test_cancel_workflow_instance():
-    assert isinstance(zeebe_client.cancel_workflow_instance(workflow_instance_key=randint(0, RANDOM_RANGE)), int)
+def test_cancel_workflow_instance(grpc_servicer):
+    bpmn_process_id = str(uuid4())
+    version = randint(0, 10)
+    grpc_servicer.mock_deploy_workflow(bpmn_process_id, version, [])
+    workflow_instance_key = zeebe_client.run_workflow(bpmn_process_id=bpmn_process_id, variables={}, version=version)
+    assert isinstance(zeebe_client.cancel_workflow_instance(workflow_instance_key=workflow_instance_key), int)
 
 
 def test_publish_message():

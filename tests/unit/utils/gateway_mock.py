@@ -24,7 +24,9 @@ class GatewayMock(GatewayServicer):
 
     def __init__(self):
         self.deployed_workflows = {}
+        self.active_workflows = {}
         self.active_jobs: Dict[int, Job] = {}
+        self.messages = {}
 
     def ActivateJobs(self, request, context):
         if not request.type:
@@ -99,16 +101,23 @@ class GatewayMock(GatewayServicer):
             for task in self.deployed_workflows[request.bpmnProcessId]["tasks"]:
                 job = random_job(task)
                 self.active_jobs[job.key] = job
+
+            workflow_instance_key = randint(0, RANDOM_RANGE)
+            self.active_workflows[workflow_instance_key] = request.bpmnProcessId
             return CreateWorkflowInstanceResponse(workflowKey=randint(0, RANDOM_RANGE),
                                                   bpmnProcessId=request.bpmnProcessId,
-                                                  version=request.version, workflowInstanceKey=randint(0, RANDOM_RANGE))
+                                                  version=request.version, workflowInstanceKey=workflow_instance_key)
         else:
             context.set_code(grpc.StatusCode.NOT_FOUND)
             return CreateWorkflowInstanceResponse()
 
     def CreateWorkflowInstanceWithResult(self, request, context):
         if request.request.bpmnProcessId in self.deployed_workflows.keys():
+            workflow_instance_key = randint(0, RANDOM_RANGE)
+            self.active_workflows[workflow_instance_key] = request.request.bpmnProcessId
+
             return CreateWorkflowInstanceWithResultResponse(workflowKey=request.request.workflowKey,
+                                                            workflowInstanceKey=workflow_instance_key,
                                                             bpmnProcessId=request.request.bpmnProcessId,
                                                             version=randint(0, 10), variables=request.request.variables)
         else:
@@ -116,7 +125,12 @@ class GatewayMock(GatewayServicer):
             return CreateWorkflowInstanceWithResultResponse()
 
     def CancelWorkflowInstance(self, request, context):
-        return CancelWorkflowInstanceResponse()
+        if request.workflowInstanceKey in self.active_workflows.keys():
+            del self.active_workflows[request.workflowInstanceKey]
+            return CancelWorkflowInstanceResponse()
+        else:
+            context.set_code(grpc.StatusCode.NOT_FOUND)
+            return CancelWorkflowInstanceResponse()
 
     def DeployWorkflow(self, request, context):
         workflows = []
@@ -128,6 +142,10 @@ class GatewayMock(GatewayServicer):
         return DeployWorkflowResponse(key=randint(0, RANDOM_RANGE), workflows=workflows)
 
     def PublishMessage(self, request, context):
+        if request.messageId in self.messages.keys():
+            context.set_code(grpc.StatusCode.ALREADY_EXISTS)
+        else:
+            self.messages[request.messageId] = request.correlationKey
         return PublishMessageResponse()
 
     def mock_deploy_workflow(self, bpmn_process_id: str, version: int, tasks: List[Task]):
