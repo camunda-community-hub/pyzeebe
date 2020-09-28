@@ -38,7 +38,6 @@ def run_around_tests(grpc_channel):
 
 
 def test_activate_jobs(grpc_servicer):
-    # TODO: Check why this takes longer than normal
     task_type = create_random_task_and_activate(grpc_servicer)
     active_jobs_count = randint(4, 100)
     counter = 0
