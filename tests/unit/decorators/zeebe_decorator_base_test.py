@@ -1,5 +1,5 @@
 from pyzeebe.decorators.zeebe_decorator_base import ZeebeDecoratorBase
-from tests.unit.utils.random_utils import random_task_context
+from tests.unit.utils.random_utils import random_job
 
 
 def test_add_before():
@@ -21,10 +21,10 @@ def test_add_before_plus_constructor():
     def function_decorator(x):
         return x
 
-    context = random_task_context()
+    job = random_job()
 
-    assert constructor_decorator(context) == context
-    assert function_decorator(context) == context
+    assert constructor_decorator(job) == job
+    assert function_decorator(job) == job
 
     base_decorator = ZeebeDecoratorBase(before=[constructor_decorator])
     base_decorator.before(function_decorator)
@@ -39,10 +39,10 @@ def test_add_after_plus_constructor():
     def function_decorator(x):
         return x
 
-    context = random_task_context()
+    job = random_job()
 
-    assert constructor_decorator(context) == context
-    assert function_decorator(context) == context
+    assert constructor_decorator(job) == job
+    assert function_decorator(job) == job
 
     base_decorator = ZeebeDecoratorBase(after=[constructor_decorator])
     base_decorator.after(function_decorator)

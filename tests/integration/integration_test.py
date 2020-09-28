@@ -1,13 +1,21 @@
 import os
-from threading import Thread, Event
+from threading import Thread
 from typing import Dict
 from uuid import uuid4
 
 import pytest
 
-from pyzeebe import Task, ZeebeWorker, ZeebeClient, exceptions, TaskContext, TaskStatusController
+from pyzeebe import ZeebeWorker, ZeebeClient, exceptions, Job
+
+zeebe_client: ZeebeClient
+zeebe_worker = ZeebeWorker()
 
 
+def exception_handler(exc: Exception, job: Job) -> None:
+    job.set_error_status(f"Failed to run task {job.type}. Reason: {exc}")
+
+
+@zeebe_worker.task(task_type="test", exception_handler=exception_handler)
 def task_handler(should_throw: bool, input: str) -> Dict:
     if should_throw:
         raise Exception("Error thrown")
@@ -15,27 +23,11 @@ def task_handler(should_throw: bool, input: str) -> Dict:
         return {"output": input + str(uuid4())}
 
 
-def exception_handler(exc: Exception, context: TaskContext, controller: TaskStatusController) -> None:
-    controller.error(f"Failed to run task {context.type}. Reason: {exc}")
-
-
-task = Task("test", task_handler, exception_handler)
-
-zeebe_client: ZeebeClient
-
-
-def run_worker(stop_event):
-    zeebe_worker = ZeebeWorker()
-    zeebe_worker.add_task(task)
-    zeebe_worker.work(stop_event)
-
-
 @pytest.fixture(scope="module", autouse=True)
 def setup():
-    global zeebe_client
+    global zeebe_client, task_handler
 
-    stop_event = Event()
-    t = Thread(target=run_worker, args=(stop_event,))
+    t = Thread(target=zeebe_worker.work)
     t.start()
 
     zeebe_client = ZeebeClient()
@@ -46,7 +38,8 @@ def setup():
         zeebe_client.deploy_workflow("test.bpmn")
 
     yield zeebe_client
-    stop_event.set()
+    zeebe_worker.stop()
+    t.join()
 
 
 def test_run_workflow():

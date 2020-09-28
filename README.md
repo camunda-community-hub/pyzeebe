@@ -31,34 +31,32 @@ To install:
 The `ZeebeWorker` class uses threading to get and run jobs.
 
 ```python
-from pyzeebe import ZeebeWorker, Task, TaskStatusController, TaskContext
+from pyzeebe import ZeebeWorker, Job
 
-def example_task(input: str):
-    return {"output": f"Hello world, {input}!"}
 
-def on_error(exception: Exception, context: TaskContext, task_status_controller: TaskStatusController):
+def on_error(exception: Exception, job: Job):
     """
     on_error will be called when the task fails
     """ 
     print(exception)
-    task_status_controller.error(f"Failed to handle task {context.type}. Error: {str(exception)}")
+    job.set_error_status(f"Failed to handle job {job}. Error: {str(exception)}")
 
-task = Task(type="example", task_handler=example_task, exception_handler=on_error) # Create task object from example_task
+
 
 worker = ZeebeWorker(hostname="<zeebe_host>", port=26500) # Create a zeebe worker
-worker.add_task(task) # Add task to zeebe worker
+
+@worker.task(task_type="example", exception_handler=on_error)
+def example_task(input: str):
+    return {"output": f"Hello world, {input}!"}
+
 
 worker.work() # Now every time that a task with type example is called example_task will be called
 ```
 
 Stop a worker:
 ```python
-from threading import Event
-
-
-stop_event = Event() 
-zeebe_worker.work(stop_event=stop_event) # Worker will begin working
-stop_event.set() # Stops worker and all running jobs
+zeebe_worker.work() # Worker will begin working
+zeebe_worker.stop() # Stops worker after all running jobs have been completed 
 ```
 
 ### Client

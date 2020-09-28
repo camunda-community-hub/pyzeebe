@@ -1,29 +1,13 @@
 from typing import Dict
 
-from pyzeebe import Task, TaskContext, TaskStatusController, ZeebeWorker, CamundaCloudCredentials
-
-
-def example_task() -> Dict:
-    return {"output": f"Hello world, test!"}
-
-
-def example_exception_handler(exc: Exception, context: TaskContext, controller: TaskStatusController) -> None:
-    print(exc)
-    print(context)
-    controller.error(f"Failed to run task {context.type}. Reason: {exc}")
-
-
-task = Task(task_type="test", task_handler=example_task, exception_handler=example_exception_handler)
+from pyzeebe import Job, ZeebeWorker, CamundaCloudCredentials
 
 
 # Use decorators to add functionality before and after tasks. These will not fail the task
-def example_logging_task_decorator(task_context: TaskContext) -> TaskContext:
-    print(task_context)
-    return task_context
+def example_logging_task_decorator(job: Job) -> Job:
+    print(job)
+    return job
 
-
-task.before(example_logging_task_decorator)
-task.after(example_logging_task_decorator)
 
 # Will use environment variable ZEEBE_ADDRESS or localhost:26500 and NOT use TLS
 worker = ZeebeWorker()
@@ -36,12 +20,44 @@ camunda_cloud_credentials = CamundaCloudCredentials(client_id="<my_client_id>", 
                                                     cluster_id="<my_cluster_id>")
 worker = ZeebeWorker(credentials=camunda_cloud_credentials)
 
-# We can also use decorators on workers. These decorators will happen before all tasks
+# Decorators allow us to add functionality before and after each job
 worker.before(example_logging_task_decorator)
 worker.after(example_logging_task_decorator)
 
-# Add task to worker
-worker.add_task(task)
+
+# Create a task like this:
+@worker.task(task_type="test")
+def example_task() -> Dict:
+    return {"output": f"Hello world, test!"}
+
+
+# Create a task that will return a single value (not a dict) like this:
+@worker.task(task_type="add_one", single_value=True, variable_name="y")  # This task will return to zeebe: { y: x + 1 }
+def add_one(x) -> int:
+    return x + 1
+
+
+# Define a custom exception_handler for a task like so:
+def example_exception_handler(exception: Exception, job: Job) -> None:
+    print(exception)
+    print(job)
+    job.set_failure_status(f"Failed to run task {job.type}. Reason: {exception}")
+
+
+@worker.task(task_type="exception_task", exception_handler=example_exception_handler)
+def exception_task():
+    raise Exception("Oh no!")
+
+
+# We can also add decorators to tasks.
+# The order of the decorators will be as follows:
+# Worker decorators -> Task decorators -> Task -> Task decorators -> Worker decorators
+# Here is how:
+@worker.task(task_type="decorator_task", before=[example_logging_task_decorator],
+             after=[example_logging_task_decorator])
+def decorator_task() -> Dict:
+    return {"output": "Hello world, test!"}
+
 
 if __name__ == "__main__":
     worker.work()

@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class TaskStatus(Enum):
+class JobStatus(Enum):
     Running = "Running"
     Completed = "Completed"
     Failed = "Failed"
