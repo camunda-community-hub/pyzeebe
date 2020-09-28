@@ -31,7 +31,7 @@ class ZeebeClient(object):
         self.zeebe_adapter.deploy_workflow(*workflow_file_path)
 
     def publish_message(self, name: str, correlation_key: str, variables: Dict = None,
-                        time_to_live_in_milliseconds: int = 60000) -> None:
+                        time_to_live_in_milliseconds: int = 60000, message_id: str = None) -> None:
         self.zeebe_adapter.publish_message(name=name, correlation_key=correlation_key,
                                            time_to_live_in_milliseconds=time_to_live_in_milliseconds,
-                                           variables=variables or {})
+                                           variables=variables or {}, message_id=message_id)
