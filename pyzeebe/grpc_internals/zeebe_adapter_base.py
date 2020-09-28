@@ -3,7 +3,7 @@ import os
 
 import grpc
 
-from pyzeebe.common.exceptions import *
+from pyzeebe.common.exceptions import ZeebeInternalError, ZeebeBackPressure, ZeebeGatewayUnavailable
 from pyzeebe.credentials.base_credentials import BaseCredentials
 from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayStub
 
