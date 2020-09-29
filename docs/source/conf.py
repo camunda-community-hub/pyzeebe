@@ -54,3 +54,5 @@ html_theme = 'alabaster'
 html_static_path = ['_static']
 
 version = "2.1.0"
+
+master_doc = 'index'
