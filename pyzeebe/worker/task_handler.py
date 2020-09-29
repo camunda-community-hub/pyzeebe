@@ -28,7 +28,7 @@ class ZeebeTaskHandler(ZeebeDecoratorBase):
     def task(self, task_type: str, exception_handler: ExceptionHandler = default_exception_handler,
              variables_to_fetch: List[str] = None, timeout: int = 10000, max_jobs_to_activate: int = 32,
              before: List[TaskDecorator] = None, after: List[TaskDecorator] = None, single_value: bool = False,
-             variable_name: str = None, ):
+             variable_name: str = None):
         """Decorator to create a task
         single_value (bool): If the function returns a single value (int, string, list) and not a dictionary set this to
                              True.
