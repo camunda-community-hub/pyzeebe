@@ -7,9 +7,8 @@ import grpc
 from pyzeebe.exceptions import InvalidJSON, WorkflowNotFound, WorkflowInstanceNotFound, WorkflowHasNoStartEvent, \
     WorkflowInvalid
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
-from pyzeebe.grpc_internals.zeebe_pb2 import (CreateWorkflowInstanceRequest, CreateWorkflowInstanceWithResultRequest,
-                                              CancelWorkflowInstanceRequest, WorkflowRequestObject,
-                                              DeployWorkflowRequest, DeployWorkflowResponse)
+from pyzeebe.grpc_internals.zeebe_pb2 import CreateWorkflowInstanceRequest, CreateWorkflowInstanceWithResultRequest, \
+    CancelWorkflowInstanceRequest, WorkflowRequestObject, DeployWorkflowRequest, DeployWorkflowResponse
 
 
 class ZeebeWorkflowAdapter(ZeebeAdapterBase):

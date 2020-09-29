@@ -5,8 +5,8 @@ from uuid import uuid4
 
 import pytest
 
-import pyzeebe.exceptions.workflow_exceptions
 from pyzeebe import ZeebeWorker, ZeebeClient, Job
+from pyzeebe.exceptions import WorkflowNotFound
 
 zeebe_client: ZeebeClient
 zeebe_worker = ZeebeWorker()
@@ -49,7 +49,7 @@ def test_run_workflow():
 
 
 def test_non_existent_workflow():
-    with pytest.raises(pyzeebe.exceptions.workflow_exceptions.WorkflowNotFound):
+    with pytest.raises(WorkflowNotFound):
         zeebe_client.run_workflow(str(uuid4()))
 
 
