@@ -2,7 +2,7 @@ from random import randint
 from unittest.mock import MagicMock
 from uuid import uuid4
 
-from pyzeebe.common.exceptions import MessageAlreadyExists
+from pyzeebe.exceptions import MessageAlreadyExists
 from pyzeebe.grpc_internals.zeebe_message_adapter import ZeebeMessageAdapter
 from pyzeebe.grpc_internals.zeebe_pb2 import *
 from tests.unit.utils.grpc_utils import *

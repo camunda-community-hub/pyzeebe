@@ -73,23 +73,35 @@ class ZeebeWorker(ZeebeTaskHandler):
                                                 request_timeout=self.request_timeout)
 
     def _dict_task(self, task_type: str, exception_handler: ExceptionHandler = default_exception_handler,
-                   before: List[TaskDecorator] = None, after: List[TaskDecorator] = None):
+                   timeout: int = 10000, max_jobs_to_activate: int = 32, before: List[TaskDecorator] = None,
+                   after: List[TaskDecorator] = None, variables_to_fetch: List[str] = None):
         def wrapper(fn: Callable[..., Dict]):
-            task = Task(task_type=task_type, task_handler=fn, exception_handler=exception_handler, before=before,
-                        after=after)
+            nonlocal variables_to_fetch
+            if not variables_to_fetch:
+                variables_to_fetch = self._get_parameters_from_function(fn)
+
+            task = Task(task_type=task_type, task_handler=fn, exception_handler=exception_handler, timeout=timeout,
+                        max_jobs_to_activate=max_jobs_to_activate, before=before, after=after,
+                        variables_to_fetch=variables_to_fetch)
             self._add_task(task)
             return fn
 
         return wrapper
 
     def _non_dict_task(self, task_type: str, variable_name: str,
-                       exception_handler: ExceptionHandler = default_exception_handler,
-                       before: List[TaskDecorator] = None, after: List[TaskDecorator] = None):
+                       exception_handler: ExceptionHandler = default_exception_handler, timeout: int = 10000,
+                       max_jobs_to_activate: int = 32, before: List[TaskDecorator] = None,
+                       after: List[TaskDecorator] = None, variables_to_fetch: List[str] = None):
         def wrapper(fn: Callable[..., Dict]):
+            nonlocal variables_to_fetch
+            if not variables_to_fetch:
+                variables_to_fetch = self._get_parameters_from_function(fn)
+
             dict_fn = self._single_value_function_to_dict(variable_name=variable_name, fn=fn)
 
-            task = Task(task_type=task_type, task_handler=dict_fn, exception_handler=exception_handler, before=before,
-                        after=after)
+            task = Task(task_type=task_type, task_handler=dict_fn, exception_handler=exception_handler, timeout=timeout,
+                        max_jobs_to_activate=max_jobs_to_activate, before=before, after=after,
+                        variables_to_fetch=variables_to_fetch)
 
             self._add_task(task)
             return fn
@@ -114,7 +126,8 @@ class ZeebeWorker(ZeebeTaskHandler):
 
         return task_handler
 
-    def _run_task_inner_function(self, task: Task, job: Job) -> Tuple[Job, bool]:
+    @staticmethod
+    def _run_task_inner_function(task: Task, job: Job) -> Tuple[Job, bool]:
         task_succeeded = False
         try:
             job.variables = task.inner_function(**job.variables)

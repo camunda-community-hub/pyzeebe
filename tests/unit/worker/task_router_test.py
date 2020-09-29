@@ -1,3 +1,4 @@
+from random import randint
 from unittest.mock import patch
 from uuid import uuid4
 
@@ -20,6 +21,31 @@ def run_around_tests():
     zeebe_task_router = ZeebeTaskRouter()
     yield
     zeebe_task_router = ZeebeTaskRouter()
+
+
+def test_add_task_through_decorator():
+    task_type = str(uuid4())
+    timeout = randint(0, 10000)
+    max_jobs_to_activate = randint(0, 1000)
+
+    @zeebe_task_router.task(task_type=task_type, timeout=timeout, max_jobs_to_activate=max_jobs_to_activate)
+    def example_test_task(x):
+        return {"x": x}
+
+    assert len(zeebe_task_router.tasks) == 1
+
+    variable = str(uuid4())
+    assert example_test_task(variable) == {"x": variable}
+
+    global task
+    task = zeebe_task_router.get_task(task_type)
+    assert task is not None
+
+    variable = str(uuid4())
+    assert task.inner_function(variable) == {"x": variable}
+    assert task.variables_to_fetch == ["x"]
+    assert task.timeout == timeout
+    assert task.max_jobs_to_activate == max_jobs_to_activate
 
 
 def test_router_before_decorator():
