@@ -1,27 +1,33 @@
-# README
+[![Coverage Status](https://coveralls.io/repos/github/JonatanMartens/pyzeebe/badge.svg?branch=master)](https://coveralls.io/github/JonatanMartens/pyzeebe?branch=master)
+![Test pyzeebe](https://github.com/JonatanMartens/pyzeebe/workflows/Test%20pyzeebe/badge.svg)
+![Integration test pyzeebe](https://github.com/JonatanMartens/pyzeebe/workflows/Integration%20test%20pyzeebe/badge.svg)
+![GitHub issues](https://img.shields.io/github/issues-raw/JonatanMartens/pyzeebe)
+![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/JonatanMartens/pyzeebe)
+![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed-raw/JonatanMartens/pyzeebe)
+![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/JonatanMartens/pyzeebe)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyzeebe)
+![PyPI](https://img.shields.io/pypi/v/pyzeebe)
 
-[![Coverage Status](https://coveralls.io/repos/github/JonatanMartens/pyzeebe/badge.svg?branch=master)](https://coveralls.io/github/JonatanMartens/pyzeebe?branch=master) ![Test pyzeebe](https://github.com/JonatanMartens/pyzeebe/workflows/Test%20pyzeebe/badge.svg) ![Integration test pyzeebe](https://github.com/JonatanMartens/pyzeebe/workflows/Integration%20test%20pyzeebe/badge.svg) ![GitHub issues](https://img.shields.io/github/issues-raw/JonatanMartens/pyzeebe) ![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/JonatanMartens/pyzeebe) ![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed-raw/JonatanMartens/pyzeebe) ![GitHub tag \(latest by date\)](https://img.shields.io/github/v/tag/JonatanMartens/pyzeebe) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyzeebe) ![PyPI](https://img.shields.io/pypi/v/pyzeebe)
 
-## Pyzeebe
 
+# Pyzeebe
 pyzeebe is a python grpc client for Zeebe.
 
 Zeebe version support:
 
 | Pyzeebe version | Tested Zeebe versions |
-| :---: | :--- |
-| 2.x.x | 0.23, 0.24 |
-| 1.x.x | 0.23, 0.24 |
+|:---------------:|----------------|
+| 2.x.x           | 0.23, 0.24         |
+| 1.x.x           | 0.23, 0.24         |
 
-### Getting Started
-
+## Getting Started
 To install:
 
 `pip install pyzeebe`
 
-### Usage
+## Usage
 
-#### Worker
+### Worker
 
 The `ZeebeWorker` class uses threading to get and run jobs.
 
@@ -49,13 +55,12 @@ worker.work() # Now every time that a task with type example is called example_t
 ```
 
 Stop a worker:
-
 ```python
 zeebe_worker.work() # Worker will begin working
-zeebe_worker.stop() # Stops worker after all running jobs have been completed
+zeebe_worker.stop() # Stops worker after all running jobs have been completed 
 ```
 
-#### Client
+### Client
 
 ```python
 from pyzeebe import ZeebeClient
@@ -78,25 +83,22 @@ zeebe_client.cancel_workflow_instance(workflow_instance_key=12345)
 
 # Publish message
 zeebe_client.publish_message(name="message_name", correlation_key="some_id")
+
 ```
 
-### Tests
-
+## Tests
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install pyzeebe
-
+ 
 `pytest tests/unit`
 
-### Contributing
-
+## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 
-### Versioning
 
-We use [SemVer](https://github.com/JonatanMartens/pyzeebe/tree/4202906527cd989ac80ba738dbb81f20ebf58ff0/semver.org) for versioning. For the versions available, see the tags on this repository.
+## Versioning
+We use [SemVer](semver.org) for versioning. For the versions available, see the tags on this repository.
 
-### License
-
-We use the MIT license, see [LICENSE.md](license.md) for details
-
+## License
+We use the MIT license, see [LICENSE.md](LICENSE.md) for details
