@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import pytest
 
-from pyzeebe.common.exceptions import NoZeebeAdapter
+from pyzeebe.exceptions import NoZeebeAdapter
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job
 from tests.unit.utils.random_utils import random_job

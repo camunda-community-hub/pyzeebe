@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 from uuid import uuid4
 
 from pyzeebe.client.client import ZeebeClient
-from pyzeebe.common.exceptions import WorkflowNotFound
+from pyzeebe.exceptions import WorkflowNotFound
 from tests.unit.utils.grpc_utils import *
 
 zeebe_client: ZeebeClient

@@ -1,6 +1,6 @@
 from typing import Dict
 
-from pyzeebe.common.exceptions import NoZeebeAdapter
+from pyzeebe.exceptions import NoZeebeAdapter
 from pyzeebe.job.job_status import JobStatus
 
 

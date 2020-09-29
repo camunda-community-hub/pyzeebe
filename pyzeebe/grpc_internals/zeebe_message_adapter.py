@@ -3,7 +3,7 @@ from typing import Dict
 
 import grpc
 
-from pyzeebe.common.exceptions import MessageAlreadyExists
+from pyzeebe.exceptions import MessageAlreadyExists
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 from pyzeebe.grpc_internals.zeebe_pb2 import PublishMessageRequest, PublishMessageResponse
 
