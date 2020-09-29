@@ -78,7 +78,7 @@ class ZeebeWorker(ZeebeTaskHandler):
         def wrapper(fn: Callable[..., Dict]):
             nonlocal variables_to_fetch
             if not variables_to_fetch:
-                variables_to_fetch = self.get_variables_to_fetch_from_function(fn)
+                variables_to_fetch = self._get_parameters_from_function(fn)
 
             task = Task(task_type=task_type, task_handler=fn, exception_handler=exception_handler, timeout=timeout,
                         max_jobs_to_activate=max_jobs_to_activate, before=before, after=after,
@@ -95,7 +95,7 @@ class ZeebeWorker(ZeebeTaskHandler):
         def wrapper(fn: Callable[..., Dict]):
             nonlocal variables_to_fetch
             if not variables_to_fetch:
-                variables_to_fetch = self.get_variables_to_fetch_from_function(fn)
+                variables_to_fetch = self._get_parameters_from_function(fn)
 
             dict_fn = self._single_value_function_to_dict(variable_name=variable_name, fn=fn)
 

@@ -69,8 +69,14 @@ class ZeebeTaskHandler(ZeebeDecoratorBase):
         return inner_fn
 
     @staticmethod
-    def get_variables_to_fetch_from_function(fn: Callable) -> List[str]:
-        return list(fn.__code__.co_varnames)
+    def _get_parameters_from_function(fn: Callable) -> List[str]:
+        parameters = fn.__code__.co_varnames
+        if "args" in parameters:
+            return []
+        elif "kwargs" in parameters:
+            return []
+        else:
+            return list(parameters)
 
     def remove_task(self, task_type: str) -> Task:
         task_index = self._get_task_index(task_type)

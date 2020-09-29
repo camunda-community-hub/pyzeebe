@@ -116,3 +116,65 @@ def test_default_exception_handler():
 
             failure_mock.assert_called()
         logging_mock.assert_called()
+
+
+def test_get_parameters_from_function_no_parameters():
+    def no_parameters():
+        pass
+
+    assert zeebe_task_handler._get_parameters_from_function(no_parameters) == []
+
+
+def test_get_parameters_from_function_one_positional():
+    def one_pos_func(x):
+        pass
+
+    assert zeebe_task_handler._get_parameters_from_function(one_pos_func) == ["x"]
+
+
+def test_get_parameters_from_function_multiple_positional():
+    def mul_pos_func(x, y, z):
+        pass
+
+    assert zeebe_task_handler._get_parameters_from_function(mul_pos_func) == ["x", "y", "z"]
+
+
+def test_get_parameters_from_function_one_keyword():
+    def one_key_func(x=0):
+        pass
+
+    assert zeebe_task_handler._get_parameters_from_function(one_key_func) == ["x"]
+
+
+def test_get_parameters_from_function_multiple_keywords():
+    def mul_key_func(x=0, y=0, z=0):
+        pass
+
+    assert zeebe_task_handler._get_parameters_from_function(mul_key_func) == ["x", "y", "z"]
+
+
+def test_get_parameters_from_function_positional_and_keyword():
+    def pos_and_key_func(x, y=0):
+        pass
+
+    assert zeebe_task_handler._get_parameters_from_function(pos_and_key_func) == ["x", "y"]
+
+
+def test_get_parameters_from_function_args():
+    def args_func(*args):
+        pass
+
+    assert zeebe_task_handler._get_parameters_from_function(args_func) == []
+
+
+def test_get_parameters_from_function_kwargs():
+    def kwargs_func(**kwargs):
+        pass
+
+    assert zeebe_task_handler._get_parameters_from_function(kwargs_func) == []
+
+
+def test_get_parameters_from_function_lambda():
+    my_func = lambda x: x
+
+    assert zeebe_task_handler._get_parameters_from_function(my_func) == ["x"]
