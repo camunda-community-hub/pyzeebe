@@ -1,3 +1,4 @@
+from random import randint
 from threading import Thread
 from unittest.mock import patch, MagicMock
 from uuid import uuid4
@@ -29,8 +30,10 @@ def run_around_tests():
 
 def test_add_task_through_decorator():
     task_type = str(uuid4())
+    timeout = randint(0, 10000)
+    max_jobs_to_activate = randint(0, 1000)
 
-    @zeebe_worker.task(task_type=task_type)
+    @zeebe_worker.task(task_type=task_type, timeout=timeout, max_jobs_to_activate=max_jobs_to_activate)
     def example_test_task(x):
         return {"x": x}
 
@@ -46,6 +49,9 @@ def test_add_task_through_decorator():
 
     variable = str(uuid4())
     assert task.inner_function(variable) == {"x": variable}
+    assert task.variables_to_fetch == ["x"]
+    assert task.timeout == timeout
+    assert task.max_jobs_to_activate == max_jobs_to_activate
 
     assert callable(task.handler)
     job = random_job(task=task)
