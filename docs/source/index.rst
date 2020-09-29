@@ -59,7 +59,6 @@ Table Of Contents
 =================
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
     client <client>
     worker <worker>
