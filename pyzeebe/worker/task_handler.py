@@ -31,9 +31,12 @@ class ZeebeTaskHandler(ZeebeDecoratorBase):
              variable_name: str = None):
         """Decorator to create a task
         single_value (bool): If the function returns a single value (int, string, list) and not a dictionary set this to
-                             True.
+                             True. Default: False
         variable_name (str): If single_value then this will be the variable name given to zeebe:
                                     { <variable_name>: <function_return_value> }
+        timeout (int): Maximum duration of the task in milliseconds. If the timeout is surpasses Zeebe will give up
+                        on the job and retry it. Default: 10000
+        max_jobs_to_activate (int):  Maximum jobs the worker will execute in parallel (of this task). Default: 32
         """
         if single_value and not variable_name:
             raise NoVariableNameGiven(task_type=task_type)
