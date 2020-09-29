@@ -60,5 +60,5 @@ Table Of Contents
 .. toctree::
    :maxdepth: 2
 
-    client <client>
-    worker <worker>
+    Client <client>
+    Worker <worker>

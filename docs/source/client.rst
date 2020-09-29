@@ -1,5 +1,3 @@
-.. _aiohttp-client:
-
 ======
 Client
 ======

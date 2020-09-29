@@ -58,9 +58,13 @@ Run a workflow
 Run a workflow with result
 --------------------------
 
+To run a workflow and receive the result directly:
+
 .. code-block:: python
 
-    result_as_dict = client.run_workflow_with_result("bpmn_process_id")
+    result = client.run_workflow_with_result("bpmn_process_id")
+
+    # result will be a dict
 
 
 Deploy a workflow
