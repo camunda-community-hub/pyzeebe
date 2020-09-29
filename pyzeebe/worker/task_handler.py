@@ -2,8 +2,9 @@ import logging
 from abc import abstractmethod
 from typing import Tuple, List, Callable
 
-from pyzeebe.common.exceptions import TaskNotFound, NoVariableNameGiven
 from pyzeebe.decorators.zeebe_decorator_base import ZeebeDecoratorBase
+from pyzeebe.exceptions import NoVariableNameGiven
+from pyzeebe.exceptions.pyzeebe_exceptions import TaskNotFound
 from pyzeebe.job.job import Job
 from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.task.task import Task

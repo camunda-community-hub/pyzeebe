@@ -4,8 +4,8 @@ from typing import Dict
 
 import grpc
 
-from pyzeebe.common.exceptions import (WorkflowNotFound, WorkflowInstanceNotFound, WorkflowInvalid,
-                                       WorkflowHasNoStartEvent, InvalidJSON)
+from pyzeebe.exceptions import InvalidJSON, WorkflowNotFound, WorkflowInstanceNotFound, WorkflowHasNoStartEvent, \
+    WorkflowInvalid
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 from pyzeebe.grpc_internals.zeebe_pb2 import (CreateWorkflowInstanceRequest, CreateWorkflowInstanceWithResultRequest,
                                               CancelWorkflowInstanceRequest, WorkflowRequestObject,

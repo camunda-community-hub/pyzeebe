@@ -3,7 +3,8 @@ from random import randint
 from unittest.mock import patch, MagicMock
 from uuid import uuid4
 
-from pyzeebe.common.exceptions import *
+from pyzeebe.exceptions import InvalidJSON, WorkflowNotFound, WorkflowInstanceNotFound, WorkflowHasNoStartEvent, \
+    WorkflowInvalid
 from pyzeebe.grpc_internals.zeebe_workflow_adapter import ZeebeWorkflowAdapter
 from tests.unit.utils.grpc_utils import *
 from tests.unit.utils.random_utils import RANDOM_RANGE
