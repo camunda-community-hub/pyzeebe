@@ -37,3 +37,7 @@ All ``pyzeebe`` exceptions inherit from :py:class:`PyZeebeException`
 .. autoexception:: pyzeebe.exceptions.ZeebeGatewayUnavailable
 
 .. autoexception:: pyzeebe.exceptions.ZeebeInternalError
+
+.. autoexception:: pyzeebe.exceptions.InvalidOAuthCredentials
+
+.. autoexception:: pyzeebe.exceptions.InvalidCamundaCloudCredentials
