@@ -3,6 +3,7 @@ from threading import Thread
 from unittest.mock import patch, MagicMock
 from uuid import uuid4
 
+from pyzeebe.exceptions import DuplicateTaskType
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_router import ZeebeTaskRouter
@@ -26,6 +27,19 @@ def run_around_tests():
     yield
     zeebe_worker = ZeebeWorker()
     task = Task(str(uuid4()), lambda x: {"x": x}, lambda x, y, z: x)
+
+
+def test_add_task():
+    zeebe_worker._add_task(task)
+
+    assert len(zeebe_worker.tasks) == 1
+    assert zeebe_worker.get_task(task.type) == task
+
+
+def test_add_duplicate_task():
+    zeebe_worker._add_task(task)
+    with pytest.raises(DuplicateTaskType):
+        zeebe_worker._add_task(task)
 
 
 def test_add_task_through_decorator():

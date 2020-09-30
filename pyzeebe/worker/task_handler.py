@@ -43,6 +43,10 @@ class ZeebeTaskHandler(ZeebeDecoratorBase):
             timeout (int): Maximum duration of the task in milliseconds. If the timeout is surpasses Zeebe will give up
                             on the job and retry it. Default: 10000
             max_jobs_to_activate (int):  Maximum jobs the worker will execute in parallel (of this task). Default: 32
+
+        Raises:
+            DuplicateTaskType: If a task from the router already exists in the worker
+
         """
         if single_value and not variable_name:
             raise NoVariableNameGiven(task_type=task_type)
@@ -88,10 +92,36 @@ class ZeebeTaskHandler(ZeebeDecoratorBase):
             return list(parameters)
 
     def remove_task(self, task_type: str) -> Task:
+        """
+        Remove a task
+
+        Args:
+            task_type (str): The type of the wanted task
+
+        Returns:
+            Task: The task that was removed
+
+        Raises:
+             TaskNotFound: If no task with specified type exists
+
+        """
         task_index = self._get_task_index(task_type)
         return self.tasks.pop(task_index)
 
     def get_task(self, task_type: str) -> Task:
+        """
+        Get a task by its type
+
+        Args:
+            task_type (str): The type of the wanted task
+
+        Returns:
+            Task: The wanted task
+
+        Raises:
+             TaskNotFound: If no task with specified type exists
+
+        """
         return self._get_task_and_index(task_type)[0]
 
     def _get_task_index(self, task_type: str) -> int:

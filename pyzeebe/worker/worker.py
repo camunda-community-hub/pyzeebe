@@ -4,6 +4,7 @@ from threading import Thread, Event
 from typing import List, Callable, Generator, Tuple, Dict
 
 from pyzeebe.credentials.base_credentials import BaseCredentials
+from pyzeebe.exceptions import TaskNotFound, DuplicateTaskType
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job
 from pyzeebe.task.exception_handler import ExceptionHandler
@@ -39,6 +40,13 @@ class ZeebeWorker(ZeebeTaskHandler):
     def work(self) -> None:
         """
         Start the worker. The worker will poll zeebe for jobs of each task in a different thread.
+
+        Raises:
+            ActivateJobsRequestInvalid: If one of the worker's task has invalid types
+            ZeebeBackPressure: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailable: If the Zeebe gateway is unavailable
+            ZeebeInternalError: If Zeebe experiences an internal error
+
         """
         for task in self.tasks:
             task_thread = Thread(target=self._handle_task, args=(task,))
@@ -109,8 +117,12 @@ class ZeebeWorker(ZeebeTaskHandler):
         return wrapper
 
     def _add_task(self, task: Task) -> None:
-        task.handler = self._create_task_handler(task)
-        self.tasks.append(task)
+        try:
+            self.get_task(task.type)
+            raise DuplicateTaskType(task.type)
+        except TaskNotFound:
+            task.handler = self._create_task_handler(task)
+            self.tasks.append(task)
 
     def _create_task_handler(self, task: Task) -> Callable[[Job], Job]:
         before_decorator_runner = self._create_before_decorator_runner(task)
@@ -175,8 +187,10 @@ class ZeebeWorker(ZeebeTaskHandler):
     def include_router(self, router: ZeebeTaskRouter) -> None:
         """
         Adds all router's tasks to the worker.
-        Decorator order:
-            Worker -> Router -> Task -> fn -> Task -> Router -> Worker
+
+        Raises:
+            DuplicateTaskType: If a task from the router already exists in the worker
+
         """
         for task in router.tasks:
             self._add_task(task)

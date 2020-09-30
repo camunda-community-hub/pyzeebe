@@ -28,6 +28,9 @@ class ZeebeClient(object):
             WorkflowNotFound: No workflow with bpmn_process_id exists
             InvalidJSON: variables is not JSONable
             WorkflowHasNoStartEvent: The specified workflow does not have a start event
+            ZeebeBackPressure: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailable: If the Zeebe gateway is unavailable
+            ZeebeInternalError: If Zeebe experiences an internal error
 
         """
         return self.zeebe_adapter.create_workflow_instance(bpmn_process_id=bpmn_process_id, variables=variables or {},
@@ -52,6 +55,9 @@ class ZeebeClient(object):
             WorkflowNotFound: No workflow with bpmn_process_id exists
             InvalidJSON: variables is not JSONable
             WorkflowHasNoStartEvent: The specified workflow does not have a start event
+            ZeebeBackPressure: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailable: If the Zeebe gateway is unavailable
+            ZeebeInternalError: If Zeebe experiences an internal error
 
         """
         return self.zeebe_adapter.create_workflow_instance_with_result(bpmn_process_id=bpmn_process_id,
@@ -71,6 +77,9 @@ class ZeebeClient(object):
 
         Raises:
             WorkflowInstanceNotFound: If no workflow instance with workflow_instance_key exists
+            ZeebeBackPressure: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailable: If the Zeebe gateway is unavailable
+            ZeebeInternalError: If Zeebe experiences an internal error
 
         """
         self.zeebe_adapter.cancel_workflow_instance(workflow_instance_key=workflow_instance_key)
@@ -85,6 +94,9 @@ class ZeebeClient(object):
 
         Raises:
             WorkflowInvalid: If one of the workflow file definitions is invalid
+            ZeebeBackPressure: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailable: If the Zeebe gateway is unavailable
+            ZeebeInternalError: If Zeebe experiences an internal error
 
         """
         self.zeebe_adapter.deploy_workflow(*workflow_file_path)
@@ -104,6 +116,9 @@ class ZeebeClient(object):
 
         Raises:
             MessageAlreadyExist: If a message with message_id already exists
+            ZeebeBackPressure: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailable: If the Zeebe gateway is unavailable
+            ZeebeInternalError: If Zeebe experiences an internal error
 
         """
         self.zeebe_adapter.publish_message(name=name, correlation_key=correlation_key,
