@@ -4,10 +4,10 @@ Tasks
 
 Tasks are the building blocks of workflows
 
-Most basic Task
+Creating a Task
 ---------------
 
-To create a task you must first create a :class:`ZeebeWorker` instance.
+To create a task you must first create a :class:`ZeebeWorker` or :class:`ZeebeTaskRouter` instance.
 
 .. code-block:: python
 
@@ -18,7 +18,9 @@ To create a task you must first create a :class:`ZeebeWorker` instance.
 This is a task that does nothing. It receives no parameters and also doesn't return any.
 
 
+.. note::
 
+    While this task indeed returns a python dictionary, it doesn't return anything to Zeebe. Do do that we have to fill the dictionary.
 
 
 Task Exception Handler
@@ -55,6 +57,7 @@ Now every time ``my_task`` is called (and then fails), ``my_exception_handler`` 
 *What does job.set_failure_status do?*
 
 This tells Zeebe that the job failed. The job will then be retried (if configured in workflow definition).
+
 
 Task timeout
 ------------
@@ -98,4 +101,7 @@ So the above task is in fact equal to:
 
 This can be helpful when we don't want to read return values from a dictionary each time we call the task (in tests for example).
 
+.. note::
+
+    The parameter ``variable_name`` must be supplied if ``single_value`` is true. If not given a :class:`NoVariableNameGiven` will be raised.
 
