@@ -28,6 +28,13 @@ class Job(object):
     def set_success_status(self) -> None:
         """
         Success status means that the job has been completed as intended.
+
+        Raises:
+            NoZeebeAdapter: If the job does not have a configured ZeebeAdapter
+            ZeebeBackPressure: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailable: If the Zeebe gateway is unavailable
+            ZeebeInternalError: If Zeebe experiences an internal error
+
         """
         if self.zeebe_adapter:
             self.zeebe_adapter.complete_job(job_key=self.key, variables=self.variables)
@@ -38,6 +45,16 @@ class Job(object):
         """
         Failure status means a technical error has occurred. If retried the job may succeed.
         For example: connection to DB lost
+
+        Args:
+            message (str): The failure message that Zeebe will receive
+
+        Raises:
+            NoZeebeAdapter: If the job does not have a configured ZeebeAdapter
+            ZeebeBackPressure: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailable: If the Zeebe gateway is unavailable
+            ZeebeInternalError: If Zeebe experiences an internal error
+
         """
         if self.zeebe_adapter:
             self.zeebe_adapter.fail_job(job_key=self.key, message=message)
@@ -48,6 +65,16 @@ class Job(object):
         """
         Error status means that the job could not be completed because of a business error and won't ever be able to be completed.
         For example: a required parameter was not given
+
+        Args:
+            message (str): The error message that Zeebe will receive
+
+        Raises:
+            NoZeebeAdapter: If the job does not have a configured ZeebeAdapter
+            ZeebeBackPressure: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailable: If the Zeebe gateway is unavailable
+            ZeebeInternalError: If Zeebe experiences an internal error
+
         """
         if self.zeebe_adapter:
             self.zeebe_adapter.throw_error(job_key=self.key, message=message)

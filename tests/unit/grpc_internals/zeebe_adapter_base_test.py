@@ -1,5 +1,5 @@
 from random import randint
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from uuid import uuid4
 
 from pyzeebe.credentials.camunda_cloud_credentials import CamundaCloudCredentials
@@ -75,8 +75,10 @@ def test_with_secure_connection():
 
 
 def test_with_camunda_cloud_credentials():
-    with patch("requests_oauthlib.OAuth2Session.post"):
-        credentials = CamundaCloudCredentials(str(uuid4()), str(uuid4()), str(uuid4()))
+    CamundaCloudCredentials.get_access_token = MagicMock()
+    CamundaCloudCredentials.get_access_token.return_value = str(uuid4())
+    credentials = CamundaCloudCredentials(str(uuid4()), str(uuid4()), str(uuid4()))
+
     with patch("grpc.secure_channel") as grpc_secure_channel_mock:
         ZeebeAdapterBase(credentials=credentials)
         grpc_secure_channel_mock.assert_called()
@@ -86,8 +88,9 @@ def test_credentials_connection_uri_gotten():
     client_id = str(uuid4())
     client_secret = str(uuid4())
     cluster_id = str(uuid4())
-    with patch("requests_oauthlib.OAuth2Session.post"):
-        credentials = CamundaCloudCredentials(client_id, client_secret, cluster_id)
+    CamundaCloudCredentials.get_access_token = MagicMock()
+    CamundaCloudCredentials.get_access_token.return_value = str(uuid4())
+    credentials = CamundaCloudCredentials(client_id, client_secret, cluster_id)
     zeebe_adapter = ZeebeAdapterBase(credentials=credentials)
     assert zeebe_adapter.connection_uri == f"{cluster_id}.zeebe.camunda.io:443"
 
