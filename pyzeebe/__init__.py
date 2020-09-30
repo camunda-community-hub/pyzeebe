@@ -1,3 +1,5 @@
+__version__ = "2.2.0"
+
 from pyzeebe import exceptions
 from pyzeebe.client.client import ZeebeClient
 from pyzeebe.credentials.camunda_cloud_credentials import CamundaCloudCredentials

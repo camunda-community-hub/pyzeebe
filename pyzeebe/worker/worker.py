@@ -39,12 +39,19 @@ class ZeebeWorker(ZeebeTaskHandler):
     def work(self) -> None:
         """
         Start the worker. The worker will poll zeebe for jobs of each task in a different thread.
+
+        Raises:
+            ActivateJobsRequestInvalid: If one of the worker's task has invalid types
+            ZeebeBackPressure: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailable: If the Zeebe gateway is unavailable
+            ZeebeInternalError: If Zeebe experiences an internal error
+
         """
         for task in self.tasks:
             task_thread = Thread(target=self._handle_task, args=(task,))
             task_thread.start()
 
-    def stop(self):
+    def stop(self) -> None:
         """
         Stop the worker. This will wait for all tasks to complete before stopping
         """
@@ -109,6 +116,7 @@ class ZeebeWorker(ZeebeTaskHandler):
         return wrapper
 
     def _add_task(self, task: Task) -> None:
+        self._is_task_duplicate(task.type)
         task.handler = self._create_task_handler(task)
         self.tasks.append(task)
 
@@ -175,8 +183,10 @@ class ZeebeWorker(ZeebeTaskHandler):
     def include_router(self, router: ZeebeTaskRouter) -> None:
         """
         Adds all router's tasks to the worker.
-        Decorator order:
-            Worker -> Router -> Task -> fn -> Task -> Router -> Worker
+
+        Raises:
+            DuplicateTaskType: If a task from the router already exists in the worker
+
         """
         for task in router.tasks:
             self._add_task(task)
