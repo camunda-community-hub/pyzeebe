@@ -15,6 +15,7 @@ An example decorator:
     def logging_decorator(job: Job) -> Job:
         logging.info(job)
         return job
+
 If a decorator raises an :class:`Exception` ``pyzeebe`` will just ignore it and continue the task/other decorators.
 
 Task Decorators

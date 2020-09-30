@@ -44,7 +44,7 @@ class ZeebeWorker(ZeebeTaskHandler):
             task_thread = Thread(target=self._handle_task, args=(task,))
             task_thread.start()
 
-    def stop(self):
+    def stop(self) -> None:
         """
         Stop the worker. This will wait for all tasks to complete before stopping
         """

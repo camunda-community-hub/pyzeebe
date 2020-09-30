@@ -2,7 +2,7 @@
 Worker
 ======
 
-The page contains all information about the :class:`ZeebeWorker` class:
+The page contains all information about the :py:class:`ZeebeWorker` class:
 
 
 .. toctree::
@@ -10,3 +10,5 @@ The page contains all information about the :class:`ZeebeWorker` class:
 
    Quickstart <worker_quickstart>
    Tasks <worker_tasks>
+   TaskRouter <worker_taskrouter>
+   Reference <worker_reference>

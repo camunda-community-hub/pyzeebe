@@ -1,5 +1,3 @@
-.. pyzeebe documentation master file, created by Jonatan Martens. sphinx-quickstart on Tue Sep 29 12:49:24 2020.
-
 Welcome to pyzeebe's documentation!
 ===================================
 Python client for Zeebe workflow engine
