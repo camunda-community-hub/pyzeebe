@@ -25,7 +25,7 @@ To install:
 
 `pip install pyzeebe`
 
-For full documentation please visit: https://pyzeebe.readthedocs.io/en/latest/
+For full documentation please visit: https://pyzeebe.readthedocs.io/en/stable/
 
 ## Usage
 
