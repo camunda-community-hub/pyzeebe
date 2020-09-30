@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-import pyzeebe
+from pyzeebe import __version__
 
 sphinx_rtd_theme  # So optimize imports doens't erase it
 
@@ -61,6 +61,6 @@ html_theme = "sphinx_rtd_theme"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-version = pyzeebe.__version__
+version = __version__
 
 master_doc = 'index'
