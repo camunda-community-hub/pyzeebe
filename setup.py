@@ -1,11 +1,13 @@
 import setuptools
 
+import pyzeebe
+
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="pyzeebe",
-    version="2.2.0",
+    version=pyzeebe.__version__,
     author="Jonatan Martens",
     author_email="jonatanmartenstav@gmail.com",
     description="Zeebe client api",
