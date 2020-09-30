@@ -62,5 +62,3 @@ html_static_path = ['_static']
 version = "2.1.0"
 
 master_doc = 'index'
-
-autodoc_mock_imports = ["grpc", "oauthlib", "requests-oauthlib", "google"]
