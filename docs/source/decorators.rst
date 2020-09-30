@@ -2,7 +2,7 @@
 Decorators
 ==========
 
-A ``pyzeebe`` decorator is a function that receives a :class:`Job` instance and returns a :class:`Job`.
+A ``pyzeebe`` decorator is a function that receives a :py:class:`Job` instance and returns a :py:class:`Job`.
 
 .. code-block:: python
 
@@ -21,7 +21,7 @@ If a decorator raises an :class:`Exception` ``pyzeebe`` will just ignore it and 
 Task Decorators
 ---------------
 
-To add a decorator to a :class:`Task`:
+To add a decorator to a :py:class:`Task`:
 
 .. code-block:: python
 
@@ -42,7 +42,7 @@ Now before and after a job is performed ``my_decorator`` will be called.
 TaskRouter Decorators
 ---------------------
 
-You can also add a decorator to a :class:`ZeebeTaskRouter`. All tasks registered under the router will then have the decorator.
+You can also add a decorator to a :py:class:`ZeebeTaskRouter`. All tasks registered under the router will then have the decorator.
 
 
 .. code-block:: python
@@ -64,7 +64,7 @@ Now all tasks registered to the router will have ``my_decorator``.
 Worker Decorators
 -----------------
 
-You can also add a decorator to a :class:`ZeebeWorker`. All tasks registered under the worker will then have the decorator.
+You can also add a decorator to a :py:class:`ZeebeWorker`. All tasks registered under the worker will then have the decorator.
 
 
 .. code-block:: python
@@ -89,8 +89,8 @@ Decorator order
 
 ``Worker`` -> ``Router`` -> ``Task``  -> Actual task function -> ``Task`` -> ``Router`` -> ``Worker``
 
-``Worker`` - Decorators registered via the :class:`ZeebeWorker` class.
+``Worker`` - Decorators registered via the :py:class:`ZeebeWorker` class.
 
-``Router`` - Decorators registered via the :class:`ZeebeTaskRouter` class and included in the worker with ``include_router``.
+``Router`` - Decorators registered via the :py:class:`ZeebeTaskRouter` class and included in the worker with ``include_router``.
 
-``Task`` - Decorators registered to the :class:`Task` class (with the worker/router ``task`` decorator).
+``Task`` - Decorators registered to the :py:class:`Task` class (with the worker/router ``task`` decorator).

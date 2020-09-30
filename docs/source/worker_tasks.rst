@@ -7,7 +7,7 @@ Tasks are the building blocks of workflows
 Creating a Task
 ---------------
 
-To create a task you must first create a :class:`ZeebeWorker` or :class:`ZeebeTaskRouter` instance.
+To create a task you must first create a :py:class:`ZeebeWorker` or :py:class:`ZeebeTaskRouter` instance.
 
 .. code-block:: python
 
@@ -32,7 +32,7 @@ An exception handler's signature:
 
     Callable[[Exception, Job], None]
 
-In other words: an exception handler is a function that receives an :class:`Exception` and :class:`Job` instance (a pyzeebe class).
+In other words: an exception handler is a function that receives an :class:`Exception` and :py:class:`Job` instance (a pyzeebe class).
 
 The exception handler is called when the task has failed.
 
