@@ -2,9 +2,9 @@ name: Integration test pyzeebe
 
 on:
   push:
-    branches: [ master, development, feature/*, bugfix/*, maintenance/*, enhancement/* ]
+    branches: [ master, development, feature/*, bugfix/*, maintenance/* ]
   pull_request:
-    branches: [ master, development, feature/*, bugfix/*, maintenance/*, enhancement/* ]
+    branches: [ master, development, feature/*, bugfix/*, maintenance/* ]
 
 jobs:
   test:
@@ -28,8 +28,9 @@ jobs:
       - uses: actions/checkout@v2
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
+          pip install pipenv
+          pipenv install --dev
 
       - name: Run integration tests
         run: |
-          pytest tests/integration
+          pipenv run pytest tests/integration
