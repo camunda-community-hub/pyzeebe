@@ -4,7 +4,6 @@ from threading import Thread, Event
 from typing import List, Callable, Generator, Tuple, Dict
 
 from pyzeebe.credentials.base_credentials import BaseCredentials
-from pyzeebe.exceptions import TaskNotFound, DuplicateTaskType
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job
 from pyzeebe.task.exception_handler import ExceptionHandler
@@ -117,12 +116,9 @@ class ZeebeWorker(ZeebeTaskHandler):
         return wrapper
 
     def _add_task(self, task: Task) -> None:
-        try:
-            self.get_task(task.type)
-            raise DuplicateTaskType(task.type)
-        except TaskNotFound:
-            task.handler = self._create_task_handler(task)
-            self.tasks.append(task)
+        self._is_task_duplicate(task.type)
+        task.handler = self._create_task_handler(task)
+        self.tasks.append(task)
 
     def _create_task_handler(self, task: Task) -> Callable[[Job], Job]:
         before_decorator_runner = self._create_before_decorator_runner(task)

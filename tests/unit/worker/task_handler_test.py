@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import pytest
 
-from pyzeebe.exceptions import NoVariableNameGiven, TaskNotFound
+from pyzeebe.exceptions import NoVariableNameGiven, TaskNotFound, DuplicateTaskType
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_handler import ZeebeTaskHandler, default_exception_handler
 from tests.unit.utils.random_utils import randint, random_job
@@ -178,3 +178,13 @@ def test_get_parameters_from_function_lambda():
     my_func = lambda x: x
 
     assert zeebe_task_handler._get_parameters_from_function(my_func) == ["x"]
+
+
+def test_check_is_task_duplicate_with_duplicate():
+    zeebe_task_handler.tasks.append(task)
+    with pytest.raises(DuplicateTaskType):
+        zeebe_task_handler._is_task_duplicate(task.type)
+
+
+def test_check_is_task_duplicate_no_duplicate():
+    zeebe_task_handler.tasks.append(task)

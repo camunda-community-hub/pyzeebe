@@ -1,9 +1,9 @@
 import logging
 from abc import abstractmethod
-from typing import Tuple, List, Callable
+from typing import Tuple, List, Callable, Dict
 
 from pyzeebe.decorators.zeebe_decorator_base import ZeebeDecoratorBase
-from pyzeebe.exceptions import NoVariableNameGiven, TaskNotFound
+from pyzeebe.exceptions import NoVariableNameGiven, TaskNotFound, DuplicateTaskType
 from pyzeebe.job.job import Job
 from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.task.task import Task
@@ -48,6 +48,8 @@ class ZeebeTaskHandler(ZeebeDecoratorBase):
             DuplicateTaskType: If a task from the router already exists in the worker
 
         """
+        self._is_task_duplicate(task_type)
+
         if single_value and not variable_name:
             raise NoVariableNameGiven(task_type=task_type)
 
@@ -75,7 +77,7 @@ class ZeebeTaskHandler(ZeebeDecoratorBase):
         raise NotImplemented()
 
     @staticmethod
-    def _single_value_function_to_dict(variable_name: str, fn: Callable):
+    def _single_value_function_to_dict(variable_name: str, fn: Callable) -> Callable[..., Dict]:
         def inner_fn(*args, **kwargs):
             return {variable_name: fn(*args, **kwargs)}
 
@@ -90,6 +92,13 @@ class ZeebeTaskHandler(ZeebeDecoratorBase):
             return []
         else:
             return list(parameters)
+
+    def _is_task_duplicate(self, task_type: str) -> None:
+        try:
+            self.get_task(task_type)
+            raise DuplicateTaskType(task_type)
+        except TaskNotFound:
+            return
 
     def remove_task(self, task_type: str) -> Task:
         """
