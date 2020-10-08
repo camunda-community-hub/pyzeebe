@@ -5,9 +5,9 @@ from unittest.mock import patch
 from uuid import uuid4
 
 import grpc
+from zeebe_grpc.gateway_pb2 import *
+from zeebe_grpc.gateway_pb2_grpc import GatewayServicer
 
-from pyzeebe.grpc_internals.zeebe_pb2 import *
-from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayServicer
 from pyzeebe.job.job import Job
 from pyzeebe.job.job_status import JobStatus
 from pyzeebe.task.task import Task
