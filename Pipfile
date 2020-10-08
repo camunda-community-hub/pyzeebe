@@ -17,7 +17,7 @@ sphinx = "~=3.2.1"
 sphinx-rtd-theme = "*"
 
 [packages]
-grpcio = "~=1.31.0"
+grpcio = "~=1.32.0"
 protobuf = "~=3.13.0"
 oauthlib = "~=3.1.0"
 requests-oauthlib = "~=1.3.0"
