@@ -1,6 +1,8 @@
 import uuid
+from unittest.mock import patch
 
-from pyzeebe.task.task import Task
+from pyzeebe.task.task import Task, default_exception_handler
+from tests.unit.utils.random_utils import random_job
 
 
 def test_add_before():
@@ -41,3 +43,14 @@ def test_add_after_plus_constructor():
     base_decorator.after(function_decorator)
     assert len(base_decorator._after) == 2
     assert base_decorator._after == [constructor_decorator, function_decorator]
+
+
+def test_default_exception_handler():
+    with patch("logging.warning") as logging_mock:
+        with patch("pyzeebe.job.job.Job.set_failure_status") as failure_mock:
+            failure_mock.return_value = None
+            job = random_job()
+            default_exception_handler(Exception(), job)
+
+            failure_mock.assert_called()
+        logging_mock.assert_called()

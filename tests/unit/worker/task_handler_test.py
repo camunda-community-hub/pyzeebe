@@ -4,9 +4,9 @@ from uuid import uuid4
 import pytest
 
 from pyzeebe.exceptions import NoVariableNameGiven, TaskNotFound, DuplicateTaskType
-from pyzeebe.task.task import Task, default_exception_handler
+from pyzeebe.task.task import Task
 from pyzeebe.worker.task_handler import ZeebeTaskHandler
-from tests.unit.utils.random_utils import randint, random_job
+from tests.unit.utils.random_utils import randint
 
 zeebe_task_handler: ZeebeTaskHandler
 task: Task
@@ -107,15 +107,6 @@ def test_fn_to_dict():
     assert dict_fn(variable) == {variable_name: variable + 1}
 
 
-def test_default_exception_handler():
-    with patch("logging.warning") as logging_mock:
-        with patch("pyzeebe.job.job.Job.set_failure_status") as failure_mock:
-            failure_mock.return_value = None
-            job = random_job()
-            default_exception_handler(Exception(), job)
-
-            failure_mock.assert_called()
-        logging_mock.assert_called()
 
 
 def test_get_parameters_from_function_no_parameters():
