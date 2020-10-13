@@ -9,7 +9,7 @@ from pyzeebe.job.job import Job
 from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_decorator import TaskDecorator
-from pyzeebe.worker.task_handler import ZeebeTaskHandler, default_exception_handler
+from pyzeebe.worker.task_handler import ZeebeTaskHandler
 from pyzeebe.worker.task_router import ZeebeTaskRouter
 
 
@@ -79,7 +79,7 @@ class ZeebeWorker(ZeebeTaskHandler):
                                                 variables_to_fetch=task.variables_to_fetch,
                                                 request_timeout=self.request_timeout)
 
-    def _dict_task(self, task_type: str, exception_handler: ExceptionHandler = default_exception_handler,
+    def _dict_task(self, task_type: str, exception_handler: ExceptionHandler = None,
                    timeout: int = 10000, max_jobs_to_activate: int = 32, before: List[TaskDecorator] = None,
                    after: List[TaskDecorator] = None, variables_to_fetch: List[str] = None):
         def wrapper(fn: Callable[..., Dict]):
@@ -96,7 +96,7 @@ class ZeebeWorker(ZeebeTaskHandler):
         return wrapper
 
     def _non_dict_task(self, task_type: str, variable_name: str,
-                       exception_handler: ExceptionHandler = default_exception_handler, timeout: int = 10000,
+                       exception_handler: ExceptionHandler = None, timeout: int = 10000,
                        max_jobs_to_activate: int = 32, before: List[TaskDecorator] = None,
                        after: List[TaskDecorator] = None, variables_to_fetch: List[str] = None):
         def wrapper(fn: Callable[..., Dict]):
@@ -118,6 +118,8 @@ class ZeebeWorker(ZeebeTaskHandler):
     def _add_task(self, task: Task) -> None:
         self._is_task_duplicate(task.type)
         task.handler = self._create_task_handler(task)
+        if self.custom_default_exception_handler and not task.has_custom_exception_handler:
+            task.exception_handler = self.custom_default_exception_handler
         self.tasks.append(task)
 
     def _create_task_handler(self, task: Task) -> Callable[[Job], Job]:

@@ -1,18 +1,11 @@
-import logging
 from abc import abstractmethod
 from typing import Tuple, List, Callable, Dict
 
 from pyzeebe.decorators.zeebe_decorator_base import ZeebeDecoratorBase
 from pyzeebe.exceptions import NoVariableNameGiven, TaskNotFound, DuplicateTaskType
-from pyzeebe.job.job import Job
 from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_decorator import TaskDecorator
-
-
-def default_exception_handler(e: Exception, job: Job) -> None:
-    logging.warning(f"Task type: {job.type} - failed job {job}. Error: {e}.")
-    job.set_failure_status(f"Failed job. Error: {e}")
 
 
 class ZeebeTaskHandler(ZeebeDecoratorBase):
@@ -24,8 +17,9 @@ class ZeebeTaskHandler(ZeebeDecoratorBase):
         """
         super().__init__(before, after)
         self.tasks: List[Task] = []
+        self.custom_default_exception_handler: ExceptionHandler = None
 
-    def task(self, task_type: str, exception_handler: ExceptionHandler = default_exception_handler,
+    def task(self, task_type: str, exception_handler: ExceptionHandler = None,
              variables_to_fetch: List[str] = None, timeout: int = 10000, max_jobs_to_activate: int = 32,
              before: List[TaskDecorator] = None, after: List[TaskDecorator] = None, single_value: bool = False,
              variable_name: str = None):
@@ -141,3 +135,6 @@ class ZeebeTaskHandler(ZeebeDecoratorBase):
             if task.type == task_type:
                 return task, index
         raise TaskNotFound(f"Could not find task {task_type}")
+
+    def set_default_exception_handler(self, exception_handler: ExceptionHandler) -> None:
+        self.custom_default_exception_handler = exception_handler
