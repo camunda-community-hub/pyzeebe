@@ -58,15 +58,14 @@ class ZeebeTaskHandler(ZeebeDecoratorBase):
                                    variables_to_fetch=variables_to_fetch)
 
     @abstractmethod
-    def _dict_task(self, task_type: str, exception_handler: ExceptionHandler = default_exception_handler,
-                   timeout: int = 10000, max_jobs_to_activate: int = 32, before: List[TaskDecorator] = None,
+    def _dict_task(self, task_type: str, exception_handler: ExceptionHandler = None, timeout: int = 10000,
+                   max_jobs_to_activate: int = 32, before: List[TaskDecorator] = None,
                    after: List[TaskDecorator] = None, variables_to_fetch: List[str] = None):
         raise NotImplemented()
 
     @abstractmethod
-    def _non_dict_task(self, task_type: str, variable_name: str,
-                       exception_handler: ExceptionHandler = default_exception_handler, timeout: int = 10000,
-                       max_jobs_to_activate: int = 32, before: List[TaskDecorator] = None,
+    def _non_dict_task(self, task_type: str, variable_name: str, exception_handler: ExceptionHandler = None,
+                       timeout: int = 10000, max_jobs_to_activate: int = 32, before: List[TaskDecorator] = None,
                        after: List[TaskDecorator] = None, variables_to_fetch: List[str] = None):
         raise NotImplemented()
 

@@ -4,8 +4,8 @@ from uuid import uuid4
 import pytest
 
 from pyzeebe.exceptions import NoVariableNameGiven, TaskNotFound, DuplicateTaskType
-from pyzeebe.task.task import Task
-from pyzeebe.worker.task_handler import ZeebeTaskHandler, default_exception_handler
+from pyzeebe.task.task import Task, default_exception_handler
+from pyzeebe.worker.task_handler import ZeebeTaskHandler
 from tests.unit.utils.random_utils import randint, random_job
 
 zeebe_task_handler: ZeebeTaskHandler
