@@ -1,7 +1,7 @@
 import logging
 import socket
 from threading import Thread, Event
-from typing import List, Callable, Generator, Tuple, Dict
+from typing import List, Callable, Generator, Tuple, Dict, Union
 
 from pyzeebe.credentials.base_credentials import BaseCredentials
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
@@ -79,6 +79,18 @@ class ZeebeWorker(ZeebeTaskHandler):
                                                 variables_to_fetch=task.variables_to_fetch,
                                                 request_timeout=self.request_timeout)
 
+    def include_router(self, *routers: ZeebeTaskRouter) -> None:
+        """
+        Adds all router's tasks to the worker.
+
+        Raises:
+            DuplicateTaskType: If a task from the router already exists in the worker
+
+        """
+        for router in routers:
+            for task in router.tasks:
+                self._add_task(task)
+
     def _dict_task(self, task_type: str, exception_handler: ExceptionHandler = default_exception_handler,
                    timeout: int = 10000, max_jobs_to_activate: int = 32, before: List[TaskDecorator] = None,
                    after: List[TaskDecorator] = None, variables_to_fetch: List[str] = None):
@@ -91,6 +103,7 @@ class ZeebeWorker(ZeebeTaskHandler):
                         max_jobs_to_activate=max_jobs_to_activate, before=before, after=after,
                         variables_to_fetch=variables_to_fetch)
             self._add_task(task)
+
             return fn
 
         return wrapper
@@ -99,7 +112,7 @@ class ZeebeWorker(ZeebeTaskHandler):
                        exception_handler: ExceptionHandler = default_exception_handler, timeout: int = 10000,
                        max_jobs_to_activate: int = 32, before: List[TaskDecorator] = None,
                        after: List[TaskDecorator] = None, variables_to_fetch: List[str] = None):
-        def wrapper(fn: Callable[..., Dict]):
+        def wrapper(fn: Callable[..., Union[str, bool, int, List]]):
             nonlocal variables_to_fetch
             if not variables_to_fetch:
                 variables_to_fetch = self._get_parameters_from_function(fn)
@@ -109,8 +122,8 @@ class ZeebeWorker(ZeebeTaskHandler):
             task = Task(task_type=task_type, task_handler=dict_fn, exception_handler=exception_handler, timeout=timeout,
                         max_jobs_to_activate=max_jobs_to_activate, before=before, after=after,
                         variables_to_fetch=variables_to_fetch)
-
             self._add_task(task)
+
             return fn
 
         return wrapper
@@ -179,14 +192,3 @@ class ZeebeWorker(ZeebeTaskHandler):
         except Exception as e:
             logging.warning(f"Failed to run decorator {decorator}. Error: {e}")
             return job
-
-    def include_router(self, router: ZeebeTaskRouter) -> None:
-        """
-        Adds all router's tasks to the worker.
-
-        Raises:
-            DuplicateTaskType: If a task from the router already exists in the worker
-
-        """
-        for task in router.tasks:
-            self._add_task(task)
