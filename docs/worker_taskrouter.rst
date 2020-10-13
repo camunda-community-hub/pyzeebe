@@ -41,6 +41,13 @@ To add the router tasks to the worker we use the :py:func:`include_router` metho
 
     worker.include_router(router)
 
-    ...
+
+Or to add multiple routers at once:
+
+.. code-block:: python
+
+    worker.include_router(router1, router2, router3, ...)
+
+
 
 That's it!
