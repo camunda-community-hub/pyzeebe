@@ -138,5 +138,4 @@ class ZeebeTaskHandler(ZeebeDecoratorBase):
     def set_default_exception_handler(self, exception_handler: ExceptionHandler) -> None:
         self.custom_default_exception_handler = exception_handler
         for task in self.tasks:
-            if not task.has_custom_exception_handler:
-                task.exception_handler = self.custom_default_exception_handler
+            task.set_custom_exception_handler(self.custom_default_exception_handler)

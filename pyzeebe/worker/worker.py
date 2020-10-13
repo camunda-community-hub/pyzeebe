@@ -118,8 +118,8 @@ class ZeebeWorker(ZeebeTaskHandler):
     def _add_task(self, task: Task) -> None:
         self._is_task_duplicate(task.type)
         task.handler = self._create_task_handler(task)
-        if self.custom_default_exception_handler and not task.has_custom_exception_handler:
-            task.exception_handler = self.custom_default_exception_handler
+        if self.custom_default_exception_handler:
+            task.set_custom_exception_handler(self.custom_default_exception_handler)
         self.tasks.append(task)
 
     def _create_task_handler(self, task: Task) -> Callable[[Job], Job]:

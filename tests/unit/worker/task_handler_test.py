@@ -179,3 +179,11 @@ def test_check_is_task_duplicate_with_duplicate():
 
 def test_check_is_task_duplicate_no_duplicate():
     zeebe_task_handler.tasks.append(task)
+
+
+def test_set_custom_exception_handler():
+    def custom_exception_handler(exc, job):
+        pass
+
+    zeebe_task_handler.set_default_exception_handler(custom_exception_handler)
+    assert zeebe_task_handler.custom_default_exception_handler == custom_exception_handler

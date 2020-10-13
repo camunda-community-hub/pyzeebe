@@ -32,6 +32,14 @@ class Task(ZeebeDecoratorBase):
         self.variables_to_fetch = variables_to_fetch or []
         self.handler: Callable[[Job], Job] = None
 
+    def set_custom_exception_handler(self, custom_exception_handler: ExceptionHandler) -> None:
+        """
+        Sets the exception handler if no custom exception handler is set for this task.
+        """
+        if not self.has_custom_exception_handler:
+            self.exception_handler = custom_exception_handler
+            self.has_custom_exception_handler = True
+
     def __repr__(self) -> str:
         return str({"type": self.type, "timeout": self.timeout, "max_jobs_to_activate": self.max_jobs_to_activate,
                     "variables_to_fetch": self.variables_to_fetch})

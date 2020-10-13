@@ -320,3 +320,36 @@ def test_get_jobs():
                                                                 max_jobs_to_activate=task.max_jobs_to_activate,
                                                                 variables_to_fetch=task.variables_to_fetch,
                                                                 request_timeout=zeebe_worker.request_timeout)
+
+
+def test_set_custom_exception_handler():
+    def custom_exception_handler(exc, job):
+        pass
+
+    zeebe_worker.set_default_exception_handler(custom_exception_handler)
+    task_type = str(uuid4())
+
+    @zeebe_worker.task(task_type=task_type)
+    def task_fn():
+        return {}
+
+    task = zeebe_worker.get_task(task_type=task_type)
+    assert task.has_custom_exception_handler
+    assert task.exception_handler == custom_exception_handler
+
+
+def test_set_custom_exception_handler_after():
+    def custom_exception_handler(exc, job):
+        pass
+
+    task_type = str(uuid4())
+
+    @zeebe_worker.task(task_type=task_type)
+    def task_fn():
+        return {}
+
+    zeebe_worker.set_default_exception_handler(custom_exception_handler)
+
+    task = zeebe_worker.get_task(task_type=task_type)
+    assert task.has_custom_exception_handler
+    assert task.exception_handler == custom_exception_handler
