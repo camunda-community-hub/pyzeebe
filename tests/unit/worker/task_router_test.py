@@ -141,3 +141,36 @@ def test_add_decorators_to_task_with_router_decorators():
     zeebe_task_router._add_decorators_to_task(task, [decorator], [decorator])
     assert len(task._before) == 2
     assert len(task._after) == 2
+
+
+def test_set_custom_exception_handler():
+    def custom_exception_handler(exc, job):
+        pass
+
+    zeebe_task_router.set_default_exception_handler(custom_exception_handler)
+    task_type = str(uuid4())
+
+    @zeebe_task_router.task(task_type=task_type)
+    def task_fn():
+        return {}
+
+    task = zeebe_task_router.get_task(task_type=task_type)
+    assert task.has_custom_exception_handler
+    assert task.exception_handler == custom_exception_handler
+
+
+def test_set_custom_exception_handler_after():
+    def custom_exception_handler(exc, job):
+        pass
+
+    task_type = str(uuid4())
+
+    @zeebe_task_router.task(task_type=task_type)
+    def task_fn():
+        return {}
+
+    zeebe_task_router.set_default_exception_handler(custom_exception_handler)
+
+    task = zeebe_task_router.get_task(task_type=task_type)
+    assert task.has_custom_exception_handler
+    assert task.exception_handler == custom_exception_handler
