@@ -32,9 +32,12 @@ class ZeebeTaskRouter(ZeebeTaskHandler):
                        max_jobs_to_activate: int = 32, before: List[TaskDecorator] = None,
                        after: List[TaskDecorator] = None, variables_to_fetch: List[str] = None):
         def wrapper(fn: Callable[..., Dict]):
-            nonlocal variables_to_fetch
+            nonlocal variables_to_fetch, exception_handler
             if not variables_to_fetch:
                 variables_to_fetch = self._get_parameters_from_function(fn)
+
+            if not exception_handler and self.custom_default_exception_handler:
+                exception_handler = self.custom_default_exception_handler
 
             dict_fn = self._single_value_function_to_dict(variable_name=variable_name, fn=fn)
 
