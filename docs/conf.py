@@ -59,6 +59,6 @@ html_theme = "sphinx_rtd_theme"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-version = "2.2.0"
+version = "2.2.1"
 
 master_doc = 'index'
