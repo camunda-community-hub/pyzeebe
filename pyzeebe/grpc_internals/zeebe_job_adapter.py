@@ -3,11 +3,11 @@ import logging
 from typing import Dict, List, Generator
 
 import grpc
+from zeebe_grpc.gateway_pb2 import ActivateJobsRequest, CompleteJobRequest, CompleteJobResponse, FailJobRequest, \
+    FailJobResponse, ThrowErrorRequest, ThrowErrorResponse
 
 from pyzeebe.exceptions import ActivateJobsRequestInvalid, JobAlreadyDeactivated, JobNotFound
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
-from pyzeebe.grpc_internals.zeebe_pb2 import ActivateJobsRequest, CompleteJobRequest, CompleteJobResponse, \
-    FailJobRequest, FailJobResponse, ThrowErrorRequest, ThrowErrorResponse
 from pyzeebe.job.job import Job
 
 

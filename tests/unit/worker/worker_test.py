@@ -245,6 +245,21 @@ def test_include_router():
     assert zeebe_worker.get_task(task_type) is not None
 
 
+def test_include_multiple_routers():
+    routers = [ZeebeTaskRouter() for _ in range(0, randint(2, 100))]
+
+    for router in routers:
+        task_type = str(uuid4())
+
+        @router.task(task_type=task_type)
+        def task_fn(x):
+            return {"x": x}
+
+        zeebe_worker.include_router(router)
+
+    assert len(zeebe_worker.tasks) == len(routers)
+
+
 def test_router_before_decorator():
     with patch("tests.unit.worker.worker_test.decorator") as mock:
         task_type = str(uuid4())

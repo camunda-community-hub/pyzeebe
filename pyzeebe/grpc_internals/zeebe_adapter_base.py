@@ -2,10 +2,10 @@ import logging
 import os
 
 import grpc
+from zeebe_grpc.gateway_pb2_grpc import GatewayStub
 
 from pyzeebe.credentials.base_credentials import BaseCredentials
 from pyzeebe.exceptions import ZeebeBackPressure, ZeebeGatewayUnavailable, ZeebeInternalError
-from pyzeebe.grpc_internals.zeebe_pb2_grpc import GatewayStub
 
 
 class ZeebeAdapterBase(object):
