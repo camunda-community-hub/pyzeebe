@@ -13,6 +13,8 @@ from pyzeebe.worker.task_handler import ZeebeTaskHandler, default_exception_hand
 from pyzeebe.worker.task_router import ZeebeTaskRouter
 
 
+logger = logging.getLogger(__name__)
+
 class ZeebeWorker(ZeebeTaskHandler):
     """A zeebe worker that can connect to a zeebe instance and perform tasks."""
 
@@ -58,10 +60,10 @@ class ZeebeWorker(ZeebeTaskHandler):
         self.stop_event.set()
 
     def _handle_task(self, task: Task) -> None:
-        logging.debug(f"Handling task {task}")
+        logger.debug(f"Handling task {task}")
         while not self.stop_event.is_set() and self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection:
             if self.zeebe_adapter.retrying_connection:
-                logging.info(f"Retrying connection to {self.zeebe_adapter.connection_uri or 'zeebe'}")
+                logger.info(f"Retrying connection to {self.zeebe_adapter.connection_uri or 'zeebe'}")
                 continue
 
             self._handle_jobs(task)
@@ -69,11 +71,11 @@ class ZeebeWorker(ZeebeTaskHandler):
     def _handle_jobs(self, task: Task) -> None:
         for job in self._get_jobs(task):
             thread = Thread(target=task.handler, args=(job,))
-            logging.debug(f"Running job: {job}")
+            logger.debug(f"Running job: {job}")
             thread.start()
 
     def _get_jobs(self, task: Task) -> Generator[Job, None, None]:
-        logging.debug(f"Activating jobs for task: {task}")
+        logger.debug(f"Activating jobs for task: {task}")
         return self.zeebe_adapter.activate_jobs(task_type=task.type, worker=self.name, timeout=task.timeout,
                                                 max_jobs_to_activate=task.max_jobs_to_activate,
                                                 variables_to_fetch=task.variables_to_fetch,
@@ -154,17 +156,17 @@ class ZeebeWorker(ZeebeTaskHandler):
             job.variables = task.inner_function(**job.variables)
             task_succeeded = True
         except Exception as e:
-            logging.debug(f"Failed job: {job}. Error: {e}.")
+            logger.debug(f"Failed job: {job}. Error: {e}.")
             task.exception_handler(e, job)
         finally:
             return job, task_succeeded
 
     def _complete_job(self, job: Job) -> None:
         try:
-            logging.debug(f"Completing job: {job}")
+            logger.debug(f"Completing job: {job}")
             self.zeebe_adapter.complete_job(job_key=job.key, variables=job.variables)
         except Exception as e:
-            logging.warning(f"Failed to complete job: {job}. Error: {e}")
+            logger.warning(f"Failed to complete job: {job}. Error: {e}")
 
     def _create_before_decorator_runner(self, task: Task) -> Callable[[Job], Job]:
         decorators = task._before.copy()
@@ -190,5 +192,5 @@ class ZeebeWorker(ZeebeTaskHandler):
         try:
             return decorator(job)
         except Exception as e:
-            logging.warning(f"Failed to run decorator {decorator}. Error: {e}")
+            logger.warning(f"Failed to run decorator {decorator}. Error: {e}")
             return job
