@@ -10,8 +10,10 @@ from pyzeebe.task.task import Task
 from pyzeebe.task.task_decorator import TaskDecorator
 
 
+logger = logging.getLogger(__name__)
+
 def default_exception_handler(e: Exception, job: Job) -> None:
-    logging.warning(f"Task type: {job.type} - failed job {job}. Error: {e}.")
+    logger.warning(f"Task type: {job.type} - failed job {job}. Error: {e}.")
     job.set_failure_status(f"Failed job. Error: {e}")
 
 

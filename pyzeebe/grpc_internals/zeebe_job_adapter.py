@@ -11,6 +11,8 @@ from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 from pyzeebe.job.job import Job
 
 
+logger = logging.getLogger(__name__)
+
 class ZeebeJobAdapter(ZeebeAdapterBase):
     def activate_jobs(self, task_type: str, worker: str, timeout: int, max_jobs_to_activate: int,
                       variables_to_fetch: List[str], request_timeout: int) -> Generator[Job, None, None]:
@@ -21,7 +23,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
                                         fetchVariable=variables_to_fetch, requestTimeout=request_timeout)):
                 for raw_job in response.jobs:
                     job = self._create_job_from_raw_job(raw_job)
-                    logging.debug(f"Got job: {job} from zeebe")
+                    logger.debug(f"Got job: {job} from zeebe")
                     yield job
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
