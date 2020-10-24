@@ -23,6 +23,7 @@ jobs:
         image: camunda/zeebe:${{ matrix.zeebe-version }}
         ports:
           - 26500/tcp
+          - 9600/tcp
         options: >-
           --health-cmd "curl http://localhost:9600/ready"
           --health-interval 10s
