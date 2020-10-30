@@ -9,6 +9,7 @@ from pyzeebe.exceptions import ZeebeBackPressure, ZeebeGatewayUnavailable, Zeebe
 
 logger = logging.getLogger(__name__)
 
+
 class ZeebeAdapterBase(object):
     def __init__(self, hostname: str = None, port: int = None, credentials: BaseCredentials = None,
                  channel: grpc.Channel = None, secure_connection: bool = False):

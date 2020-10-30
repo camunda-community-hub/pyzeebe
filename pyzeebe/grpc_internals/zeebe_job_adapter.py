@@ -10,8 +10,8 @@ from pyzeebe.exceptions import ActivateJobsRequestInvalid, JobAlreadyDeactivated
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 from pyzeebe.job.job import Job
 
-
 logger = logging.getLogger(__name__)
+
 
 class ZeebeJobAdapter(ZeebeAdapterBase):
     def activate_jobs(self, task_type: str, worker: str, timeout: int, max_jobs_to_activate: int,
