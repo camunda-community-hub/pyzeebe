@@ -45,8 +45,10 @@ def test_connectivity_transient_failure():
 
 
 def test_connectivity_shutdown():
+    zeebe_adapter._channel.close = MagicMock()
     with pytest.raises(ConnectionAbortedError):
         zeebe_adapter._check_connectivity(grpc.ChannelConnectivity.SHUTDOWN)
+        zeebe_adapter._channel.close.assert_called_once()
 
 
 def test_only_port():

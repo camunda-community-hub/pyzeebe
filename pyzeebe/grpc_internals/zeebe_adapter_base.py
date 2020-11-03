@@ -61,6 +61,7 @@ class ZeebeAdapterBase(object):
             logging.error(f"Failed to establish connection to {self.connection_uri or 'zeebe'}. Non recoverable")
             self.connected = False
             self.retrying_connection = False
+            self._channel.close()
             raise ConnectionAbortedError(f"Lost connection to {self.connection_uri or 'zeebe'}")
 
     def _common_zeebe_grpc_errors(self, rpc_error: grpc.RpcError):
