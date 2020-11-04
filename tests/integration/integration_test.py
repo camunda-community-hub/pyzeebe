@@ -28,8 +28,7 @@ def task_handler(should_throw: bool, input: str) -> Dict:
 def setup():
     global zeebe_client, task_handler
 
-    t = Thread(target=zeebe_worker.work)
-    t.start()
+    zeebe_worker.work()
 
     zeebe_client = ZeebeClient()
     try:
@@ -39,8 +38,8 @@ def setup():
         zeebe_client.deploy_workflow("test.bpmn")
 
     yield zeebe_client
-    zeebe_worker.stop()
-    t.join()
+    zeebe_worker.stop(wait=True)
+    assert not zeebe_worker._task_threads
 
 
 def test_run_workflow():
