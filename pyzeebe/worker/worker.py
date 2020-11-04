@@ -50,7 +50,9 @@ class ZeebeWorker(ZeebeTaskHandler):
 
         """
         for task in self.tasks:
-            task_thread = Thread(target=self._handle_task, args=(task,))
+            task_thread = Thread(target=self._handle_task,
+                                 args=(task,),
+                                 name=f"{self.__class__.__name__}-Task-{task.type}")
             task_thread.start()
 
     def stop(self) -> None:
@@ -70,7 +72,9 @@ class ZeebeWorker(ZeebeTaskHandler):
 
     def _handle_jobs(self, task: Task) -> None:
         for job in self._get_jobs(task):
-            thread = Thread(target=task.handler, args=(job,))
+            thread = Thread(target=task.handler,
+                            args=(job,),
+                            name=f"{self.__class__.__name__}-Job-{job.type}")
             logger.debug(f"Running job: {job}")
             thread.start()
 
