@@ -9,9 +9,10 @@ from pyzeebe.exceptions import ZeebeBackPressure, ZeebeGatewayUnavailable, Zeebe
 
 logger = logging.getLogger(__name__)
 
+
 class ZeebeAdapterBase(object):
     def __init__(self, hostname: str = None, port: int = None, credentials: BaseCredentials = None,
-                 channel: grpc.Channel = None, secure_connection: bool = False):
+                 channel: grpc.Channel = None, secure_connection: bool = False, max_retries: int = 10):
         if channel:
             self.connection_uri = None
             self._channel = channel
@@ -24,6 +25,8 @@ class ZeebeAdapterBase(object):
         self.retrying_connection = True
         self._channel.subscribe(self._check_connectivity, try_to_connect=True)
         self._gateway_stub = GatewayStub(self._channel)
+        self._max_retries = max_retries
+        self._current_retries = 0
 
     @staticmethod
     def _get_connection_uri(hostname: str = None, port: int = None, credentials: BaseCredentials = None) -> str:
@@ -46,24 +49,36 @@ class ZeebeAdapterBase(object):
 
     def _check_connectivity(self, value: grpc.ChannelConnectivity) -> None:
         logger.debug(f"Grpc channel connectivity changed to: {value}")
+
         if value in [grpc.ChannelConnectivity.READY, grpc.ChannelConnectivity.IDLE]:
             logger.debug(f"Connected to {self.connection_uri or 'zeebe'}")
             self.connected = True
             self.retrying_connection = False
+
         elif value == grpc.ChannelConnectivity.CONNECTING:
             logger.debug(f"Connecting to {self.connection_uri or 'zeebe'}.")
             self.connected = False
             self.retrying_connection = True
+
         elif value == grpc.ChannelConnectivity.TRANSIENT_FAILURE:
-            logger.warning(f"Lost connection to {self.connection_uri or 'zeebe'}. Retrying...")
-            self.connected = False
-            self.retrying_connection = True
+            if self._should_retry():
+                logger.warning(f"Lost connection to {self.connection_uri or 'zeebe'}. Retrying...")
+                self.connected = False
+                self.retrying_connection = True
+            else:
+                logger.error(f"Failed to establish connection to {self.connection_uri or 'zeebe'}. Not recoverable")
+                self._channel.close()
+                self.connected = False
+                self.retrying_connection = False
+                raise ConnectionAbortedError(f"Lost connection to {self.connection_uri or 'zeebe'}")
+
         elif value == grpc.ChannelConnectivity.SHUTDOWN:
-            logger.error(f"Failed to establish connection to {self.connection_uri or 'zeebe'}. Non recoverable")
+            logger.warning(f"Shutting down grpc channel to {self.connection_uri or 'zeebe'}")
             self.connected = False
             self.retrying_connection = False
-            self._channel.close()
-            raise ConnectionAbortedError(f"Lost connection to {self.connection_uri or 'zeebe'}")
+
+    def _should_retry(self):
+        return self._max_retries == -1 or self._current_retries < self._max_retries
 
     def _common_zeebe_grpc_errors(self, rpc_error: grpc.RpcError):
         if self.is_error_status(rpc_error, grpc.StatusCode.RESOURCE_EXHAUSTED):
