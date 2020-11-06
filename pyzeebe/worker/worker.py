@@ -12,8 +12,8 @@ from pyzeebe.task.task_decorator import TaskDecorator
 from pyzeebe.worker.task_handler import ZeebeTaskHandler, default_exception_handler
 from pyzeebe.worker.task_router import ZeebeTaskRouter
 
-
 logger = logging.getLogger(__name__)
+
 
 class ZeebeWorker(ZeebeTaskHandler):
     """A zeebe worker that can connect to a zeebe instance and perform tasks."""
