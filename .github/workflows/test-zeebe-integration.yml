@@ -23,13 +23,6 @@ jobs:
         image: camunda/zeebe:${{ matrix.zeebe-version }}
         ports:
           - 26500/tcp
-          - 9600/tcp
-        options: >-
-          --health-cmd "curl http://localhost:9600/ready"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-          --health-start-period 10s
 
 
     steps:
@@ -38,6 +31,11 @@ jobs:
         run: |
           pip install pipenv
           pipenv install --dev
+
+      - name: Sleep for 10 seconds
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '10s'
 
       - name: Run integration tests
         run: |
