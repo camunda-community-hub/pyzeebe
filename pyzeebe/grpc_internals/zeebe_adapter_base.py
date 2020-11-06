@@ -7,6 +7,7 @@ from zeebe_grpc.gateway_pb2_grpc import GatewayStub
 from pyzeebe.credentials.base_credentials import BaseCredentials
 from pyzeebe.exceptions import ZeebeBackPressure, ZeebeGatewayUnavailable, ZeebeInternalError
 
+logger = logging.getLogger(__name__)
 
 class ZeebeAdapterBase(object):
     def __init__(self, hostname: str = None, port: int = None, credentials: BaseCredentials = None,
@@ -44,21 +45,21 @@ class ZeebeAdapterBase(object):
             return grpc.insecure_channel(connection_uri)
 
     def _check_connectivity(self, value: grpc.ChannelConnectivity) -> None:
-        logging.debug(f"Grpc channel connectivity changed to: {value}")
+        logger.debug(f"Grpc channel connectivity changed to: {value}")
         if value in [grpc.ChannelConnectivity.READY, grpc.ChannelConnectivity.IDLE]:
-            logging.debug(f"Connected to {self.connection_uri or 'zeebe'}")
+            logger.debug(f"Connected to {self.connection_uri or 'zeebe'}")
             self.connected = True
             self.retrying_connection = False
         elif value == grpc.ChannelConnectivity.CONNECTING:
-            logging.debug(f"Connecting to {self.connection_uri or 'zeebe'}.")
+            logger.debug(f"Connecting to {self.connection_uri or 'zeebe'}.")
             self.connected = False
             self.retrying_connection = True
         elif value == grpc.ChannelConnectivity.TRANSIENT_FAILURE:
-            logging.warning(f"Lost connection to {self.connection_uri or 'zeebe'}. Retrying...")
+            logger.warning(f"Lost connection to {self.connection_uri or 'zeebe'}. Retrying...")
             self.connected = False
             self.retrying_connection = True
         elif value == grpc.ChannelConnectivity.SHUTDOWN:
-            logging.error(f"Failed to establish connection to {self.connection_uri or 'zeebe'}. Non recoverable")
+            logger.error(f"Failed to establish connection to {self.connection_uri or 'zeebe'}. Non recoverable")
             self.connected = False
             self.retrying_connection = False
             self._channel.close()

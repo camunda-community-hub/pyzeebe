@@ -44,6 +44,18 @@ def test_connectivity_transient_failure():
     assert not zeebe_adapter.connected
 
 
+def test_connectivity_transient_failure_logs_warning(caplog):
+    zeebe_adapter._check_connectivity(grpc.ChannelConnectivity.TRANSIENT_FAILURE)
+    expected_logger = "pyzeebe.grpc_internals.zeebe_adapter_base"
+    expected_level = "WARNING"
+    matching_logs = [
+        log
+        for log in caplog.records
+        if log.name == expected_logger and log.levelname == expected_level
+    ]
+    assert len(matching_logs) > 0
+
+
 def test_connectivity_shutdown():
     zeebe_adapter._channel.close = MagicMock()
     with pytest.raises(ConnectionAbortedError):
