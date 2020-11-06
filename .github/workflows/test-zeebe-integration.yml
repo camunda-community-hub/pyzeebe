@@ -23,11 +23,6 @@ jobs:
         image: camunda/zeebe:${{ matrix.zeebe-version }}
         ports:
           - 26500/tcp
-        options: >-
-          --health-cmd "zbctl status --insecure "
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
 
     steps:
@@ -36,6 +31,11 @@ jobs:
         run: |
           pip install pipenv
           pipenv install --dev
+
+      - name: Sleep for 30 seconds
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '30s'
 
       - name: Run integration tests
         run: |

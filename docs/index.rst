@@ -47,6 +47,7 @@ Dependencies
 ============
 
 * python 3.5+
+* zeebe-grpc
 * grpcio
 * protobuf
 * oauthlib
