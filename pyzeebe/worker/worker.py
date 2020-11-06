@@ -12,16 +12,15 @@ from pyzeebe.task.task_decorator import TaskDecorator
 from pyzeebe.worker.task_handler import ZeebeTaskHandler, default_exception_handler
 from pyzeebe.worker.task_router import ZeebeTaskRouter
 
-
 logger = logging.getLogger(__name__)
+
 
 class ZeebeWorker(ZeebeTaskHandler):
     """A zeebe worker that can connect to a zeebe instance and perform tasks."""
 
     def __init__(self, name: str = None, request_timeout: int = 0, hostname: str = None, port: int = None,
                  credentials: BaseCredentials = None, secure_connection: bool = False,
-                 before: List[TaskDecorator] = None,
-                 after: List[TaskDecorator] = None):
+                 before: List[TaskDecorator] = None, after: List[TaskDecorator] = None):
         """
         Args:
             hostname (str): Zeebe instance hostname
