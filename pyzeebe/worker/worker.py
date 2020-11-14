@@ -37,6 +37,7 @@ class ZeebeWorker(ZeebeTaskHandler):
         self.name = name or socket.gethostname()
         self.request_timeout = request_timeout
         self.stop_event = Event()
+        self._task_threads: List[Thread] = []
 
     def work(self) -> None:
         """
@@ -54,12 +55,21 @@ class ZeebeWorker(ZeebeTaskHandler):
                                  args=(task,),
                                  name=f"{self.__class__.__name__}-Task-{task.type}")
             task_thread.start()
+            self._task_threads.append(task_thread)
 
-    def stop(self) -> None:
+    def stop(self, wait: bool = False) -> None:
         """
-        Stop the worker. This will wait for all tasks to complete before stopping
+        Stop the worker. This will emit a signal asking tasks to complete the current task and stop polling for new.
+
+        Args:
+            wait (bool): Wait for all tasks to complete
         """
         self.stop_event.set()
+        if wait:
+            logger.debug("Waiting for threads to join")
+            while self._task_threads:
+                thread = self._task_threads.pop(0)
+                thread.join()
 
     def _handle_task(self, task: Task) -> None:
         logger.debug(f"Handling task {task}")
