@@ -20,7 +20,8 @@ class ZeebeWorker(ZeebeTaskHandler):
 
     def __init__(self, name: str = None, request_timeout: int = 0, hostname: str = None, port: int = None,
                  credentials: BaseCredentials = None, secure_connection: bool = False,
-                 before: List[TaskDecorator] = None, after: List[TaskDecorator] = None):
+                 before: List[TaskDecorator] = None, after: List[TaskDecorator] = None,
+                 max_connection_retries: int = 10):
         """
         Args:
             hostname (str): Zeebe instance hostname
@@ -29,10 +30,12 @@ class ZeebeWorker(ZeebeTaskHandler):
             request_timeout (int): Longpolling timeout for getting tasks from zeebe. If 0 default value is used
             before (List[TaskDecorator]): Decorators to be performed before each task
             after (List[TaskDecorator]): Decorators to be performed after each task
+            max_connection_retries (int): Amount of connection retries before worker gives up on connecting to zeebe. To setup with infinite retries use -1
         """
         super().__init__(before, after)
         self.zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port, credentials=credentials,
-                                          secure_connection=secure_connection)
+                                          secure_connection=secure_connection,
+                                          max_connection_retries=max_connection_retries)
         self.name = name or socket.gethostname()
         self.request_timeout = request_timeout
         self.stop_event = Event()

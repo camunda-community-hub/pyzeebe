@@ -39,14 +39,14 @@ def test_connectivity_connecting():
 
 
 def test_connectivity_transient_failure_retry():
-    zeebe_adapter._max_retries = 1
+    zeebe_adapter._max_connection_retries = 1
     zeebe_adapter._check_connectivity(grpc.ChannelConnectivity.TRANSIENT_FAILURE)
     assert zeebe_adapter.retrying_connection
     assert not zeebe_adapter.connected
 
 
 def test_connectivity_transient_failure_no_retry():
-    zeebe_adapter._max_retries = 0
+    zeebe_adapter._max_connection_retries = 0
     zeebe_adapter._channel.close = MagicMock()
     with pytest.raises(ConnectionAbortedError):
         zeebe_adapter._check_connectivity(grpc.ChannelConnectivity.TRANSIENT_FAILURE)
@@ -72,13 +72,13 @@ def test_connectivity_shutdown():
 
 
 def test_should_retry_no_current_retries():
-    zeebe_adapter._max_retries = 1
+    zeebe_adapter._max_connection_retries = 1
     assert zeebe_adapter._should_retry()
 
 
 def test_should_retry_current_retries_over_max():
-    zeebe_adapter._max_retries = 1
-    zeebe_adapter._current_retries = 1
+    zeebe_adapter._max_connection_retries = 1
+    zeebe_adapter._current_connection_retries = 1
     assert not zeebe_adapter._should_retry()
 
 
