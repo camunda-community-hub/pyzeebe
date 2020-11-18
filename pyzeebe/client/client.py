@@ -7,6 +7,8 @@ from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 
 
 class ZeebeClient(object):
+    """A zeebe client that can connect to a zeebe instance and perform actions."""
+
     def __init__(self, hostname: str = None, port: int = None, credentials: BaseCredentials = None,
                  channel: grpc.Channel = None, secure_connection: bool = False, max_connection_retries: int = 10):
         """
