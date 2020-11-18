@@ -54,6 +54,7 @@ class ZeebeAdapterBase(object):
             logger.debug(f"Connected to {self.connection_uri or 'zeebe'}")
             self.connected = True
             self.retrying_connection = False
+            self._current_connection_retries = 0
 
         elif value == grpc.ChannelConnectivity.CONNECTING:
             logger.debug(f"Connecting to {self.connection_uri or 'zeebe'}.")
