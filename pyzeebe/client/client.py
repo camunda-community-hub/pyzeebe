@@ -13,8 +13,7 @@ class ZeebeClient(object):
         Args:
             hostname (str): Zeebe instance hostname
             port (int): Port of the zeebe
-            max_connection_retries (int): Amount of connection retries before client gives up on connecting to zeebe.
-                                            To setup with infinite retries use -1
+            max_connection_retries (int): Amount of connection retries before client gives up on connecting to zeebe. To setup with infinite retries use -1
         """
 
         self.zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port, credentials=credentials, channel=channel,
