@@ -66,6 +66,7 @@ class ZeebeAdapterBase(object):
                 logger.warning(f"Lost connection to {self.connection_uri or 'zeebe'}. Retrying...")
                 self.connected = False
                 self.retrying_connection = True
+                self._current_connection_retries = self._current_connection_retries + 1
             else:
                 logger.error(f"Failed to establish connection to {self.connection_uri or 'zeebe'}. Not recoverable")
                 self._channel.close()
