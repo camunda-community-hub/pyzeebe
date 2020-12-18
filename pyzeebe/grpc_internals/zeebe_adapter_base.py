@@ -49,6 +49,7 @@ class ZeebeAdapterBase(object):
 
     def _check_connectivity(self, value: grpc.ChannelConnectivity) -> None:
         logger.debug(f"Grpc channel connectivity changed to: {value}")
+        self.connected = False
 
         if value in [grpc.ChannelConnectivity.READY, grpc.ChannelConnectivity.IDLE]:
             logger.debug(f"Connected to {self.connection_uri or 'zeebe'}")
@@ -58,25 +59,21 @@ class ZeebeAdapterBase(object):
 
         elif value == grpc.ChannelConnectivity.CONNECTING:
             logger.debug(f"Connecting to {self.connection_uri or 'zeebe'}.")
-            self.connected = False
             self.retrying_connection = True
 
         elif value == grpc.ChannelConnectivity.TRANSIENT_FAILURE:
             if self._should_retry():
                 logger.warning(f"Lost connection to {self.connection_uri or 'zeebe'}. Retrying...")
-                self.connected = False
                 self.retrying_connection = True
                 self._current_connection_retries = self._current_connection_retries + 1
             else:
                 logger.error(f"Failed to establish connection to {self.connection_uri or 'zeebe'}. Not recoverable")
                 self._channel.close()
-                self.connected = False
                 self.retrying_connection = False
                 raise ConnectionAbortedError(f"Lost connection to {self.connection_uri or 'zeebe'}")
 
         elif value == grpc.ChannelConnectivity.SHUTDOWN:
             logger.warning(f"Shutting down grpc channel to {self.connection_uri or 'zeebe'}")
-            self.connected = False
             self.retrying_connection = False
 
     def _should_retry(self):
