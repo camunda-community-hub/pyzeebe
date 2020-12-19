@@ -46,7 +46,7 @@ Creating a client
 Dependencies
 ============
 
-* python 3.5+
+* python 3.6+
 * zeebe-grpc
 * grpcio
 * protobuf
