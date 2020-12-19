@@ -20,6 +20,19 @@ To create a client with custom hostname and port:
 
     client = ZeebeClient(hostname="zeebe_gateway", port=26500)
 
+
+To change connection retries:
+
+.. code-block:: python
+
+    worker = ZeebeClient(max_connection_retries=1)  # Will only accept one failure
+
+.. note::
+
+    The default behavior is 10 retries. If you want infinite retries just set to -1.
+
+
+
 To create a client with a secure connection:
 
 .. code-block:: python
