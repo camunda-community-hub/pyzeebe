@@ -168,3 +168,14 @@ def test_common_zeebe_grpc_error_unkown_error():
     error._state = GRPCStatusCode("Nothing")
     with pytest.raises(grpc.RpcError):
         zeebe_adapter._common_zeebe_grpc_errors(error)
+
+def test_cleanup_after_retried():
+    error = grpc.RpcError()
+    error._state = GRPCStatusCode(grpc.StatusCode.UNAVAILABLE)
+    zeebe_adapter._cleanup = MagicMock()
+    zeebe_adapter._max_connection_retries = 1
+    with pytest.raises(ZeebeGatewayUnavailable):
+        zeebe_adapter._common_zeebe_grpc_errors(error)
+
+    zeebe_adapter._cleanup.assert_called_once()
+

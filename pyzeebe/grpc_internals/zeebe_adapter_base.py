@@ -1,4 +1,5 @@
 import logging
+import atexit
 import os
 
 import grpc
@@ -27,6 +28,7 @@ class ZeebeAdapterBase(object):
         self._gateway_stub = GatewayStub(self._channel)
         self._max_connection_retries = max_connection_retries
         self._current_connection_retries = 0
+        atexit.register(self._cleanup)
 
     @staticmethod
     def _get_connection_uri(hostname: str = None, port: int = None, credentials: BaseCredentials = None) -> str:
@@ -83,8 +85,13 @@ class ZeebeAdapterBase(object):
         if self.is_error_status(rpc_error, grpc.StatusCode.RESOURCE_EXHAUSTED):
             raise ZeebeBackPressure()
         elif self.is_error_status(rpc_error, grpc.StatusCode.UNAVAILABLE):
+            self._current_connection_retries += 1
+            if not self._should_retry():
+                self._cleanup()
             raise ZeebeGatewayUnavailable()
         elif self.is_error_status(rpc_error, grpc.StatusCode.INTERNAL):
+            if not self._should_retry():
+                self._cleanup()
             raise ZeebeInternalError()
         else:
             raise rpc_error
@@ -92,3 +99,9 @@ class ZeebeAdapterBase(object):
     @staticmethod
     def is_error_status(rpc_error: grpc.RpcError, status_code: grpc.StatusCode):
         return rpc_error._state.code == status_code
+
+    def _cleanup(self):
+        try:
+            self._channel.close()
+        except Exception as e:
+            logger.exception(f"Failed to close channel, {type(e).__name__} exception was raised")
