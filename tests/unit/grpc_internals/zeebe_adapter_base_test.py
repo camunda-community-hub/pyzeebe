@@ -169,7 +169,7 @@ def test_common_zeebe_grpc_error_unkown_error():
     with pytest.raises(grpc.RpcError):
         zeebe_adapter._common_zeebe_grpc_errors(error)
 
-def test_cleanup_after_retried():
+def test_close_after_retried():
     error = grpc.RpcError()
     error._state = GRPCStatusCode(grpc.StatusCode.UNAVAILABLE)
     zeebe_adapter._close = MagicMock()
@@ -178,4 +178,3 @@ def test_cleanup_after_retried():
         zeebe_adapter._common_zeebe_grpc_errors(error)
 
     zeebe_adapter._close.assert_called_once()
-

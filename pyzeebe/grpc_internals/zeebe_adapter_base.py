@@ -89,7 +89,7 @@ class ZeebeAdapterBase(object):
             raise ZeebeGatewayUnavailable()
         elif self.is_error_status(rpc_error, grpc.StatusCode.INTERNAL):
             if not self._should_retry():
-                self._cleanup()
+                self._close()
             raise ZeebeInternalError()
         else:
             raise rpc_error
