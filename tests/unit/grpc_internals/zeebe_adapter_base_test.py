@@ -38,10 +38,19 @@ def test_connectivity_connecting():
     assert not zeebe_adapter.connected
 
 
-def test_connectivity_transient_failure():
+def test_connectivity_transient_failure_retry():
+    zeebe_adapter._max_connection_retries = 1
     zeebe_adapter._check_connectivity(grpc.ChannelConnectivity.TRANSIENT_FAILURE)
     assert zeebe_adapter.retrying_connection
     assert not zeebe_adapter.connected
+
+
+def test_connectivity_transient_failure_no_retry():
+    zeebe_adapter._max_connection_retries = 0
+    zeebe_adapter._channel.close = MagicMock()
+    with pytest.raises(ConnectionAbortedError):
+        zeebe_adapter._check_connectivity(grpc.ChannelConnectivity.TRANSIENT_FAILURE)
+        zeebe_adapter._channel.close.assert_called_once()
 
 
 def test_connectivity_transient_failure_logs_warning(caplog):
@@ -57,8 +66,20 @@ def test_connectivity_transient_failure_logs_warning(caplog):
 
 
 def test_connectivity_shutdown():
-    with pytest.raises(ConnectionAbortedError):
-        zeebe_adapter._check_connectivity(grpc.ChannelConnectivity.SHUTDOWN)
+    zeebe_adapter._check_connectivity(grpc.ChannelConnectivity.SHUTDOWN)
+    assert not zeebe_adapter.connected
+    assert not zeebe_adapter.retrying_connection
+
+
+def test_should_retry_no_current_retries():
+    zeebe_adapter._max_connection_retries = 1
+    assert zeebe_adapter._should_retry()
+
+
+def test_should_retry_current_retries_over_max():
+    zeebe_adapter._max_connection_retries = 1
+    zeebe_adapter._current_connection_retries = 1
+    assert not zeebe_adapter._should_retry()
 
 
 def test_only_port():
@@ -147,3 +168,25 @@ def test_common_zeebe_grpc_error_unkown_error():
     error._state = GRPCStatusCode("Nothing")
     with pytest.raises(grpc.RpcError):
         zeebe_adapter._common_zeebe_grpc_errors(error)
+
+
+def test_close_after_retried_unavailable():
+    error = grpc.RpcError()
+    error._state = GRPCStatusCode(grpc.StatusCode.UNAVAILABLE)
+    zeebe_adapter._close = MagicMock()
+    zeebe_adapter._max_connection_retries = 1
+    with pytest.raises(ZeebeGatewayUnavailable):
+        zeebe_adapter._common_zeebe_grpc_errors(error)
+
+    zeebe_adapter._close.assert_called_once()
+
+
+def test_close_after_retried_internal():
+    error = grpc.RpcError()
+    error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
+    zeebe_adapter._close = MagicMock()
+    zeebe_adapter._max_connection_retries = 1
+    with pytest.raises(ZeebeInternalError):
+        zeebe_adapter._common_zeebe_grpc_errors(error)
+
+    zeebe_adapter._close.assert_called_once()
