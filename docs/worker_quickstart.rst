@@ -42,7 +42,9 @@ To change connection retries:
 
 .. code-block:: python
 
-    worker = ZeebeWorker(max_connection_retries=1)  # Will only accept one failure
+    worker = ZeebeWorker(max_connection_retries=1)  # Will only accept one failure and disconnect upon the second
+
+This means the worker will disconnect upon two consecutive failures. Each time the worker connects successfully the counter is reset.
 
 .. note::
 
