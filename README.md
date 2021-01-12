@@ -17,7 +17,7 @@ Zeebe version support:
 
 | Pyzeebe version | Tested Zeebe versions |
 |:---------------:|----------------|
-| 2.x.x           | 0.23, 0.24         |
+| 2.x.x           | 0.23, 0.24, 0.25         |
 | 1.x.x           | 0.23, 0.24         |
 
 ## Getting Started

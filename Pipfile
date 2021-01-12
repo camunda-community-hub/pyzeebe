@@ -7,18 +7,16 @@ verify_ssl = true
 autopep8 = "~=1.5.4"
 pylint = "~=2.6.0"
 coverage = "~=5.3"
-pytest = "~=6.1.1"
+pytest = "~=6.2.1"
 pytest-grpc = "~=0.8.0"
 mypy = "~=0.790"
-coveralls = "~=2.1.2"
-importlib-metadata = "~=2.0.0"
+coveralls = "~=2.2.0"
+importlib-metadata = "~=3.3.0"
 pyzeebe = {editable = true, path = "."}
-sphinx = "~=3.2.1"
+sphinx = "~=3.4.2"
 sphinx-rtd-theme = "*"
 
 [packages]
-grpcio = "~=1.32.0"
-protobuf = "~=3.13.0"
 oauthlib = "~=3.1.0"
 requests-oauthlib = "~=1.3.0"
-zeebe-grpc = "~=0.24.3.3"
+zeebe-grpc = "~=0.25.1.0"

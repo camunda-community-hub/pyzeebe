@@ -13,10 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        zeebe-version: [ "0.23.6", "0.24.3" ]
-        python-version: [ 3.5, 3.6, 3.7, 3.8 ]
+        zeebe-version: [ "0.23.7", "0.24.6", "0.25.3" ]
 
-    container: python:${{ matrix.python-version }}
+    container: python:3.6
 
     services:
       zeebe:
@@ -24,12 +23,18 @@ jobs:
         ports:
           - 26500/tcp
 
+
     steps:
       - uses: actions/checkout@v2
       - name: Install dependencies
         run: |
           pip install pipenv
           pipenv install --dev
+
+      - name: Sleep for 30 seconds
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '30s'
 
       - name: Run integration tests
         run: |

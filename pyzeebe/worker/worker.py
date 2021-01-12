@@ -12,8 +12,8 @@ from pyzeebe.task.task_decorator import TaskDecorator
 from pyzeebe.worker.task_handler import ZeebeTaskHandler, default_exception_handler
 from pyzeebe.worker.task_router import ZeebeTaskRouter
 
-
 logger = logging.getLogger(__name__)
+
 
 class ZeebeWorker(ZeebeTaskHandler):
     """A zeebe worker that can connect to a zeebe instance and perform tasks."""
@@ -37,6 +37,7 @@ class ZeebeWorker(ZeebeTaskHandler):
         self.name = name or socket.gethostname()
         self.request_timeout = request_timeout
         self.stop_event = Event()
+        self._task_threads: List[Thread] = []
 
     def work(self) -> None:
         """
@@ -50,14 +51,25 @@ class ZeebeWorker(ZeebeTaskHandler):
 
         """
         for task in self.tasks:
-            task_thread = Thread(target=self._handle_task, args=(task,))
+            task_thread = Thread(target=self._handle_task,
+                                 args=(task,),
+                                 name=f"{self.__class__.__name__}-Task-{task.type}")
             task_thread.start()
+            self._task_threads.append(task_thread)
 
-    def stop(self) -> None:
+    def stop(self, wait: bool = False) -> None:
         """
-        Stop the worker. This will wait for all tasks to complete before stopping
+        Stop the worker. This will emit a signal asking tasks to complete the current task and stop polling for new.
+
+        Args:
+            wait (bool): Wait for all tasks to complete
         """
         self.stop_event.set()
+        if wait:
+            logger.debug("Waiting for threads to join")
+            while self._task_threads:
+                thread = self._task_threads.pop(0)
+                thread.join()
 
     def _handle_task(self, task: Task) -> None:
         logger.debug(f"Handling task {task}")
@@ -70,7 +82,9 @@ class ZeebeWorker(ZeebeTaskHandler):
 
     def _handle_jobs(self, task: Task) -> None:
         for job in self._get_jobs(task):
-            thread = Thread(target=task.handler, args=(job,))
+            thread = Thread(target=task.handler,
+                            args=(job,),
+                            name=f"{self.__class__.__name__}-Job-{job.type}")
             logger.debug(f"Running job: {job}")
             thread.start()
 

@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pyzeebe",
-    version="2.2.2",
+    version="2.2.3",
     author="Jonatan Martens",
     author_email="jonatanmartenstav@gmail.com",
     description="Zeebe client api",
@@ -13,8 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/JonatanMartens/pyzeebe",
     packages=setuptools.find_packages(exclude=("tests",)),
-    install_requires=["grpcio==1.32.0", "protobuf==3.13.0", "oauthlib==3.1.0", "requests-oauthlib==1.3.0",
-                      "zeebe-grpc==0.24.3.3"],
+    install_requires=["oauthlib==3.1.0", "requests-oauthlib==1.3.0", "zeebe-grpc==0.25.1.0"],
     exclude=["*test.py", "tests", "*.bpmn"],
     keywords="zeebe workflow workflow-engine",
     license="MIT",
@@ -23,5 +22,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.5",
+    python_requires=">=3.6",
 )

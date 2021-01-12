@@ -1,4 +1,4 @@
-__version__ = "2.2.2"
+__version__ = "2.2.3"
 
 from pyzeebe import exceptions
 from pyzeebe.client.client import ZeebeClient
