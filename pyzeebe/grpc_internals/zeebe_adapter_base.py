@@ -88,6 +88,7 @@ class ZeebeAdapterBase(object):
                 self._close()
             raise ZeebeGatewayUnavailable()
         elif self.is_error_status(rpc_error, grpc.StatusCode.INTERNAL):
+            self._current_connection_retries += 1
             if not self._should_retry():
                 self._close()
             raise ZeebeInternalError()
