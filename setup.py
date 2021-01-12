@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pyzeebe",
-    version="2.2.2",
+    version="2.2.3",
     author="Jonatan Martens",
     author_email="jonatanmartenstav@gmail.com",
     description="Zeebe client api",
