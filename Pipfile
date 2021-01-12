@@ -11,7 +11,7 @@ pytest = "~=6.2.1"
 pytest-grpc = "~=0.8.0"
 mypy = "~=0.790"
 coveralls = "~=2.2.0"
-importlib-metadata = "~=3.3.0"
+importlib-metadata = "~=3.4.0"
 pyzeebe = {editable = true, path = "."}
 sphinx = "~=3.4.3"
 sphinx-rtd-theme = "*"
