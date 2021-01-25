@@ -1,5 +1,6 @@
 import logging
 import socket
+import time
 from threading import Thread, Event
 from typing import List, Callable, Generator, Tuple, Dict, Union
 
@@ -39,11 +40,14 @@ class ZeebeWorker(ZeebeTaskHandler):
         self.name = name or socket.gethostname()
         self.request_timeout = request_timeout
         self.stop_event = Event()
-        self._task_threads: List[Thread] = []
+        self._task_threads: Dict[str, Thread] = {}
 
-    def work(self) -> None:
+    def work(self, watch: bool = False) -> None:
         """
         Start the worker. The worker will poll zeebe for jobs of each task in a different thread.
+
+        Args:
+            watch (bool): Start a watcher thread that restarts task threads on error
 
         Raises:
             ActivateJobsRequestInvalid: If one of the worker's task has invalid types
@@ -53,11 +57,23 @@ class ZeebeWorker(ZeebeTaskHandler):
 
         """
         for task in self.tasks:
-            task_thread = Thread(target=self._handle_task,
-                                 args=(task,),
-                                 name=f"{self.__class__.__name__}-Task-{task.type}")
-            task_thread.start()
-            self._task_threads.append(task_thread)
+            task_thread = self._start_task_thread(task)
+            self._task_threads[task.type] = task_thread
+
+        if watch:
+            watcher_thread = Thread(target=self._watch_task_threads,
+                                    name=f"{self.__class__.__name__}-Watch")
+            watcher_thread.start()
+
+
+    def _start_task_thread(self, task) -> Thread:
+        if self.stop_event.is_set():
+            raise RuntimeError("Tried to start a task with stop_event set")
+        task_thread = Thread(target=self._handle_task,
+                             args=(task,),
+                             name=f"{self.__class__.__name__}-Task-{task.type}")
+        task_thread.start()
+        return task_thread
 
     def stop(self, wait: bool = False) -> None:
         """
@@ -68,10 +84,42 @@ class ZeebeWorker(ZeebeTaskHandler):
         """
         self.stop_event.set()
         if wait:
-            logger.debug("Waiting for threads to join")
-            while self._task_threads:
-                thread = self._task_threads.pop(0)
-                thread.join()
+            self._join_task_threads()
+
+    def _join_task_threads(self) -> None:
+        logger.debug("Waiting for threads to join")
+        while self._task_threads:
+            # get first dict item
+            task_type = next(iter(self._task_threads))
+            # remove from list and wait to join
+            thread = self._task_threads.pop(task_type)
+            thread.join()
+        logger.debug("All threads joined")
+
+    def _watch_task_threads(self, frequency: int = 10) -> None:
+        logger.debug("Starting task thread watch")
+        try:
+            self._watch_task_threads_runner(frequency)
+        except Exception:
+            logger.debug("An unhandled exception occured when watching threads, stopping worker")
+            self.stop()
+            raise
+        logger.info(f"Watcher stopping (stop_event={self.stop_event.is_set()}, "
+                    f"task_threads list lenght={len(self._task_threads)})")
+
+    def _watch_task_threads_runner(self, frequency: int = 10) -> None:
+        while not self.stop_event.is_set() and self._task_threads:
+            logger.debug("Checking task thread status")
+            for task_type in iter(self._task_threads):
+                thread = self._task_threads[task_type]
+                if not thread.is_alive():
+                    logger.warning(f"Task thread {task_type} is not alive, restarting")
+                    self._restart_task_thread(task_type)
+            time.sleep(frequency)
+
+    def _restart_task_thread(self, task_type: str) -> None:
+        task = next(task for task in self.tasks if task.type is task_type)
+        self._task_threads[task_type] = self._start_task_thread(task)
 
     def _handle_task(self, task: Task) -> None:
         logger.debug(f"Handling task {task}")
