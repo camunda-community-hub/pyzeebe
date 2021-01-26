@@ -5,6 +5,7 @@ from threading import Thread, Event
 from typing import List, Callable, Generator, Tuple, Dict, Union
 
 from pyzeebe.credentials.base_credentials import BaseCredentials
+from pyzeebe.exceptions.pyzeebe_exceptions import MaxConsecutiveTaskThread
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job
 from pyzeebe.task.exception_handler import ExceptionHandler
@@ -22,7 +23,7 @@ class ZeebeWorker(ZeebeTaskHandler):
     def __init__(self, name: str = None, request_timeout: int = 0, hostname: str = None, port: int = None,
                  credentials: BaseCredentials = None, secure_connection: bool = False,
                  before: List[TaskDecorator] = None, after: List[TaskDecorator] = None,
-                 max_connection_retries: int = 10):
+                 max_connection_retries: int = 10, watcher_max_errors_factor: int = 3):
         """
         Args:
             hostname (str): Zeebe instance hostname
@@ -41,6 +42,7 @@ class ZeebeWorker(ZeebeTaskHandler):
         self.request_timeout = request_timeout
         self.stop_event = Event()
         self._task_threads: Dict[str, Thread] = {}
+        self.watcher_max_errors_factor = watcher_max_errors_factor
 
     def work(self, watch: bool = False) -> None:
         """
@@ -69,6 +71,7 @@ class ZeebeWorker(ZeebeTaskHandler):
     def _start_task_thread(self, task) -> Thread:
         if self.stop_event.is_set():
             raise RuntimeError("Tried to start a task with stop_event set")
+        logging.debug(f"Starting task thread for {task.type}")
         task_thread = Thread(target=self._handle_task,
                              args=(task,),
                              name=f"{self.__class__.__name__}-Task-{task.type}")
@@ -100,22 +103,38 @@ class ZeebeWorker(ZeebeTaskHandler):
         logger.debug("Starting task thread watch")
         try:
             self._watch_task_threads_runner(frequency)
-        except Exception:
-            logger.debug("An unhandled exception occured when watching threads, stopping worker")
+        except Exception as err:
+            if isinstance(err, MaxConsecutiveTaskThread):
+                logger.debug("Stopping worker due to too many errors.")
+            else:
+                logger.debug("An unhandled exception occured when watching threads, stopping worker")
             self.stop()
             raise
         logger.info(f"Watcher stopping (stop_event={self.stop_event.is_set()}, "
                     f"task_threads list lenght={len(self._task_threads)})")
 
     def _watch_task_threads_runner(self, frequency: int = 10) -> None:
+        consecutive_errors = 0
+        max_errors = self.watcher_max_errors_factor * len(self.tasks)
         while not self.stop_event.is_set() and self._task_threads:
             logger.debug("Checking task thread status")
             for task_type in iter(self._task_threads):
                 thread = self._task_threads[task_type]
                 if not thread.is_alive():
+                    consecutive_errors += 1
+                    self._check_max_errors(consecutive_errors, max_errors)
                     logger.warning(f"Task thread {task_type} is not alive, restarting")
                     self._restart_task_thread(task_type)
+                else:
+                    consecutive_errors = 0
             time.sleep(frequency)
+
+    @staticmethod
+    def _check_max_errors(consecutive_errors, max_errors):
+        logger.debug(f"Checking {consecutive_errors} >= {max_errors}")
+        if consecutive_errors >= max_errors:
+            raise MaxConsecutiveTaskThread(f"Number of consecutive errors ({consecutive_errors}) exceeded "
+                                           f"max allowed number of errors ({max_errors})")
 
     def _restart_task_thread(self, task_type: str) -> None:
         task = next(task for task in self.tasks if task.type is task_type)
