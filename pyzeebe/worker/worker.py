@@ -71,7 +71,7 @@ class ZeebeWorker(ZeebeTaskHandler):
     def _start_task_thread(self, task) -> Thread:
         if self.stop_event.is_set():
             raise RuntimeError("Tried to start a task with stop_event set")
-        logging.debug(f"Starting task thread for {task.type}")
+        logger.debug(f"Starting task thread for {task.type}")
         task_thread = Thread(target=self._handle_task,
                              args=(task,),
                              name=f"{self.__class__.__name__}-Task-{task.type}")
@@ -113,25 +113,33 @@ class ZeebeWorker(ZeebeTaskHandler):
         logger.info(f"Watcher stopping (stop_event={self.stop_event.is_set()}, "
                     f"task_threads list lenght={len(self._task_threads)})")
 
+    def _should_handle_task(self) -> bool:
+        return not self.stop_event.is_set() and (self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection)
+
+    def _should_watch_threads(self) -> bool:
+        return not self.stop_event.is_set() and bool(self._task_threads)
+
     def _watch_task_threads_runner(self, frequency: int = 10) -> None:
         consecutive_errors = 0
         max_errors = self.watcher_max_errors_factor * len(self.tasks)
-        while not self.stop_event.is_set() and self._task_threads:
+        while self._should_watch_threads():
             logger.debug("Checking task thread status")
             for task_type in iter(self._task_threads):
                 thread = self._task_threads[task_type]
                 if not thread.is_alive():
                     consecutive_errors += 1
                     self._check_max_errors(consecutive_errors, max_errors)
-                    logger.warning(f"Task thread {task_type} is not alive, restarting")
-                    self._restart_task_thread(task_type)
+                    if self._should_handle_task():
+                        logger.warning(f"Task thread {task_type} is not alive, restarting")
+                        self._restart_task_thread(task_type)
+                    else:
+                        logger.warning(f"Task thread {task_type} is not alive, but condition not met for restarting")
                 else:
                     consecutive_errors = 0
             time.sleep(frequency)
 
     @staticmethod
     def _check_max_errors(consecutive_errors, max_errors):
-        logger.debug(f"Checking {consecutive_errors} >= {max_errors}")
         if consecutive_errors >= max_errors:
             raise MaxConsecutiveTaskThread(f"Number of consecutive errors ({consecutive_errors}) exceeded "
                                            f"max allowed number of errors ({max_errors})")
@@ -142,12 +150,17 @@ class ZeebeWorker(ZeebeTaskHandler):
 
     def _handle_task(self, task: Task) -> None:
         logger.debug(f"Handling task {task}")
-        while not self.stop_event.is_set() and self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection:
+        retries = 0
+        while self._should_handle_task():
             if self.zeebe_adapter.retrying_connection:
-                logger.info(f"Retrying connection to {self.zeebe_adapter.connection_uri or 'zeebe'}")
+                if retries % 10 == 0:
+                    logger.debug(f"Waiting for connection to {self.zeebe_adapter.connection_uri or 'zeebe'}")
+                retries += 1
+                time.sleep(0.5)
                 continue
 
             self._handle_jobs(task)
+        logger.info(f"Handle task thread for {task.type} ending")
 
     def _handle_jobs(self, task: Task) -> None:
         for job in self._get_jobs(task):
