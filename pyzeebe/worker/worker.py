@@ -63,9 +63,9 @@ class ZeebeWorker(ZeebeTaskHandler):
             self._task_threads[task.type] = task_thread
 
         if watch:
-            watcher_thread = Thread(target=self._watch_task_threads,
+            self._watcher_thread = Thread(target=self._watch_task_threads,
                                     name=f"{self.__class__.__name__}-Watch")
-            watcher_thread.start()
+            self._watcher_thread.start()
 
 
     def _start_task_thread(self, task) -> Thread:
