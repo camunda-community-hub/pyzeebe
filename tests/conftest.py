@@ -5,9 +5,14 @@ from tests.unit.utils.gateway_mock import GatewayMock
 from tests.unit.utils.random_utils import random_job
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def job():
     return random_job()
+
+
+@pytest.fixture
+def zeebe_adapter(grpc_channel):
+    return ZeebeAdapter(channel=grpc_channel)
 
 
 @pytest.fixture(scope="module")
@@ -25,8 +30,3 @@ def grpc_servicer():
 def grpc_stub_cls(grpc_channel):
     from zeebe_grpc.gateway_pb2_grpc import GatewayStub
     return GatewayStub
-
-
-@pytest.fixture(scope="module")
-def zeebe_adapter(grpc_channel):
-    return ZeebeAdapter(channel=grpc_channel)
