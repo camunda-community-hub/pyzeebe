@@ -22,18 +22,20 @@ def job_without_adapter():
 
 
 @pytest.fixture
-def zeebe_adapter(grpc_channel):
-    return ZeebeAdapter(channel=grpc_channel)
+def zeebe_adapter(grpc_create_channel):
+    return ZeebeAdapter(channel=grpc_create_channel())
 
 
 @pytest.fixture
-def zeebe_client(grpc_channel):
-    return ZeebeClient(channel=grpc_channel)
+def zeebe_client(grpc_create_channel):
+    return ZeebeClient(channel=grpc_create_channel())
 
 
 @pytest.fixture
-def zeebe_worker():
-    return ZeebeWorker()
+def zeebe_worker(zeebe_adapter):
+    worker = ZeebeWorker()
+    worker.zeebe_adapter = zeebe_adapter
+    return worker
 
 
 @pytest.fixture
