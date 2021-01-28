@@ -7,7 +7,12 @@ from tests.unit.utils.random_utils import random_job
 
 
 @pytest.fixture
-def job():
+def job_with_adapter(zeebe_adapter):
+    return random_job(zeebe_adapter=zeebe_adapter)
+
+
+@pytest.fixture
+def job_without_adapter():
     return random_job()
 
 
