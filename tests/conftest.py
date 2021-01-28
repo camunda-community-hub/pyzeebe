@@ -1,5 +1,6 @@
 import pytest
 
+from pyzeebe import ZeebeClient
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from tests.unit.utils.gateway_mock import GatewayMock
 from tests.unit.utils.random_utils import random_job
@@ -13,6 +14,11 @@ def job():
 @pytest.fixture
 def zeebe_adapter(grpc_channel):
     return ZeebeAdapter(channel=grpc_channel)
+
+
+@pytest.fixture
+def zeebe_client(grpc_channel):
+    return ZeebeClient(channel=grpc_channel)
 
 
 @pytest.fixture(scope="module")
