@@ -2,9 +2,10 @@ from random import randint
 from unittest.mock import MagicMock
 from uuid import uuid4
 
+import pytest
+
 from pyzeebe.client.client import ZeebeClient
 from pyzeebe.exceptions import WorkflowNotFound
-from tests.unit.utils.grpc_utils import *
 
 zeebe_client: ZeebeClient
 

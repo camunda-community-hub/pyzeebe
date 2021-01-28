@@ -2,13 +2,15 @@ from random import randint
 from unittest.mock import MagicMock
 from uuid import uuid4
 
+import grpc
+import pytest
 from zeebe_grpc.gateway_pb2 import *
 
 from pyzeebe.exceptions import ActivateJobsRequestInvalid, JobAlreadyDeactivated, JobNotFound
 from pyzeebe.grpc_internals.zeebe_job_adapter import ZeebeJobAdapter
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
-from tests.unit.utils.grpc_utils import *
+from tests.unit.utils.grpc_utils import GRPCStatusCode
 from tests.unit.utils.random_utils import RANDOM_RANGE, random_job
 
 zeebe_job_adapter: ZeebeJobAdapter

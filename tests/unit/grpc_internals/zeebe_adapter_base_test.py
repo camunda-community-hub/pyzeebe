@@ -2,11 +2,14 @@ from random import randint
 from unittest.mock import patch, MagicMock
 from uuid import uuid4
 
+import grpc
+import pytest
+
 from pyzeebe.credentials.camunda_cloud_credentials import CamundaCloudCredentials
 from pyzeebe.credentials.oauth_credentials import OAuthCredentials
 from pyzeebe.exceptions import ZeebeBackPressure, ZeebeGatewayUnavailable, ZeebeInternalError
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
-from tests.unit.utils.grpc_utils import *
+from tests.unit.utils.grpc_utils import GRPCStatusCode
 from tests.unit.utils.random_utils import RANDOM_RANGE
 
 zeebe_adapter: ZeebeAdapterBase

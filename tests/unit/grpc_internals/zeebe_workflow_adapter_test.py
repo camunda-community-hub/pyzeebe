@@ -3,10 +3,13 @@ from random import randint
 from unittest.mock import patch, MagicMock
 from uuid import uuid4
 
+import grpc
+import pytest
+
 from pyzeebe.exceptions import InvalidJSON, WorkflowNotFound, WorkflowInstanceNotFound, WorkflowHasNoStartEvent, \
     WorkflowInvalid
 from pyzeebe.grpc_internals.zeebe_workflow_adapter import ZeebeWorkflowAdapter
-from tests.unit.utils.grpc_utils import *
+from tests.unit.utils.grpc_utils import GRPCStatusCode
 from tests.unit.utils.random_utils import RANDOM_RANGE
 
 zeebe_workflow_adapter: ZeebeWorkflowAdapter

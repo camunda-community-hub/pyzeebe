@@ -3,12 +3,13 @@ from threading import Thread
 from unittest.mock import patch, MagicMock
 from uuid import uuid4
 
+import pytest
+
 from pyzeebe.exceptions import DuplicateTaskType
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_router import ZeebeTaskRouter
 from pyzeebe.worker.worker import ZeebeWorker
-from tests.unit.utils.grpc_utils import *
 from tests.unit.utils.random_utils import random_job
 
 zeebe_worker: ZeebeWorker
