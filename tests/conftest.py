@@ -1,7 +1,11 @@
+from random import randint
+from uuid import uuid4
+
 import pytest
 
-from pyzeebe import ZeebeClient
+from pyzeebe import ZeebeClient, ZeebeWorker, ZeebeTaskRouter
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
+from pyzeebe.task.task import Task
 from tests.unit.utils.gateway_mock import GatewayMock
 from tests.unit.utils.random_utils import random_job
 
@@ -24,6 +28,26 @@ def zeebe_adapter(grpc_channel):
 @pytest.fixture
 def zeebe_client(grpc_channel):
     return ZeebeClient(channel=grpc_channel)
+
+
+@pytest.fixture
+def zeebe_worker():
+    return ZeebeWorker()
+
+
+@pytest.fixture
+def task():
+    return Task(str(uuid4()), lambda x: {"x": x}, lambda x, y, z: x)
+
+
+@pytest.fixture
+def router():
+    return ZeebeTaskRouter()
+
+
+@pytest.fixture
+def routers():
+    return [ZeebeTaskRouter() for _ in range(0, randint(2, 100))]
 
 
 @pytest.fixture(scope="module")
