@@ -6,6 +6,7 @@ import pytest
 from pyzeebe import ZeebeClient, ZeebeWorker, ZeebeTaskRouter
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.task.task import Task
+from pyzeebe.worker.task_handler import ZeebeTaskHandler
 from tests.unit.utils.gateway_mock import GatewayMock
 from tests.unit.utils.random_utils import random_job
 
@@ -48,6 +49,11 @@ def router():
 @pytest.fixture
 def routers():
     return [ZeebeTaskRouter() for _ in range(0, randint(2, 100))]
+
+
+@pytest.fixture
+def task_handler():
+    return ZeebeTaskHandler()
 
 
 @pytest.fixture(scope="module")
