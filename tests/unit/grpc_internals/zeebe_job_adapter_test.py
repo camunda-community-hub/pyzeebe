@@ -7,7 +7,6 @@ import pytest
 from zeebe_grpc.gateway_pb2 import *
 
 from pyzeebe.exceptions import ActivateJobsRequestInvalid, JobAlreadyDeactivated, JobNotFound
-from pyzeebe.grpc_internals.zeebe_job_adapter import ZeebeJobAdapter
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
 from tests.unit.utils.grpc_utils import GRPCStatusCode
