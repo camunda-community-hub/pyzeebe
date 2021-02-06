@@ -60,22 +60,6 @@ def test_add_task_through_decorator(zeebe_worker):
         mock.assert_called_with(job_key=job.key, variables=job.variables)
 
 
-def test_add_task(zeebe_worker, task):
-    zeebe_worker._add_task(task)
-    assert len(zeebe_worker.tasks) == 1
-    assert zeebe_worker.get_task(task.type).handler is not None
-
-    variable = str(uuid4())
-    assert task.inner_function(variable) == {"x": variable}
-
-    assert callable(task.handler)
-    job = random_job(task=task)
-    job.variables = {"x": str(uuid4())}
-    with patch("pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job") as mock:
-        assert isinstance(task.handler(job), Job)
-        mock.assert_called_with(job_key=job.key, variables=job.variables)
-
-
 def test_before_task_decorator_called(zeebe_worker, task):
     with patch("tests.unit.worker.worker_test.decorator") as mock:
         job = random_job(task=task)

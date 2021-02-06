@@ -82,21 +82,6 @@ def test_activate_jobs_common_errors_called(zeebe_adapter):
     zeebe_adapter._common_zeebe_grpc_errors.assert_called()
 
 
-def test_throw_error_common_errors_called(zeebe_adapter):
-    zeebe_adapter._common_zeebe_grpc_errors = MagicMock()
-    error = grpc.RpcError()
-    error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
-
-    zeebe_adapter._gateway_stub.ActivateJobs = MagicMock(side_effect=error)
-
-    zeebe_adapter.zeebe_job_adapter.activate_jobs(task_type=str(uuid4()), worker=str(uuid4()),
-                                                  timeout=randint(10, 100),
-                                                  request_timeout=100, max_jobs_to_activate=0,
-                                                  variables_to_fetch=[])
-
-    zeebe_adapter._common_zeebe_grpc_errors.assert_called()
-
-
 def test_complete_job(zeebe_adapter, grpc_servicer):
     task_type = create_random_task_and_activate(grpc_servicer)
     job = get_first_active_job(task_type, zeebe_adapter)
