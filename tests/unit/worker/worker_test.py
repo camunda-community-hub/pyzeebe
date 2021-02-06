@@ -187,7 +187,7 @@ class TestStartAndStop:
 
 
 class TestGetJobs:
-    def test_get_jobs(self, zeebe_worker, task):
+    def test_activate_jobs_called(self, zeebe_worker, task):
         zeebe_worker.zeebe_adapter.activate_jobs = MagicMock()
         zeebe_worker._get_jobs(task)
         zeebe_worker.zeebe_adapter.activate_jobs.assert_called_with(task_type=task.type, worker=zeebe_worker.name,
