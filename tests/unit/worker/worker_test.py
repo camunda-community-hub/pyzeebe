@@ -34,19 +34,17 @@ class TestAddTask:
 
         assert zeebe_worker.get_task(task.type).type == task.type
 
-    def test_original_function_not_changed(self, zeebe_worker, task):
+    def test_original_function_not_changed(self, zeebe_worker, task, job_from_task):
         zeebe_worker._add_task(task)
-        job = random_job(task)
-        job.variables = {"x": str(uuid4())}
+        job_from_task.variables = {"x": str(uuid4())}
 
-        assert task.inner_function(**job.variables) == job.variables
+        assert task.inner_function(**job_from_task.variables) == job_from_task.variables
 
-    def test_task_handler_calls_original_function(self, zeebe_worker, task):
-        job = random_job(task)
-        job.variables = {"x": str(uuid4())}
+    def test_task_handler_calls_original_function(self, zeebe_worker, task, job_from_task):
+        job_from_task.variables = {"x": str(uuid4())}
 
         zeebe_worker._add_task(task)
-        task.handler(job)
+        task.handler(job_from_task)
 
         task.inner_function.assert_called_once()
 
@@ -80,14 +78,13 @@ class TestAddTask:
 
         assert callable(task.handler)
 
-    def test_exception_handler_called(self, zeebe_worker, task):
-        job = random_job(task=task)
-        job.variables = {"x": str(uuid4())}
+    def test_exception_handler_called(self, zeebe_worker, task, job_from_task):
+        job_from_task.variables = {"x": str(uuid4())}
         task.inner_function.side_effect = Exception()
         task.exception_handler = MagicMock()
         zeebe_worker._add_task(task)
 
-        task.handler(job)
+        task.handler(job_from_task)
 
         task.exception_handler.assert_called()
 
@@ -113,44 +110,39 @@ class TestDecorator:
         assert len(zeebe_worker._after) == 1
         assert decorator in zeebe_worker._after
 
-    def test_create_before_decorator_runner(self, zeebe_worker, task, decorator):
+    def test_create_before_decorator_runner(self, zeebe_worker, task, decorator, job_from_task):
         task.before(decorator)
-        job = random_job(task=task)
-        job.variables = {"x": str(uuid4())}
+        job_from_task.variables = {"x": str(uuid4())}
         decorators = zeebe_worker._create_before_decorator_runner(task)
-        assert isinstance(decorators(job), Job)
+        assert isinstance(decorators(job_from_task), Job)
 
-    def test_before_task_decorator_called(self, zeebe_worker, task, decorator):
-        job = random_job(task=task)
-        job.variables = {"x": str(uuid4())}
+    def test_before_task_decorator_called(self, zeebe_worker, task, decorator, job_from_task):
+        job_from_task.variables = {"x": str(uuid4())}
 
         task.before(decorator)
         zeebe_worker._add_task(task)
 
-        task.handler(job)
+        task.handler(job_from_task)
 
-        decorator.assert_called_with(job)
+        decorator.assert_called_with(job_from_task)
 
-    def test_after_task_decorator_called(self, zeebe_worker, task, decorator):
-        job = random_job(task=task)
-        job.variables = {"x": str(uuid4())}
+    def test_after_task_decorator_called(self, zeebe_worker, task, decorator, job_from_task):
+        job_from_task.variables = {"x": str(uuid4())}
 
         task.after(decorator)
         zeebe_worker._add_task(task)
 
-        task.handler(job)
+        task.handler(job_from_task)
 
-        decorator.assert_called_with(job)
+        decorator.assert_called_with(job_from_task)
 
-    def test_decorator_failed(self, zeebe_worker, task, decorator):
-        job = random_job(task=task)
-
+    def test_decorator_failed(self, zeebe_worker, task, decorator, job_from_task):
         decorator.side_effect = Exception()
         zeebe_worker.before(decorator)
         zeebe_worker.after(decorator)
         zeebe_worker._add_task(task)
 
-        assert isinstance(task.handler(job), Job)
+        assert isinstance(task.handler(job_from_task), Job)
         assert decorator.call_count == 2
 
 
@@ -161,27 +153,23 @@ class TestHandleJobs:
         return zeebe_worker._get_jobs
 
     def test_handle_no_job(self, zeebe_worker, task, get_jobs_mock):
-        job = random_job(task=task)
         get_jobs_mock.return_value = []
         task.handler = MagicMock(return_value={"x": str(uuid4())})
 
         zeebe_worker._handle_jobs(task)
 
-        with pytest.raises(AssertionError):
-            task.handler.assert_called_with(job)
+        task.handler.assert_not_called()
 
-    def test_handle_one_job(self, zeebe_worker, task, get_jobs_mock):
-        job = random_job(task=task)
-        get_jobs_mock.return_value = [job]
+    def test_handle_one_job(self, zeebe_worker, task, job_from_task, get_jobs_mock):
+        get_jobs_mock.return_value = [job_from_task]
         task.handler = MagicMock(return_value={"x": str(uuid4())})
 
         zeebe_worker._handle_jobs(task)
 
-        task.handler.assert_called_with(job)
+        task.handler.assert_called_with(job_from_task)
 
-    def test_handle_many_jobs(self, zeebe_worker, task, get_jobs_mock):
-        job = random_job(task=task)
-        get_jobs_mock.return_value = [job] * 10
+    def test_handle_many_jobs(self, zeebe_worker, task, job_from_task, get_jobs_mock):
+        get_jobs_mock.return_value = [job_from_task] * 10
         task.handler = MagicMock(return_value={"x": str(uuid4())})
 
         zeebe_worker._handle_jobs(task)

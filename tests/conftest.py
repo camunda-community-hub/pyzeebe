@@ -24,6 +24,11 @@ def job_without_adapter():
 
 
 @pytest.fixture
+def job_from_task(task):
+    return random_job(task)
+
+
+@pytest.fixture
 def zeebe_adapter(grpc_create_channel):
     return ZeebeAdapter(channel=grpc_create_channel())
 
