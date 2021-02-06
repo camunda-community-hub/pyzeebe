@@ -176,8 +176,7 @@ def test_handle_one_job(zeebe_worker, task):
 
     with patch("pyzeebe.worker.worker.ZeebeWorker._get_jobs") as get_jobs_mock:
         get_jobs_mock.return_value = [job]
-        task.handler = MagicMock()
-        task.handler.return_value = {"x": str(uuid4())}
+        task.handler = MagicMock(return_value={"x": str(uuid4())})
         zeebe_worker._handle_jobs(task)
         task.handler.assert_called_with(job)
 
@@ -185,13 +184,12 @@ def test_handle_one_job(zeebe_worker, task):
 def test_handle_no_job(zeebe_worker, task):
     job = random_job(task=task)
 
-    with patch("pyzeebe.worker.worker.ZeebeWorker._get_jobs") as get_jobs_mock:
-        get_jobs_mock.return_value = []
-        task.handler = MagicMock()
-        task.handler.return_value = {"x": str(uuid4())}
-        zeebe_worker._handle_jobs(task)
-        with pytest.raises(AssertionError):
-            task.handler.assert_called_with(job)
+    zeebe_worker._get_jobs = MagicMock(return_value=[])
+    task.handler = MagicMock(return_value={"x": str(uuid4())})
+    zeebe_worker._handle_jobs(task)
+
+    with pytest.raises(AssertionError):
+        task.handler.assert_called_with(job)
 
 
 def test_handle_many_jobs(zeebe_worker, task):
@@ -199,8 +197,7 @@ def test_handle_many_jobs(zeebe_worker, task):
 
     with patch("pyzeebe.worker.worker.ZeebeWorker._get_jobs") as get_jobs_mock:
         get_jobs_mock.return_value = [job]
-        task.handler = MagicMock()
-        task.handler.return_value = {"x": str(uuid4())}
+        task.handler = MagicMock(return_value={"x": str(uuid4())})
         zeebe_worker._handle_jobs(task)
         task.handler.assert_called_with(job)
 
