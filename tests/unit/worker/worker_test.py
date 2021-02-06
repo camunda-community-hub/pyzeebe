@@ -147,7 +147,7 @@ class TestHandleJobs:
 
     @pytest.fixture(autouse=True)
     def task_handler_mock(self, task):
-        task.handler = MagicMock(return_value={"x": str(uuid4())})
+        task.handler = MagicMock(wraps=task.handler)
 
     def test_handle_no_job(self, zeebe_worker, task, get_jobs_mock):
         get_jobs_mock.return_value = []
