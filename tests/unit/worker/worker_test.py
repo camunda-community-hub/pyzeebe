@@ -152,9 +152,12 @@ class TestHandleJobs:
         zeebe_worker._get_jobs = MagicMock()
         return zeebe_worker._get_jobs
 
+    @pytest.fixture(autouse=True)
+    def task_handler_mock(self, task):
+        task.handler = MagicMock(return_value={"x": str(uuid4())})
+
     def test_handle_no_job(self, zeebe_worker, task, get_jobs_mock):
         get_jobs_mock.return_value = []
-        task.handler = MagicMock(return_value={"x": str(uuid4())})
 
         zeebe_worker._handle_jobs(task)
 
@@ -162,7 +165,6 @@ class TestHandleJobs:
 
     def test_handle_one_job(self, zeebe_worker, task, job_from_task, get_jobs_mock):
         get_jobs_mock.return_value = [job_from_task]
-        task.handler = MagicMock(return_value={"x": str(uuid4())})
 
         zeebe_worker._handle_jobs(task)
 
@@ -170,7 +172,6 @@ class TestHandleJobs:
 
     def test_handle_many_jobs(self, zeebe_worker, task, job_from_task, get_jobs_mock):
         get_jobs_mock.return_value = [job_from_task] * 10
-        task.handler = MagicMock(return_value={"x": str(uuid4())})
 
         zeebe_worker._handle_jobs(task)
 
