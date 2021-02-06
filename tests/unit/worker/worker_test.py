@@ -11,10 +11,9 @@ from pyzeebe.worker.worker import ZeebeWorker
 from tests.unit.utils.random_utils import random_job
 
 
-def test_add_task(zeebe_worker, task):
+def test_add_task_saves_task(zeebe_worker, task):
     zeebe_worker._add_task(task)
 
-    assert len(zeebe_worker.tasks) == 1
     assert zeebe_worker.get_task(task.type) == task
 
 
@@ -24,36 +23,71 @@ def test_add_duplicate_task(zeebe_worker, task):
         zeebe_worker._add_task(task)
 
 
-def test_add_task_through_decorator(zeebe_worker):
-    task_type = str(uuid4())
-    timeout = randint(0, 10000)
-    max_jobs_to_activate = randint(0, 1000)
-
-    @zeebe_worker.task(task_type=task_type, timeout=timeout, max_jobs_to_activate=max_jobs_to_activate)
-    def example_test_task(x):
-        return {"x": x}
+def test_only_one_task_added(zeebe_worker):
+    @zeebe_worker.task(str(uuid4()))
+    def _():
+        pass
 
     assert len(zeebe_worker.tasks) == 1
-    assert zeebe_worker.get_task(task_type).handler is not None
 
-    variable = str(uuid4())
-    assert example_test_task(variable) == {"x": variable}
 
-    task = zeebe_worker.get_task(task_type)
-    assert task is not None
+def test_task_type_saved(zeebe_worker, task):
+    zeebe_worker._add_task(task)
 
-    variable = str(uuid4())
-    assert task.inner_function(variable) == {"x": variable}
-    assert task.variables_to_fetch == ["x"]
-    assert task.timeout == timeout
-    assert task.max_jobs_to_activate == max_jobs_to_activate
+    assert zeebe_worker.get_task(task.type).type == task.type
+
+
+def test_original_function_not_changed(zeebe_worker, task):
+    zeebe_worker._add_task(task)
+    job = random_job(task)
+    job.variables = {"x": str(uuid4())}
+
+    assert task.inner_function(**job.variables) == job.variables
+
+
+def test_task_handler_calls_original_function(zeebe_worker, task):
+    job = random_job(task)
+    job.variables = {"x": str(uuid4())}
+
+    zeebe_worker._add_task(task)
+    task.handler(job)
+
+    task.inner_function.assert_called_once()
+
+
+def test_task_timeout_saved(zeebe_worker, task):
+    timeout = randint(0, 10000)
+    task.timeout = timeout
+
+    zeebe_worker._add_task(task)
+
+    assert zeebe_worker.get_task(task.type).timeout == timeout
+
+
+def test_task_max_jobs_saved(zeebe_worker, task):
+    max_jobs_to_activate = randint(0, 1000)
+    task.max_jobs_to_activate = max_jobs_to_activate
+
+    zeebe_worker._add_task(task)
+
+    assert zeebe_worker.get_task(task.type).max_jobs_to_activate == max_jobs_to_activate
+
+
+def test_task_variables_to_fetch_are_correct(zeebe_worker):
+    task_type = str(uuid4())
+    expected_variables_to_fetch = ["x"]
+
+    @zeebe_worker.task(task_type)
+    def _(x):
+        pass
+
+    assert zeebe_worker.get_task(task_type).variables_to_fetch == expected_variables_to_fetch
+
+
+def test_task_handler_is_callable(zeebe_worker, task):
+    zeebe_worker._add_task(task)
 
     assert callable(task.handler)
-    job = random_job(task=task)
-    job.variables = {"x": str(uuid4())}
-    with patch("pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job") as mock:
-        assert isinstance(task.handler(job), Job)
-        mock.assert_called_with(job_key=job.key, variables=job.variables)
 
 
 def test_before_task_decorator_called(zeebe_worker, task, decorator):
