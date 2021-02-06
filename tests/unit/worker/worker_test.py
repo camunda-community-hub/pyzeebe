@@ -8,7 +8,6 @@ import pytest
 from pyzeebe.exceptions import DuplicateTaskType, MaxConsecutiveTaskThreadError
 from pyzeebe.job.job import Job
 from pyzeebe.worker.worker import ZeebeWorker
-from tests.unit.utils.random_utils import random_job
 
 
 class TestAddTask:
@@ -36,14 +35,12 @@ class TestAddTask:
 
     def test_original_function_not_changed(self, zeebe_worker, task, job_from_task):
         zeebe_worker._add_task(task)
-        job_from_task.variables = {"x": str(uuid4())}
 
         assert task.inner_function(**job_from_task.variables) == job_from_task.variables
 
     def test_task_handler_calls_original_function(self, zeebe_worker, task, job_from_task):
-        job_from_task.variables = {"x": str(uuid4())}
-
         zeebe_worker._add_task(task)
+
         task.handler(job_from_task)
 
         task.inner_function.assert_called_once()
@@ -79,7 +76,6 @@ class TestAddTask:
         assert callable(task.handler)
 
     def test_exception_handler_called(self, zeebe_worker, task, job_from_task):
-        job_from_task.variables = {"x": str(uuid4())}
         task.inner_function.side_effect = Exception()
         task.exception_handler = MagicMock()
         zeebe_worker._add_task(task)
@@ -112,13 +108,12 @@ class TestDecorator:
 
     def test_create_before_decorator_runner(self, zeebe_worker, task, decorator, job_from_task):
         task.before(decorator)
-        job_from_task.variables = {"x": str(uuid4())}
+
         decorators = zeebe_worker._create_before_decorator_runner(task)
+
         assert isinstance(decorators(job_from_task), Job)
 
     def test_before_task_decorator_called(self, zeebe_worker, task, decorator, job_from_task):
-        job_from_task.variables = {"x": str(uuid4())}
-
         task.before(decorator)
         zeebe_worker._add_task(task)
 
@@ -127,8 +122,6 @@ class TestDecorator:
         decorator.assert_called_with(job_from_task)
 
     def test_after_task_decorator_called(self, zeebe_worker, task, decorator, job_from_task):
-        job_from_task.variables = {"x": str(uuid4())}
-
         task.after(decorator)
         zeebe_worker._add_task(task)
 
@@ -207,6 +200,7 @@ class TestGetJobs:
 class TestIncludeRouter:
     def test_include_router_adds_task(self, zeebe_worker, router, task_type):
         self.include_router_with_task(zeebe_worker, router, task_type)
+
         assert zeebe_worker.get_task(task_type) is not None
 
     def test_include_multiple_routers(self, zeebe_worker, routers):

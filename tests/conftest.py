@@ -25,7 +25,9 @@ def job_without_adapter():
 
 @pytest.fixture
 def job_from_task(task):
-    return random_job(task)
+    job = random_job(task)
+    job.variables = dict(x=str(uuid4()))
+    return job
 
 
 @pytest.fixture
@@ -47,7 +49,7 @@ def zeebe_worker(zeebe_adapter):
 
 @pytest.fixture
 def task(task_type):
-    return Task(task_type, MagicMock(wraps=lambda x: {"x": x}), MagicMock(wraps=lambda x, y, z: x))
+    return Task(task_type, MagicMock(wraps=lambda x: dict(x=x)), MagicMock(wraps=lambda x, y, z: x))
 
 
 @pytest.fixture
