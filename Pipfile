@@ -9,7 +9,7 @@ pylint = "~=2.6.0"
 coverage = "~=5.3"
 pytest = "~=6.2.1"
 pytest-grpc = "~=0.8.0"
-mypy = "~=0.790"
+mypy = "~=0.800"
 coveralls = "~=2.2.0"
 importlib-metadata = "~=3.4.0"
 pyzeebe = {editable = true, path = "."}
