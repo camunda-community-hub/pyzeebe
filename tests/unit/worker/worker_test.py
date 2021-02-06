@@ -215,8 +215,8 @@ def test_stop_worker(zeebe_worker):
     zeebe_worker.stop()
 
 
-def test_include_router(zeebe_worker, router, task_type):
-    @router.task(task_type=task_type)
+def test_include_router_adds_task(zeebe_worker, router, task_type):
+    @router.task(task_type)
     def task_fn(x):
         return {"x": x}
 
@@ -224,7 +224,7 @@ def test_include_router(zeebe_worker, router, task_type):
     assert zeebe_worker.get_task(task_type) is not None
 
 
-def test_include_multiple_routers(zeebe_worker, routers, task_type):
+def test_include_multiple_routers(zeebe_worker, routers):
     for router in routers:
         @router.task(str(uuid4()))
         def task_fn(x):
@@ -235,52 +235,34 @@ def test_include_multiple_routers(zeebe_worker, routers, task_type):
     assert len(zeebe_worker.tasks) == len(routers)
 
 
-def test_router_before_decorator(zeebe_worker, router, decorator, task_type):
+def test_router_before_decorator(zeebe_worker, router, decorator, job_without_adapter, task_type):
     router.before(decorator)
 
-    @router.task(task_type=task_type, before=[decorator])
+    @router.task(task_type)
     def task_fn(x):
         return {"x": x}
 
-    zeebe_worker.before(decorator)
     zeebe_worker.include_router(router)
-
     task = zeebe_worker.get_task(task_type)
 
-    job = random_job(task=task)
-    job.variables = {"x": str(uuid4())}
+    task.handler(job_without_adapter)
 
-    decorator.return_value = job
-
-    with patch("pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job") as grpc_mock:
-        assert isinstance(task.handler(job), Job)
-        grpc_mock.assert_called_with(job_key=job.key, variables=job.variables)
-
-    assert decorator.call_count == 3
+    assert decorator.call_count == 1
 
 
-def test_router_after_decorator(zeebe_worker, router, decorator, task_type):
+def test_router_after_decorator(zeebe_worker, router, decorator, job_without_adapter, task_type):
     router.after(decorator)
 
-    @router.task(task_type=task_type, after=[decorator])
+    @router.task(task_type)
     def task_fn(x):
         return {"x": x}
 
-    zeebe_worker.after(decorator)
     zeebe_worker.include_router(router)
-
     task = zeebe_worker.get_task(task_type)
 
-    job = random_job(task=task)
-    job.variables = {"x": str(uuid4())}
+    task.handler(job_without_adapter)
 
-    decorator.return_value = job
-
-    with patch("pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job") as grpc_mock:
-        assert isinstance(task.handler(job), Job)
-        grpc_mock.assert_called_with(job_key=job.key, variables=job.variables)
-
-    assert decorator.call_count == 3
+    assert decorator.call_count == 1
 
 
 def test_router_non_dict_task(zeebe_worker, task_type):
