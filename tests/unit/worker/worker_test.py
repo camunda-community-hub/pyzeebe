@@ -155,37 +155,41 @@ class TestDecorator:
 
 
 class TestHandleJobs:
-    def test_handle_no_job(self, zeebe_worker, task):
-        job = random_job(task=task)
+    @pytest.fixture(autouse=True)
+    def get_jobs_mock(self, zeebe_worker):
+        zeebe_worker._get_jobs = MagicMock()
+        return zeebe_worker._get_jobs
 
-        zeebe_worker._get_jobs = MagicMock(return_value=[])
+    def test_handle_no_job(self, zeebe_worker, task, get_jobs_mock):
+        job = random_job(task=task)
+        get_jobs_mock.return_value = []
         task.handler = MagicMock(return_value={"x": str(uuid4())})
+
         zeebe_worker._handle_jobs(task)
 
         with pytest.raises(AssertionError):
             task.handler.assert_called_with(job)
 
-    def test_handle_one_job(self, zeebe_worker, task):
+    def test_handle_one_job(self, zeebe_worker, task, get_jobs_mock):
         job = random_job(task=task)
+        get_jobs_mock.return_value = [job]
+        task.handler = MagicMock(return_value={"x": str(uuid4())})
 
-        with patch("pyzeebe.worker.worker.ZeebeWorker._get_jobs") as get_jobs_mock:
-            get_jobs_mock.return_value = [job]
-            task.handler = MagicMock(return_value={"x": str(uuid4())})
-            zeebe_worker._handle_jobs(task)
-            task.handler.assert_called_with(job)
+        zeebe_worker._handle_jobs(task)
 
-    def test_handle_many_jobs(self, zeebe_worker, task):
+        task.handler.assert_called_with(job)
+
+    def test_handle_many_jobs(self, zeebe_worker, task, get_jobs_mock):
         job = random_job(task=task)
+        get_jobs_mock.return_value = [job] * 10
+        task.handler = MagicMock(return_value={"x": str(uuid4())})
 
-        with patch("pyzeebe.worker.worker.ZeebeWorker._get_jobs") as get_jobs_mock:
-            get_jobs_mock.return_value = [job]
-            task.handler = MagicMock(return_value={"x": str(uuid4())})
-            zeebe_worker._handle_jobs(task)
-            task.handler.assert_called_with(job)
+        zeebe_worker._handle_jobs(task)
+
+        assert task.handler.call_count == 10
 
 
 class TestStartAndStop:
-
     def test_work_thread_start_called(self, zeebe_worker, task):
         with patch("pyzeebe.worker.worker.Thread") as thread_mock:
             thread_instance_mock = MagicMock()
