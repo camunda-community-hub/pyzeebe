@@ -73,8 +73,7 @@ def test_task_max_jobs_saved(zeebe_worker, task):
     assert zeebe_worker.get_task(task.type).max_jobs_to_activate == max_jobs_to_activate
 
 
-def test_task_variables_to_fetch_are_correct(zeebe_worker):
-    task_type = str(uuid4())
+def test_task_variables_to_fetch_are_correct(zeebe_worker, task_type):
     expected_variables_to_fetch = ["x"]
 
     @zeebe_worker.task(task_type)
@@ -216,9 +215,7 @@ def test_stop_worker(zeebe_worker):
     zeebe_worker.stop()
 
 
-def test_include_router(zeebe_worker, router):
-    task_type = str(uuid4())
-
+def test_include_router(zeebe_worker, router, task_type):
     @router.task(task_type=task_type)
     def task_fn(x):
         return {"x": x}
@@ -227,11 +224,9 @@ def test_include_router(zeebe_worker, router):
     assert zeebe_worker.get_task(task_type) is not None
 
 
-def test_include_multiple_routers(zeebe_worker, routers):
+def test_include_multiple_routers(zeebe_worker, routers, task_type):
     for router in routers:
-        task_type = str(uuid4())
-
-        @router.task(task_type=task_type)
+        @router.task(str(uuid4()))
         def task_fn(x):
             return {"x": x}
 
@@ -240,8 +235,7 @@ def test_include_multiple_routers(zeebe_worker, routers):
     assert len(zeebe_worker.tasks) == len(routers)
 
 
-def test_router_before_decorator(zeebe_worker, router, decorator):
-    task_type = str(uuid4())
+def test_router_before_decorator(zeebe_worker, router, decorator, task_type):
     router.before(decorator)
 
     @router.task(task_type=task_type, before=[decorator])
@@ -265,8 +259,7 @@ def test_router_before_decorator(zeebe_worker, router, decorator):
     assert decorator.call_count == 3
 
 
-def test_router_after_decorator(zeebe_worker, router, decorator):
-    task_type = str(uuid4())
+def test_router_after_decorator(zeebe_worker, router, decorator, task_type):
     router.after(decorator)
 
     @router.task(task_type=task_type, after=[decorator])
@@ -290,9 +283,8 @@ def test_router_after_decorator(zeebe_worker, router, decorator):
     assert decorator.call_count == 3
 
 
-def test_router_non_dict_task(zeebe_worker):
+def test_router_non_dict_task(zeebe_worker, task_type):
     with patch("pyzeebe.worker.task_handler.ZeebeTaskHandler._single_value_function_to_dict") as single_value_mock:
-        task_type = str(uuid4())
         variable_name = str(uuid4())
 
         @zeebe_worker.task(task_type=task_type, single_value=True, variable_name=variable_name)

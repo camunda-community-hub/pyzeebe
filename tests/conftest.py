@@ -41,8 +41,13 @@ def zeebe_worker(zeebe_adapter):
 
 
 @pytest.fixture
-def task():
-    return Task(str(uuid4()), MagicMock(wraps=lambda x: {"x": x}), MagicMock(wraps=lambda x, y, z: x))
+def task(task_type):
+    return Task(task_type, MagicMock(wraps=lambda x: {"x": x}), MagicMock(wraps=lambda x, y, z: x))
+
+
+@pytest.fixture
+def task_type():
+    return str(uuid4())
 
 
 @pytest.fixture
