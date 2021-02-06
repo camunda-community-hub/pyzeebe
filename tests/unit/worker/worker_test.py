@@ -93,21 +93,14 @@ def test_decorator_failed(zeebe_worker, task, decorator):
 
 
 def test_task_exception_handler_called(zeebe_worker, task):
-    def task_handler(x):
-        raise Exception()
-
-    def exception_handler(e, job, status_setter):
-        pass
-
     job = random_job(task=task)
     job.variables = {"x": str(uuid4())}
-
-    task.inner_function = task_handler
-    task.exception_handler = exception_handler
-
+    task.inner_function.side_effect = Exception()
     task.exception_handler = MagicMock()
     zeebe_worker._add_task(task)
+
     task.handler(job)
+
     task.exception_handler.assert_called()
 
 
