@@ -66,7 +66,7 @@ class ZeebeWorker(ZeebeTaskHandler):
         if watch:
             self._start_watcher_thread()
 
-    def _start_task_thread(self, task) -> Thread:
+    def _start_task_thread(self, task: Task) -> Thread:
         if self.stop_event.is_set():
             raise RuntimeError("Tried to start a task with stop_event set")
         logger.debug(f"Starting task thread for {task.type}")
