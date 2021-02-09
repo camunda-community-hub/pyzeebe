@@ -4,46 +4,32 @@ from unittest.mock import patch, MagicMock
 from uuid import uuid4
 import time
 
+import pytest
+
 from pyzeebe.exceptions import DuplicateTaskType, MaxConsecutiveTaskThread
 from pyzeebe.job.job import Job
-from pyzeebe.task.task import Task
-from pyzeebe.worker.task_router import ZeebeTaskRouter
 from pyzeebe.worker.worker import ZeebeWorker
-from tests.unit.utils.grpc_utils import *
 from tests.unit.utils.random_utils import random_job
-
-zeebe_worker: ZeebeWorker
-task: Task
 
 
 def decorator(job: Job) -> Job:
     return job
 
 
-@pytest.fixture(autouse=True)
-def run_around_tests():
-    global zeebe_worker, task
-    task = Task(str(uuid4()), lambda x: {"x": x}, lambda x, y, z: x)
-    zeebe_worker = ZeebeWorker()
-    yield
-    zeebe_worker = ZeebeWorker()
-    task = Task(str(uuid4()), lambda x: {"x": x}, lambda x, y, z: x)
-
-
-def test_add_task():
+def test_add_task(zeebe_worker, task):
     zeebe_worker._add_task(task)
 
     assert len(zeebe_worker.tasks) == 1
     assert zeebe_worker.get_task(task.type) == task
 
 
-def test_add_duplicate_task():
+def test_add_duplicate_task(zeebe_worker, task):
     zeebe_worker._add_task(task)
     with pytest.raises(DuplicateTaskType):
         zeebe_worker._add_task(task)
 
 
-def test_add_task_through_decorator():
+def test_add_task_through_decorator(zeebe_worker):
     task_type = str(uuid4())
     timeout = randint(0, 10000)
     max_jobs_to_activate = randint(0, 1000)
@@ -58,7 +44,6 @@ def test_add_task_through_decorator():
     variable = str(uuid4())
     assert example_test_task(variable) == {"x": variable}
 
-    global task
     task = zeebe_worker.get_task(task_type)
     assert task is not None
 
@@ -76,23 +61,7 @@ def test_add_task_through_decorator():
         mock.assert_called_with(job_key=job.key, variables=job.variables)
 
 
-def test_add_task():
-    zeebe_worker._add_task(task)
-    assert len(zeebe_worker.tasks) == 1
-    assert zeebe_worker.get_task(task.type).handler is not None
-
-    variable = str(uuid4())
-    assert task.inner_function(variable) == {"x": variable}
-
-    assert callable(task.handler)
-    job = random_job(task=task)
-    job.variables = {"x": str(uuid4())}
-    with patch("pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.complete_job") as mock:
-        assert isinstance(task.handler(job), Job)
-        mock.assert_called_with(job_key=job.key, variables=job.variables)
-
-
-def test_before_task_decorator_called():
+def test_before_task_decorator_called(zeebe_worker, task):
     with patch("tests.unit.worker.worker_test.decorator") as mock:
         job = random_job(task=task)
         job.variables = {"x": str(uuid4())}
@@ -107,7 +76,7 @@ def test_before_task_decorator_called():
         mock.assert_called_with(job)
 
 
-def test_after_task_decorator_called():
+def test_after_task_decorator_called(zeebe_worker, task):
     with patch("tests.unit.worker.worker_test.decorator") as mock:
         job = random_job(task=task)
         job.variables = {"x": str(uuid4())}
@@ -123,7 +92,7 @@ def test_after_task_decorator_called():
         mock.assert_called_with(job)
 
 
-def test_decorator_failed():
+def test_decorator_failed(zeebe_worker, task):
     job = random_job(task=task)
 
     with patch("tests.unit.worker.worker_test.decorator") as decorator_mock:
@@ -136,7 +105,7 @@ def test_decorator_failed():
         assert decorator_mock.call_count == 2
 
 
-def test_task_exception_handler_called():
+def test_task_exception_handler_called(zeebe_worker, task):
     def task_handler(x):
         raise Exception()
 
@@ -149,19 +118,19 @@ def test_task_exception_handler_called():
     task.inner_function = task_handler
     task.exception_handler = exception_handler
 
-    with patch("tests.unit.worker.worker_test.task.exception_handler") as mock:
-        zeebe_worker._add_task(task)
-        task.handler(job)
-        mock.assert_called()
+    task.exception_handler = MagicMock()
+    zeebe_worker._add_task(task)
+    task.handler(job)
+    task.exception_handler.assert_called()
 
 
-def test_add_before_decorator():
+def test_add_before_decorator(zeebe_worker):
     zeebe_worker.before(decorator)
     assert len(zeebe_worker._before) == 1
     assert decorator in zeebe_worker._before
 
 
-def test_add_after_decorator():
+def test_add_after_decorator(zeebe_worker):
     zeebe_worker.after(decorator)
     assert len(zeebe_worker._after) == 1
     assert decorator in zeebe_worker._after
@@ -179,7 +148,7 @@ def test_add_constructor_after_decorator():
     assert decorator in zeebe_worker._after
 
 
-def test_create_before_decorator_runner():
+def test_create_before_decorator_runner(zeebe_worker, task):
     task.before(decorator)
     job = random_job(task=task)
     job.variables = {"x": str(uuid4())}
@@ -187,41 +156,38 @@ def test_create_before_decorator_runner():
     assert isinstance(decorators(job), Job)
 
 
-def test_handle_one_job():
+def test_handle_one_job(zeebe_worker, task):
     job = random_job(task=task)
 
     with patch("pyzeebe.worker.worker.ZeebeWorker._get_jobs") as get_jobs_mock:
         get_jobs_mock.return_value = [job]
-        with patch("tests.unit.worker.worker_test.task.handler") as task_handler_mock:
-            task_handler_mock.return_value = {"x": str(uuid4())}
-            zeebe_worker._handle_jobs(task)
-            task_handler_mock.assert_called_with(job)
+        task.handler = MagicMock(return_value={"x": str(uuid4())})
+        zeebe_worker._handle_jobs(task)
+        task.handler.assert_called_with(job)
 
 
-def test_handle_no_job():
+def test_handle_no_job(zeebe_worker, task):
     job = random_job(task=task)
 
-    with patch("pyzeebe.worker.worker.ZeebeWorker._get_jobs") as get_jobs_mock:
-        get_jobs_mock.return_value = []
-        with patch("tests.unit.worker.worker_test.task.handler") as task_handler_mock:
-            task_handler_mock.return_value = {"x": str(uuid4())}
-            zeebe_worker._handle_jobs(task)
-            with pytest.raises(AssertionError):
-                task_handler_mock.assert_called_with(job)
+    zeebe_worker._get_jobs = MagicMock(return_value=[])
+    task.handler = MagicMock(return_value={"x": str(uuid4())})
+    zeebe_worker._handle_jobs(task)
+
+    with pytest.raises(AssertionError):
+        task.handler.assert_called_with(job)
 
 
-def test_handle_many_jobs():
+def test_handle_many_jobs(zeebe_worker, task):
     job = random_job(task=task)
 
     with patch("pyzeebe.worker.worker.ZeebeWorker._get_jobs") as get_jobs_mock:
         get_jobs_mock.return_value = [job]
-        with patch("tests.unit.worker.worker_test.task.handler") as task_handler_mock:
-            task_handler_mock.return_value = {"x": str(uuid4())}
-            zeebe_worker._handle_jobs(task)
-            task_handler_mock.assert_called_with(job)
+        task.handler = MagicMock(return_value={"x": str(uuid4())})
+        zeebe_worker._handle_jobs(task)
+        task.handler.assert_called_with(job)
 
 
-def test_work_thread_start_called():
+def test_work_thread_start_called(zeebe_worker, task):
     with patch("pyzeebe.worker.worker.Thread") as thread_mock:
         thread_instance_mock = MagicMock()
         thread_mock.return_value = thread_instance_mock
@@ -231,14 +197,13 @@ def test_work_thread_start_called():
         thread_instance_mock.start.assert_called_once()
 
 
-def test_stop_worker():
+def test_stop_worker(zeebe_worker):
     zeebe_worker.work()
     zeebe_worker.stop()
 
 
-def test_include_router():
+def test_include_router(zeebe_worker, router):
     task_type = str(uuid4())
-    router = ZeebeTaskRouter()
 
     @router.task(task_type=task_type)
     def task_fn(x):
@@ -248,9 +213,7 @@ def test_include_router():
     assert zeebe_worker.get_task(task_type) is not None
 
 
-def test_include_multiple_routers():
-    routers = [ZeebeTaskRouter() for _ in range(0, randint(2, 100))]
-
+def test_include_multiple_routers(zeebe_worker, routers):
     for router in routers:
         task_type = str(uuid4())
 
@@ -263,10 +226,9 @@ def test_include_multiple_routers():
     assert len(zeebe_worker.tasks) == len(routers)
 
 
-def test_router_before_decorator():
+def test_router_before_decorator(zeebe_worker, router):
     with patch("tests.unit.worker.worker_test.decorator") as mock:
         task_type = str(uuid4())
-        router = ZeebeTaskRouter()
         router.before(decorator)
 
         @router.task(task_type=task_type, before=[decorator])
@@ -290,10 +252,9 @@ def test_router_before_decorator():
         assert mock.call_count == 3
 
 
-def test_router_after_decorator():
+def test_router_after_decorator(zeebe_worker, router):
     with patch("tests.unit.worker.worker_test.decorator") as mock:
         task_type = str(uuid4())
-        router = ZeebeTaskRouter()
         router.after(decorator)
 
         @router.task(task_type=task_type, after=[decorator])
@@ -317,7 +278,7 @@ def test_router_after_decorator():
         assert mock.call_count == 3
 
 
-def test_router_non_dict_task():
+def test_router_non_dict_task(zeebe_worker):
     with patch("pyzeebe.worker.task_handler.ZeebeTaskHandler._single_value_function_to_dict") as single_value_mock:
         task_type = str(uuid4())
         variable_name = str(uuid4())
@@ -330,7 +291,7 @@ def test_router_non_dict_task():
     assert len(zeebe_worker.tasks) == 1
 
 
-def test_get_jobs():
+def test_get_jobs(zeebe_worker, task):
     zeebe_worker.zeebe_adapter.activate_jobs = MagicMock()
     zeebe_worker._get_jobs(task)
     zeebe_worker.zeebe_adapter.activate_jobs.assert_called_with(task_type=task.type, worker=zeebe_worker.name,
