@@ -151,7 +151,7 @@ class ZeebeWorker(ZeebeTaskHandler):
                                            f"max allowed number of errors ({max_errors})")
 
     def _restart_task_thread(self, task_type: str) -> None:
-        task = next(task for task in self.tasks if task.type is task_type)
+        task = self.get_task(task_type)
         self._task_threads[task_type] = self._start_task_thread(task)
 
     def _handle_task(self, task: Task) -> None:
