@@ -43,6 +43,7 @@ class ZeebeWorker(ZeebeTaskHandler):
         self.stop_event = Event()
         self._task_threads: Dict[str, Thread] = {}
         self.watcher_max_errors_factor = watcher_max_errors_factor
+        self._watcher_thread  = None
 
     def work(self, watch: bool = False) -> None:
         """
@@ -63,10 +64,7 @@ class ZeebeWorker(ZeebeTaskHandler):
             self._task_threads[task.type] = task_thread
 
         if watch:
-            self._watcher_thread = Thread(target=self._watch_task_threads,
-                                    name=f"{self.__class__.__name__}-Watch")
-            self._watcher_thread.start()
-
+            self._start_watcher_thread()
 
     def _start_task_thread(self, task) -> Thread:
         if self.stop_event.is_set():
@@ -77,6 +75,11 @@ class ZeebeWorker(ZeebeTaskHandler):
                              name=f"{self.__class__.__name__}-Task-{task.type}")
         task_thread.start()
         return task_thread
+
+    def _start_watcher_thread(self):
+        self._watcher_thread = Thread(target=self._watch_task_threads,
+                                      name=f"{self.__class__.__name__}-Watch")
+        self._watcher_thread.start()
 
     def stop(self, wait: bool = False) -> None:
         """
