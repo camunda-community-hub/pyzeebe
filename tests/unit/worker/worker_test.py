@@ -366,7 +366,8 @@ def handle_not_alive_thread_spy(mocker):
     yield spy
 
 
-def test_watch_task_threads_TBD(handle_task_mock, stop_event_mock, handle_not_alive_thread_spy, stop_after_test):
+def test_watch_task_threads_dont_restart_running_threads(
+        handle_task_mock, stop_event_mock, handle_not_alive_thread_spy, stop_after_test):
     def fake_task_handler_never_return(*_args):
         while not stop_after_test.is_set():
             time.sleep(0.05)
@@ -381,11 +382,12 @@ def test_watch_task_threads_TBD(handle_task_mock, stop_event_mock, handle_not_al
 
     assert handle_not_alive_thread_spy.call_count == 0
 
-def test_watch_task_threads_that_die_TBD(handle_task_mock, stop_event_mock, handle_not_alive_thread_spy):
-    def fake_task_handler_return_right_away(*_args):
+def test_watch_task_threads_that_die_get_restarted_then_exit_after_too_many_errors(
+        handle_task_mock, stop_event_mock, handle_not_alive_thread_spy):
+    def fake_task_handler_return_immediately(*_args):
         pass
 
-    handle_task_mock.side_effect = fake_task_handler_return_right_away
+    handle_task_mock.side_effect = fake_task_handler_return_immediately
     zeebe_worker._add_task(task)
     zeebe_worker.watcher_max_errors_factor = 2
     # change stop_event.is_set on nth call
