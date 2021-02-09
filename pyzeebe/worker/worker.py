@@ -95,10 +95,7 @@ class ZeebeWorker(ZeebeTaskHandler):
     def _join_task_threads(self) -> None:
         logger.debug("Waiting for threads to join")
         while self._task_threads:
-            # get first dict item
-            task_type = next(iter(self._task_threads))
-            # remove from list and wait to join
-            thread = self._task_threads.pop(task_type)
+            _, thread = self._task_threads.popitem()
             thread.join()
         logger.debug("All threads joined")
 
