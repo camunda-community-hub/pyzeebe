@@ -316,8 +316,8 @@ def handle_task_mock():
 
 
 @pytest.fixture
-def stop_event_mock():
-    with patch("tests.unit.worker.worker_test.zeebe_worker.stop_event") as mock:
+def stop_event_mock(zeebe_worker):
+    with patch.object(zeebe_worker, "stop_event") as mock:
         yield mock
 
 
@@ -328,7 +328,7 @@ def handle_not_alive_thread_spy(mocker):
 
 
 def test_watch_task_threads_dont_restart_running_threads(
-        handle_task_mock, stop_event_mock, handle_not_alive_thread_spy, stop_after_test):
+        zeebe_worker, task, handle_task_mock, stop_event_mock, handle_not_alive_thread_spy, stop_after_test):
     def fake_task_handler_never_return(*_args):
         while not stop_after_test.is_set():
             time.sleep(0.05)
@@ -344,7 +344,7 @@ def test_watch_task_threads_dont_restart_running_threads(
     assert handle_not_alive_thread_spy.call_count == 0
 
 def test_watch_task_threads_that_die_get_restarted_then_exit_after_too_many_errors(
-        handle_task_mock, stop_event_mock, handle_not_alive_thread_spy):
+        zeebe_worker, task, handle_task_mock, stop_event_mock, handle_not_alive_thread_spy):
     def fake_task_handler_return_immediately(*_args):
         pass
 
