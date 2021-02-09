@@ -340,13 +340,11 @@ def test_get_jobs():
                                                                 request_timeout=zeebe_worker.request_timeout)
 
 
-stop_test = Event()
-
 
 @pytest.fixture
 def stop_after_test():
-    stop_test.clear()
-    yield
+    stop_test = Event()
+    yield stop_test
     stop_test.set()
 
 
@@ -368,10 +366,9 @@ def handle_not_alive_thread_spy(mocker):
     yield spy
 
 
-@pytest.mark.usefixtures("stop_after_test")
-def test_watch_task_threads_TBD(handle_task_mock, stop_event_mock, handle_not_alive_thread_spy):
+def test_watch_task_threads_TBD(handle_task_mock, stop_event_mock, handle_not_alive_thread_spy, stop_after_test):
     def fake_task_handler_never_return(*_args):
-        while not stop_test.is_set():
+        while not stop_after_test.is_set():
             time.sleep(0.05)
 
     handle_task_mock.side_effect = fake_task_handler_never_return
