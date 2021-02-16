@@ -6,7 +6,7 @@ import time
 
 import pytest
 
-from pyzeebe.exceptions import DuplicateTaskType, MaxConsecutiveTaskThread
+from pyzeebe.exceptions import DuplicateTaskType, MaxConsecutiveTaskThreadError
 from pyzeebe.job.job import Job
 from pyzeebe.worker.worker import ZeebeWorker
 from tests.unit.utils.random_utils import random_job
@@ -354,7 +354,7 @@ def test_watch_task_threads_that_die_get_restarted_then_exit_after_too_many_erro
     # change stop_event.is_set on nth call
     stop_event_mock.is_set.return_value = False
     zeebe_worker.work(watch=False)
-    with pytest.raises(MaxConsecutiveTaskThread) as exc_info:
+    with pytest.raises(MaxConsecutiveTaskThreadError) as exc_info:
         zeebe_worker._watch_task_threads(frequency=0)
 
     assert "consecutive errors (2)" in exc_info.value.args[0]

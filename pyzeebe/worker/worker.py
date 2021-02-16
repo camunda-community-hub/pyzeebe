@@ -5,7 +5,7 @@ from threading import Thread, Event
 from typing import List, Callable, Generator, Tuple, Dict, Union
 
 from pyzeebe.credentials.base_credentials import BaseCredentials
-from pyzeebe.exceptions.pyzeebe_exceptions import MaxConsecutiveTaskThread
+from pyzeebe.exceptions.pyzeebe_exceptions import MaxConsecutiveTaskThreadError
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job
 from pyzeebe.task.exception_handler import ExceptionHandler
@@ -104,7 +104,7 @@ class ZeebeWorker(ZeebeTaskHandler):
         try:
             self._watch_task_threads_runner(frequency)
         except Exception as err:
-            if isinstance(err, MaxConsecutiveTaskThread):
+            if isinstance(err, MaxConsecutiveTaskThreadError):
                 logger.debug("Stopping worker due to too many errors.")
             else:
                 logger.debug("An unhandled exception occured when watching threads, stopping worker")
@@ -147,7 +147,7 @@ class ZeebeWorker(ZeebeTaskHandler):
     @staticmethod
     def _check_max_errors(consecutive_errors, max_errors):
         if consecutive_errors >= max_errors:
-            raise MaxConsecutiveTaskThread(f"Number of consecutive errors ({consecutive_errors}) exceeded "
+            raise MaxConsecutiveTaskThreadError(f"Number of consecutive errors ({consecutive_errors}) exceeded "
                                            f"max allowed number of errors ({max_errors})")
 
     def _restart_task_thread(self, task_type: str) -> None:
