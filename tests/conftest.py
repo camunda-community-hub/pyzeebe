@@ -1,4 +1,6 @@
 from random import randint
+from threading import Event
+from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
@@ -41,6 +43,31 @@ def zeebe_worker(zeebe_adapter):
 @pytest.fixture
 def task():
     return Task(str(uuid4()), lambda x: {"x": x}, lambda x, y, z: x)
+
+
+@pytest.fixture
+def stop_after_test():
+    stop_test = Event()
+    yield stop_test
+    stop_test.set()
+
+
+@pytest.fixture
+def handle_task_mock():
+    with patch("pyzeebe.worker.worker.ZeebeWorker._handle_task") as mock:
+        yield mock
+
+
+@pytest.fixture
+def stop_event_mock(zeebe_worker):
+    with patch.object(zeebe_worker, "stop_event") as mock:
+        yield mock
+
+
+@pytest.fixture
+def handle_not_alive_thread_spy(mocker):
+    spy = mocker.spy(ZeebeWorker, "_handle_not_alive_thread")
+    yield spy
 
 
 @pytest.fixture

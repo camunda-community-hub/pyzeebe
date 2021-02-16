@@ -1,5 +1,4 @@
 from random import randint
-from threading import Event
 from unittest.mock import patch, MagicMock
 from uuid import uuid4
 import time
@@ -299,32 +298,6 @@ def test_get_jobs(zeebe_worker, task):
                                                                 max_jobs_to_activate=task.max_jobs_to_activate,
                                                                 variables_to_fetch=task.variables_to_fetch,
                                                                 request_timeout=zeebe_worker.request_timeout)
-
-
-
-@pytest.fixture
-def stop_after_test():
-    stop_test = Event()
-    yield stop_test
-    stop_test.set()
-
-
-@pytest.fixture
-def handle_task_mock():
-    with patch("pyzeebe.worker.worker.ZeebeWorker._handle_task") as mock:
-        yield mock
-
-
-@pytest.fixture
-def stop_event_mock(zeebe_worker):
-    with patch.object(zeebe_worker, "stop_event") as mock:
-        yield mock
-
-
-@pytest.fixture
-def handle_not_alive_thread_spy(mocker):
-    spy = mocker.spy(ZeebeWorker, "_handle_not_alive_thread")
-    yield spy
 
 
 def test_watch_task_threads_dont_restart_running_threads(
