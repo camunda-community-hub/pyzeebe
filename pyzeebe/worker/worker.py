@@ -121,7 +121,6 @@ class ZeebeWorker(ZeebeTaskHandler):
 
     def _watch_task_threads_runner(self, frequency: int = 10) -> None:
         consecutive_errors = 0
-        max_errors = self.watcher_max_errors_factor * len(self.tasks)
         while self._should_watch_threads():
             logger.debug("Checking task thread status")
             # converting to list to avoid "RuntimeError: dictionary changed size during iteration"
@@ -131,7 +130,7 @@ class ZeebeWorker(ZeebeTaskHandler):
                 thread = self._task_threads.get(task_type)
                 if not thread or not thread.is_alive():
                     consecutive_errors += 1
-                    self._check_max_errors(consecutive_errors, max_errors)
+                    self._check_max_errors(consecutive_errors)
                     self._handle_not_alive_thread(task_type)
                 else:
                     consecutive_errors = 0
@@ -144,8 +143,8 @@ class ZeebeWorker(ZeebeTaskHandler):
         else:
             logger.warning(f"Task thread {task_type} is not alive, but condition not met for restarting")
 
-    @staticmethod
-    def _check_max_errors(consecutive_errors, max_errors):
+    def _check_max_errors(self, consecutive_errors: int):
+        max_errors = self.watcher_max_errors_factor * len(self.tasks)
         if consecutive_errors >= max_errors:
             raise MaxConsecutiveTaskThreadError(f"Number of consecutive errors ({consecutive_errors}) exceeded "
                                            f"max allowed number of errors ({max_errors})")
