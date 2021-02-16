@@ -1,5 +1,4 @@
 import os
-from threading import Thread
 from typing import Dict
 from uuid import uuid4
 
@@ -28,7 +27,7 @@ def task_handler(should_throw: bool, input: str) -> Dict:
 def setup():
     global zeebe_client, task_handler
 
-    zeebe_worker.work()
+    zeebe_worker.work(watch=True)
 
     zeebe_client = ZeebeClient()
     try:
@@ -39,7 +38,7 @@ def setup():
 
     yield zeebe_client
     zeebe_worker.stop(wait=True)
-    assert not zeebe_worker._task_threads
+    assert not zeebe_worker._watcher_thread.is_alive()
 
 
 def test_run_workflow():

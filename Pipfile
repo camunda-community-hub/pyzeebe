@@ -15,6 +15,7 @@ importlib-metadata = "~=3.4.0"
 pyzeebe = {editable = true, path = "."}
 sphinx = "~=3.4.3"
 sphinx-rtd-theme = "*"
+pytest-mock = "*"
 
 [packages]
 oauthlib = "~=3.1.0"
