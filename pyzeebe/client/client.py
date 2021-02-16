@@ -7,10 +7,20 @@ from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 
 
 class ZeebeClient(object):
+    """A zeebe client that can connect to a zeebe instance and perform actions."""
+
     def __init__(self, hostname: str = None, port: int = None, credentials: BaseCredentials = None,
-                 channel: grpc.Channel = None, secure_connection: bool = False):
+                 channel: grpc.Channel = None, secure_connection: bool = False, max_connection_retries: int = 10):
+        """
+        Args:
+            hostname (str): Zeebe instance hostname
+            port (int): Port of the zeebe
+            max_connection_retries (int): Amount of connection retries before client gives up on connecting to zeebe. To setup with infinite retries use -1
+        """
+
         self.zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port, credentials=credentials, channel=channel,
-                                          secure_connection=secure_connection)
+                                          secure_connection=secure_connection,
+                                          max_connection_retries=max_connection_retries)
 
     def run_workflow(self, bpmn_process_id: str, variables: Dict = None, version: int = -1) -> int:
         """

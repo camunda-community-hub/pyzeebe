@@ -38,6 +38,18 @@ To create a worker with custom hostname and port:
 
     worker = ZeebeWorker(hostname="zeebe_gateway", port=26500)
 
+To change connection retries:
+
+.. code-block:: python
+
+    worker = ZeebeWorker(max_connection_retries=1)  # Will only accept one failure and disconnect upon the second
+
+This means the worker will disconnect upon two consecutive failures. Each time the worker connects successfully the counter is reset.
+
+.. note::
+
+    The default behavior is 10 retries. If you want infinite retries just set to -1.
+
 To create a worker with a secure connection:
 
 .. code-block:: python
