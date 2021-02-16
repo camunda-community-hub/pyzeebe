@@ -137,7 +137,7 @@ class ZeebeWorker(ZeebeTaskHandler):
                     consecutive_errors = 0
             time.sleep(frequency)
 
-    def _handle_not_alive_thread(self, task_type):
+    def _handle_not_alive_thread(self, task_type: str):
         if self._should_handle_task():
             logger.warning(f"Task thread {task_type} is not alive, restarting")
             self._restart_task_thread(task_type)
