@@ -171,7 +171,7 @@ class TestHandleJobs:
         assert task.handler.call_count == 10
 
 
-class TestStartAndStop:
+class TestWorkerThreads:
     def test_work_thread_start_called(self, zeebe_worker, task):
         with patch("pyzeebe.worker.worker.Thread") as thread_mock:
             thread_instance_mock = MagicMock()
@@ -184,6 +184,39 @@ class TestStartAndStop:
     def test_stop_worker(self, zeebe_worker):
         zeebe_worker.work()
         zeebe_worker.stop()
+
+    def test_watch_task_threads_dont_restart_running_threads(
+            self, zeebe_worker, task, handle_task_mock, stop_event_mock, handle_not_alive_thread_spy, stop_after_test):
+        def fake_task_handler_never_return(*_args):
+            while not stop_after_test.is_set():
+                time.sleep(0.05)
+
+        handle_task_mock.side_effect = fake_task_handler_never_return
+        zeebe_worker._add_task(task)
+        zeebe_worker.watcher_max_errors_factor = 2
+        # change stop_event.is_set on nth call
+        stop_event_mock.is_set.side_effect = [False, False, True, True]
+        zeebe_worker.work(watch=False)
+        zeebe_worker._watch_task_threads(frequency=0)
+
+        assert handle_not_alive_thread_spy.call_count == 0
+
+    def test_watch_task_threads_that_die_get_restarted_then_exit_after_too_many_errors(
+            self, zeebe_worker, task, handle_task_mock, stop_event_mock, handle_not_alive_thread_spy):
+        def fake_task_handler_return_immediately(*_args):
+            pass
+
+        handle_task_mock.side_effect = fake_task_handler_return_immediately
+        zeebe_worker._add_task(task)
+        zeebe_worker.watcher_max_errors_factor = 2
+        # change stop_event.is_set on nth call
+        stop_event_mock.is_set.return_value = False
+        zeebe_worker.work(watch=False)
+        with pytest.raises(MaxConsecutiveTaskThreadError) as exc_info:
+            zeebe_worker._watch_task_threads(frequency=0)
+
+        assert "consecutive errors (2)" in exc_info.value.args[0]
+        assert handle_not_alive_thread_spy.call_count == 1
 
 
 class TestGetJobs:
@@ -235,38 +268,3 @@ class TestIncludeRouter:
 
         zeebe_worker.include_router(router)
         return zeebe_worker.get_task(task_type)
-
-
-def test_watch_task_threads_dont_restart_running_threads(
-        zeebe_worker, task, handle_task_mock, stop_event_mock, handle_not_alive_thread_spy, stop_after_test):
-    def fake_task_handler_never_return(*_args):
-        while not stop_after_test.is_set():
-            time.sleep(0.05)
-
-    handle_task_mock.side_effect = fake_task_handler_never_return
-    zeebe_worker._add_task(task)
-    zeebe_worker.watcher_max_errors_factor = 2
-    # change stop_event.is_set on nth call
-    stop_event_mock.is_set.side_effect = [False, False, True, True]
-    zeebe_worker.work(watch=False)
-    zeebe_worker._watch_task_threads(frequency=0)
-
-    assert handle_not_alive_thread_spy.call_count == 0
-
-
-def test_watch_task_threads_that_die_get_restarted_then_exit_after_too_many_errors(
-        zeebe_worker, task, handle_task_mock, stop_event_mock, handle_not_alive_thread_spy):
-    def fake_task_handler_return_immediately(*_args):
-        pass
-
-    handle_task_mock.side_effect = fake_task_handler_return_immediately
-    zeebe_worker._add_task(task)
-    zeebe_worker.watcher_max_errors_factor = 2
-    # change stop_event.is_set on nth call
-    stop_event_mock.is_set.return_value = False
-    zeebe_worker.work(watch=False)
-    with pytest.raises(MaxConsecutiveTaskThreadError) as exc_info:
-        zeebe_worker._watch_task_threads(frequency=0)
-
-    assert "consecutive errors (2)" in exc_info.value.args[0]
-    assert handle_not_alive_thread_spy.call_count == 1
