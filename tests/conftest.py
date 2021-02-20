@@ -7,7 +7,7 @@ import pytest
 
 from pyzeebe import ZeebeClient, ZeebeWorker, ZeebeTaskRouter, Job
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
-from pyzeebe.task.task import Task
+from pyzeebe.task import task_builder
 from pyzeebe.task.task_config import TaskConfig
 from pyzeebe.worker.task_handler import ZeebeTaskHandler
 from tests.unit.utils.gateway_mock import GatewayMock
@@ -57,8 +57,14 @@ def zeebe_worker(zeebe_adapter):
 
 
 @pytest.fixture
-def task(task_type):
-    return Task(task_type, MagicMock(wraps=lambda x: dict(x=x)), MagicMock(wraps=lambda x, y, z: x))
+def task(original_task_function, task_config):
+    return task_builder.build_task(original_task_function, task_config)
+
+
+@pytest.fixture
+def first_active_job(task, job_from_task, grpc_servicer) -> str:
+    grpc_servicer.active_jobs[job_from_task.key] = job_from_task
+    return job_from_task
 
 
 @pytest.fixture
@@ -76,7 +82,9 @@ def original_task_function():
     def original_function():
         pass
 
-    return MagicMock(wraps=original_function)
+    mock = MagicMock(wraps=original_function)
+    mock.__code__ = original_function.__code__
+    return mock
 
 
 @pytest.fixture

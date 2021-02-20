@@ -1,7 +1,7 @@
+import time
 from random import randint
 from unittest.mock import patch, MagicMock
 from uuid import uuid4
-import time
 
 import pytest
 
@@ -224,10 +224,10 @@ class TestGetJobs:
         zeebe_worker.zeebe_adapter.activate_jobs = MagicMock()
         zeebe_worker._get_jobs(task)
         zeebe_worker.zeebe_adapter.activate_jobs.assert_called_with(task_type=task.type, worker=zeebe_worker.name,
-                                                                    timeout=task.timeout,
-                                                                    max_jobs_to_activate=task.max_jobs_to_activate,
-                                                                    variables_to_fetch=task.variables_to_fetch,
-                                                                    request_timeout=zeebe_worker.request_timeout)
+                                                                    timeout=task.config.timeout,
+                                                                    max_jobs_to_activate=task.config.max_jobs_to_activate,
+                                                                    variables_to_fetch=task.config.variables_to_fetch,
+                                                                    request_timeout=zeebe_worker.config.request_timeout)
 
 
 class TestIncludeRouter:

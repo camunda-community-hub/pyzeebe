@@ -47,7 +47,8 @@ def test_remove_task_from_many(task_handler, task):
     task_handler.tasks.append(task)
 
     for i in range(0, randint(0, 100)):
-        task_handler.tasks.append(Task(str(uuid4()), lambda x: x, lambda x: x))
+        task.config.type = str(uuid4())
+        task_handler.tasks.append(task)
     assert task_handler.remove_task(task.type) is not None
     assert task not in task_handler.tasks
 

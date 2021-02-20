@@ -1,17 +1,23 @@
 from collections import Callable
 
 from pyzeebe import Job, TaskDecorator
-from pyzeebe.task.task_config import TaskConfig
 from pyzeebe.task import task_builder
+from pyzeebe.task.task import Task
+from pyzeebe.task.task_config import TaskConfig
 
 
 class TestBuildTask:
+    def test_returns_task(self, original_task_function: Callable, task_config: TaskConfig):
+        task = task_builder.build_task(original_task_function, task_config)
+
+        assert isinstance(task, Task)
+
     def test_single_value_func(self, task_config: TaskConfig, mocked_job_with_adapter: Job):
         task_config.single_value = True
         task_config.variable_name = "y"
         mocked_job_with_adapter.variables = {"x": 1}
 
-        job = task_builder.build_task(lambda x: x, task_config)[0](mocked_job_with_adapter)
+        job = task_builder.build_task(lambda x: x, task_config).job_handler(mocked_job_with_adapter)
 
         assert job.variables.pop("y") == 1
 
@@ -21,9 +27,9 @@ class TestBuildTask:
         def dummy_fn(x, y):
             pass
 
-        _, updated_task_config = task_builder.build_task(dummy_fn, task_config)
+        task = task_builder.build_task(dummy_fn, task_config)
 
-        assert updated_task_config.variables_to_fetch == expected_variables_to_fetch
+        assert task.config.variables_to_fetch == expected_variables_to_fetch
 
 
 class TestBuildJobHandler:
