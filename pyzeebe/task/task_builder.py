@@ -9,7 +9,7 @@ DecoratorRunner = Callable[[Job], Job]
 JobHandler = Callable[[Job], Job]
 
 
-def build_task(task_function, task_config: TaskConfig) -> Tuple[JobHandler, TaskConfig]:
+def build_task(task_function: Callable, task_config: TaskConfig) -> Tuple[JobHandler, TaskConfig]:
     if not task_config.variables_to_fetch:
         task_config.variables_to_fetch = get_parameters_from_function(task_function)
 
@@ -19,7 +19,7 @@ def build_task(task_function, task_config: TaskConfig) -> Tuple[JobHandler, Task
     return build_job_handler(task_function, task_config), task_config
 
 
-def build_job_handler(task_function, task_config: TaskConfig) -> JobHandler:
+def build_job_handler(task_function: Callable, task_config: TaskConfig) -> JobHandler:
     before_decorator_runner = create_decorator_runner(task_config.before)
     after_decorator_runner = create_decorator_runner(task_config.after)
 
