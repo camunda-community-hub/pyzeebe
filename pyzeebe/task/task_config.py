@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 
 from pyzeebe import ExceptionHandler, TaskDecorator, Job
+from pyzeebe.exceptions import NoVariableNameGiven
 
 logger = logging.getLogger(__name__)
 
@@ -19,5 +20,11 @@ class TaskConfig:
     timeout: int = 10000
     max_jobs_to_activate: int = 32
     variables_to_fetch: Optional[List[str]] = None
+    single_value: bool = False
+    variable_name: Optional[str] = None
     before: List[TaskDecorator] = field(default_factory=list)
     after: List[TaskDecorator] = field(default_factory=list)
+
+    def __post_init__(self):
+        if self.single_value and not self.variable_name:
+            raise NoVariableNameGiven(self.type)

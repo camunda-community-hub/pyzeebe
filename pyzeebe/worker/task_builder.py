@@ -1,5 +1,5 @@
 import logging
-from typing import List, Callable
+from typing import List, Callable, Dict
 
 from pyzeebe import Job, TaskDecorator
 from pyzeebe.task.task_config import TaskConfig
@@ -9,7 +9,17 @@ DecoratorRunner = Callable[[Job], Job]
 JobHandler = Callable[[Job], Job]
 
 
-def build_task(task_function, task_config: TaskConfig) -> JobHandler:
+def build_task(task_function, task_config: TaskConfig):
+    if not task_config.variables_to_fetch:
+        task_config.variables_to_fetch = get_parameters_from_function(task_function)
+
+    if task_config.single_value:
+        task_function = convert_to_dict_function(task_function, task_config.variable_name)
+
+    return build_job_handler(task_function, task_config), task_config
+
+
+def build_job_handler(task_function, task_config: TaskConfig) -> JobHandler:
     before_decorator_runner = create_decorator_runner(task_config.before)
     after_decorator_runner = create_decorator_runner(task_config.after)
 
@@ -42,3 +52,20 @@ def run_decorator(decorator: TaskDecorator, job: Job) -> Job:
     except Exception as e:
         logger.warning(f"Failed to run decorator {decorator}. Exception: {e}")
         return job
+
+
+def convert_to_dict_function(single_value_function: Callable, variable_name: str) -> Callable[..., Dict]:
+    def inner_fn(*args, **kwargs):
+        return {variable_name: single_value_function(*args, **kwargs)}
+
+    return inner_fn
+
+
+def get_parameters_from_function(fn: Callable) -> List[str]:
+    parameters = fn.__code__.co_varnames
+    if "args" in parameters:
+        return []
+    elif "kwargs" in parameters:
+        return []
+    else:
+        return list(parameters)
