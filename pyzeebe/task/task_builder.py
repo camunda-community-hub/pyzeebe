@@ -1,5 +1,5 @@
 import logging
-from typing import List, Callable, Dict
+from typing import List, Callable, Dict, Tuple
 
 from pyzeebe import Job, TaskDecorator
 from pyzeebe.task.task_config import TaskConfig
@@ -9,7 +9,7 @@ DecoratorRunner = Callable[[Job], Job]
 JobHandler = Callable[[Job], Job]
 
 
-def build_task(task_function, task_config: TaskConfig):
+def build_task(task_function, task_config: TaskConfig) -> Tuple[JobHandler, TaskConfig]:
     if not task_config.variables_to_fetch:
         task_config.variables_to_fetch = get_parameters_from_function(task_function)
 
