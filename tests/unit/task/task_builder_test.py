@@ -2,7 +2,7 @@ from collections import Callable
 
 from pyzeebe import Job, TaskDecorator
 from pyzeebe.task.task_config import TaskConfig
-from pyzeebe.worker import task_builder
+from pyzeebe.task import task_builder
 
 
 class TestBuildTask:
