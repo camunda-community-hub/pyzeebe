@@ -7,7 +7,7 @@ from pyzeebe.exceptions import NoVariableNameGiven, TaskNotFound, DuplicateTaskT
 from pyzeebe.job.job import Job
 from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.task.task import Task
-from pyzeebe.task.task_decorator import TaskDecorator
+from pyzeebe import TaskDecorator
 
 logger = logging.getLogger(__name__)
 

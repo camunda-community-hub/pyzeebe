@@ -2,7 +2,7 @@ from typing import List, Callable, Dict
 
 from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.task.task import Task
-from pyzeebe.task.task_decorator import TaskDecorator
+from pyzeebe import TaskDecorator
 from pyzeebe.worker.task_handler import ZeebeTaskHandler, default_exception_handler
 
 

@@ -4,3 +4,4 @@ from pyzeebe import Job
 
 DecoratorRunner = Callable[[Job], Job]
 JobHandler = Callable[[Job], Job]
+TaskDecorator = Callable[[Job], Job]
