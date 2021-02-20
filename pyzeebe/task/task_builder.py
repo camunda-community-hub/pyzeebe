@@ -30,6 +30,7 @@ def build_job_handler(task_function: Callable, task_config: TaskConfig) -> JobHa
             job = after_decorator_runner(job)
             job.set_success_status()
         except Exception as e:
+            logger.debug(f"Failed job: {job}. Error: {e}.")
             task_config.exception_handler(e, job)
         finally:
             return job
