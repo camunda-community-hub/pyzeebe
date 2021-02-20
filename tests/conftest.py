@@ -8,6 +8,7 @@ import pytest
 from pyzeebe import ZeebeClient, ZeebeWorker, ZeebeTaskRouter, Job
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.task.task import Task
+from pyzeebe.task.task_config import TaskConfig
 from pyzeebe.worker.task_handler import ZeebeTaskHandler
 from tests.unit.utils.gateway_mock import GatewayMock
 from tests.unit.utils.random_utils import random_job
@@ -16,6 +17,14 @@ from tests.unit.utils.random_utils import random_job
 @pytest.fixture
 def job_with_adapter(zeebe_adapter):
     return random_job(zeebe_adapter=zeebe_adapter)
+
+
+@pytest.fixture
+def mocked_job_with_adapter(job_with_adapter):
+    job_with_adapter.set_success_status = MagicMock()
+    job_with_adapter.set_failure_status = MagicMock()
+    job_with_adapter.set_error_status = MagicMock()
+    return job_with_adapter
 
 
 @pytest.fixture
@@ -53,8 +62,21 @@ def task(task_type):
 
 
 @pytest.fixture
+def task_config(task_type):
+    return TaskConfig(task_type, MagicMock())
+
+
+@pytest.fixture
 def task_type():
     return str(uuid4())
+
+
+@pytest.fixture
+def original_task_function():
+    def original_function():
+        pass
+
+    return MagicMock(wraps=original_function)
 
 
 @pytest.fixture
