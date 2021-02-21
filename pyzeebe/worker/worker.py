@@ -9,7 +9,6 @@ from pyzeebe.credentials.base_credentials import BaseCredentials
 from pyzeebe.exceptions.pyzeebe_exceptions import MaxConsecutiveTaskThreadError
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job
-from pyzeebe.task import task_builder
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_router import ZeebeTaskRouter
 
