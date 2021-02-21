@@ -24,7 +24,7 @@ class TestAddTask:
 
     def test_only_one_task_added(self, zeebe_worker):
         @zeebe_worker.task(str(uuid4()))
-        def _():
+        def dummy_function():
             pass
 
         assert len(zeebe_worker.tasks) == 1
@@ -38,7 +38,7 @@ class TestAddTask:
         expected_variables_to_fetch = ["x"]
 
         @zeebe_worker.task(task_type)
-        def _(x):
+        def dummy_function(x):
             pass
 
         assert zeebe_worker.get_task(task_type).config.variables_to_fetch == expected_variables_to_fetch
@@ -205,7 +205,7 @@ class TestIncludeRouter:
         task_type = task_type or str(uuid4())
 
         @router.task(task_type)
-        def _():
+        def dummy_function():
             return {}
 
         zeebe_worker.include_router(router)
