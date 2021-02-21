@@ -1,11 +1,11 @@
 from random import randint
 from threading import Event
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from uuid import uuid4
 
 import pytest
 
-from pyzeebe import ZeebeClient, ZeebeWorker, ZeebeTaskRouter
+from pyzeebe import ZeebeClient, ZeebeWorker, ZeebeTaskRouter, Job
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_handler import ZeebeTaskHandler
@@ -21,6 +21,13 @@ def job_with_adapter(zeebe_adapter):
 @pytest.fixture
 def job_without_adapter():
     return random_job()
+
+
+@pytest.fixture
+def job_from_task(task):
+    job = random_job(task)
+    job.variables = dict(x=str(uuid4()))
+    return job
 
 
 @pytest.fixture
@@ -41,8 +48,13 @@ def zeebe_worker(zeebe_adapter):
 
 
 @pytest.fixture
-def task():
-    return Task(str(uuid4()), lambda x: {"x": x}, lambda x, y, z: x)
+def task(task_type):
+    return Task(task_type, MagicMock(wraps=lambda x: dict(x=x)), MagicMock(wraps=lambda x, y, z: x))
+
+
+@pytest.fixture
+def task_type():
+    return str(uuid4())
 
 
 @pytest.fixture
@@ -83,6 +95,14 @@ def routers():
 @pytest.fixture
 def task_handler():
     return ZeebeTaskHandler()
+
+
+@pytest.fixture
+def decorator():
+    def simple_decorator(job: Job) -> Job:
+        return job
+
+    return MagicMock(wraps=simple_decorator)
 
 
 @pytest.fixture(scope="module")
