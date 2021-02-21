@@ -2,22 +2,20 @@ import logging
 import socket
 import time
 from threading import Thread, Event
-from typing import List, Callable, Generator, Tuple, Dict, Union
+from typing import List, Callable, Generator, Tuple, Dict
 
+from pyzeebe import TaskDecorator
 from pyzeebe.credentials.base_credentials import BaseCredentials
 from pyzeebe.exceptions.pyzeebe_exceptions import MaxConsecutiveTaskThreadError
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job
-from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.task.task import Task
-from pyzeebe import TaskDecorator
-from pyzeebe.worker.task_handler import ZeebeTaskHandler, default_exception_handler
 from pyzeebe.worker.task_router import ZeebeTaskRouter
 
 logger = logging.getLogger(__name__)
 
 
-class ZeebeWorker(ZeebeTaskHandler):
+class ZeebeWorker(ZeebeTaskRouter):
     """A zeebe worker that can connect to a zeebe instance and perform tasks."""
 
     def __init__(self, name: str = None, request_timeout: int = 0, hostname: str = None, port: int = None,
@@ -43,7 +41,7 @@ class ZeebeWorker(ZeebeTaskHandler):
         self.stop_event = Event()
         self._task_threads: Dict[str, Thread] = {}
         self.watcher_max_errors_factor = watcher_max_errors_factor
-        self._watcher_thread  = None
+        self._watcher_thread = None
 
     def work(self, watch: bool = False) -> None:
         """
@@ -147,7 +145,7 @@ class ZeebeWorker(ZeebeTaskHandler):
         max_errors = self.watcher_max_errors_factor * len(self.tasks)
         if consecutive_errors >= max_errors:
             raise MaxConsecutiveTaskThreadError(f"Number of consecutive errors ({consecutive_errors}) exceeded "
-                                           f"max allowed number of errors ({max_errors})")
+                                                f"max allowed number of errors ({max_errors})")
 
     def _restart_task_thread(self, task_type: str) -> None:
         task = self.get_task(task_type)

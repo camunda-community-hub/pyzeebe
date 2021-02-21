@@ -9,7 +9,7 @@ from pyzeebe import ZeebeClient, ZeebeWorker, ZeebeTaskRouter, Job
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.task import task_builder
 from pyzeebe.task.task_config import TaskConfig
-from pyzeebe.worker.task_handler import ZeebeTaskHandler
+from pyzeebe.worker.task_router import ZeebeTaskRouter
 from tests.unit.utils.gateway_mock import GatewayMock
 from tests.unit.utils.random_utils import random_job
 
@@ -124,7 +124,7 @@ def routers():
 
 @pytest.fixture
 def task_handler():
-    return ZeebeTaskHandler()
+    return ZeebeTaskRouter()
 
 
 @pytest.fixture
