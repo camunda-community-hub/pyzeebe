@@ -34,17 +34,18 @@ class ZeebeTaskRouter(ZeebeDecoratorBase):
         """
         if isinstance(task_config, str):
             task_config = TaskConfig(task_config)
-
-        self._is_task_duplicate(task_config.type)
-
-        task_config = self._add_decorators_to_config(task_config)
+        config_with_decorators = self._add_decorators_to_config(task_config)
 
         def wrapper(fn: Callable):
-            task = task_builder.build_task(fn, task_config)
-            self.tasks.append(task)
+            task = task_builder.build_task(fn, config_with_decorators)
+            self._add_task(task)
             return fn
 
         return wrapper
+
+    def _add_task(self, task: Task):
+        self._is_task_duplicate(task.type)
+        self.tasks.append(task)
 
     def _add_decorators_to_config(self, config: TaskConfig) -> TaskConfig:
         before_decorators = self._before.copy()

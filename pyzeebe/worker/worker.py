@@ -2,13 +2,14 @@ import logging
 import socket
 import time
 from threading import Thread, Event
-from typing import List, Callable, Generator, Tuple, Dict
+from typing import List, Generator, Dict
 
 from pyzeebe import TaskDecorator
 from pyzeebe.credentials.base_credentials import BaseCredentials
 from pyzeebe.exceptions.pyzeebe_exceptions import MaxConsecutiveTaskThreadError
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job
+from pyzeebe.task import task_builder
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_router import ZeebeTaskRouter
 
@@ -167,7 +168,7 @@ class ZeebeWorker(ZeebeTaskRouter):
 
     def _handle_jobs(self, task: Task) -> None:
         for job in self._get_jobs(task):
-            thread = Thread(target=task.handler,
+            thread = Thread(target=task.job_handler,
                             args=(job,),
                             name=f"{self.__class__.__name__}-Job-{job.type}")
             logger.debug(f"Running job: {job}")
@@ -175,9 +176,9 @@ class ZeebeWorker(ZeebeTaskRouter):
 
     def _get_jobs(self, task: Task) -> Generator[Job, None, None]:
         logger.debug(f"Activating jobs for task: {task}")
-        return self.zeebe_adapter.activate_jobs(task_type=task.type, worker=self.name, timeout=task.timeout,
-                                                max_jobs_to_activate=task.max_jobs_to_activate,
-                                                variables_to_fetch=task.variables_to_fetch,
+        return self.zeebe_adapter.activate_jobs(task_type=task.type, worker=self.name, timeout=task.config.timeout,
+                                                max_jobs_to_activate=task.config.max_jobs_to_activate,
+                                                variables_to_fetch=task.config.variables_to_fetch,
                                                 request_timeout=self.request_timeout)
 
     def include_router(self, *routers: ZeebeTaskRouter) -> None:
@@ -190,69 +191,5 @@ class ZeebeWorker(ZeebeTaskRouter):
         """
         for router in routers:
             for task in router.tasks:
+                task.config = self._add_decorators_to_config(task.config)
                 self._add_task(task)
-
-    def _add_task(self, task: Task) -> None:
-        self._is_task_duplicate(task.type)
-        task.handler = self._create_task_handler(task)
-        self.tasks.append(task)
-
-    def _create_task_handler(self, task: Task) -> Callable[[Job], Job]:
-        before_decorator_runner = self._create_before_decorator_runner(task)
-        after_decorator_runner = self._create_after_decorator_runner(task)
-
-        def task_handler(job: Job) -> Job:
-            job = before_decorator_runner(job)
-            job, task_succeeded = self._run_task_inner_function(task, job)
-            job = after_decorator_runner(job)
-            if task_succeeded:
-                self._complete_job(job)
-            return job
-
-        return task_handler
-
-    @staticmethod
-    def _run_task_inner_function(task: Task, job: Job) -> Tuple[Job, bool]:
-        task_succeeded = False
-        try:
-            job.variables = task.inner_function(**job.variables)
-            task_succeeded = True
-        except Exception as e:
-            logger.debug(f"Failed job: {job}. Error: {e}.")
-            task.exception_handler(e, job)
-        finally:
-            return job, task_succeeded
-
-    def _complete_job(self, job: Job) -> None:
-        try:
-            logger.debug(f"Completing job: {job}")
-            self.zeebe_adapter.complete_job(job_key=job.key, variables=job.variables)
-        except Exception as e:
-            logger.warning(f"Failed to complete job: {job}. Error: {e}")
-
-    def _create_before_decorator_runner(self, task: Task) -> Callable[[Job], Job]:
-        decorators = task._before.copy()
-        decorators.extend(self._before)
-        return self._create_decorator_runner(decorators)
-
-    def _create_after_decorator_runner(self, task: Task) -> Callable[[Job], Job]:
-        decorators = self._after.copy()
-        decorators.extend(task._after)
-        return self._create_decorator_runner(decorators)
-
-    @staticmethod
-    def _create_decorator_runner(decorators: List[TaskDecorator]) -> Callable[[Job], Job]:
-        def decorator_runner(job: Job):
-            for decorator in decorators:
-                job = ZeebeWorker._run_decorator(decorator, job)
-            return job
-
-        return decorator_runner
-
-    @staticmethod
-    def _run_decorator(decorator: TaskDecorator, job: Job) -> Job:
-        try:
-            return decorator(job)
-        except Exception as e:
-            logger.warning(f"Failed to run decorator {decorator}. Error: {e}")
-            return job

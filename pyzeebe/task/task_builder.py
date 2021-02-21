@@ -16,7 +16,7 @@ def build_task(task_function: Callable, task_config: TaskConfig) -> Task:
     if task_config.single_value:
         task_function = convert_to_dict_function(task_function, task_config.variable_name)
 
-    return Task(build_job_handler(task_function, task_config), task_config)
+    return Task(task_function, build_job_handler(task_function, task_config), task_config)
 
 
 def build_job_handler(task_function: Callable, task_config: TaskConfig) -> JobHandler:

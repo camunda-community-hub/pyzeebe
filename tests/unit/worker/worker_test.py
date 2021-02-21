@@ -1,5 +1,4 @@
 import time
-from random import randint
 from unittest.mock import patch, MagicMock
 from uuid import uuid4
 
@@ -7,11 +6,12 @@ import pytest
 
 from pyzeebe.exceptions import DuplicateTaskType, MaxConsecutiveTaskThreadError
 from pyzeebe.job.job import Job
+from pyzeebe.task.task import Task
 from pyzeebe.worker.worker import ZeebeWorker
 
 
 class TestAddTask:
-    def test_task_added(self, zeebe_worker, task):
+    def test_add_task(self, zeebe_worker, task):
         zeebe_worker._add_task(task)
 
         assert zeebe_worker.get_task(task.type) == task
@@ -33,56 +33,14 @@ class TestAddTask:
 
         assert zeebe_worker.get_task(task.type).type == task.type
 
-    def test_original_function_not_changed(self, zeebe_worker, task, job_from_task):
-        zeebe_worker._add_task(task)
-
-        assert task.inner_function(**job_from_task.variables) == job_from_task.variables
-
-    def test_task_handler_calls_original_function(self, zeebe_worker, task, job_from_task):
-        zeebe_worker._add_task(task)
-
-        task.handler(job_from_task)
-
-        task.inner_function.assert_called_once()
-
-    def test_task_timeout_saved(self, zeebe_worker, task):
-        timeout = randint(0, 10000)
-        task.timeout = timeout
-
-        zeebe_worker._add_task(task)
-
-        assert zeebe_worker.get_task(task.type).timeout == timeout
-
-    def test_task_max_jobs_saved(self, zeebe_worker, task):
-        max_jobs_to_activate = randint(0, 1000)
-        task.max_jobs_to_activate = max_jobs_to_activate
-
-        zeebe_worker._add_task(task)
-
-        assert zeebe_worker.get_task(task.type).max_jobs_to_activate == max_jobs_to_activate
-
-    def test_variables_to_fetch_match_function_parameters(self, zeebe_worker, task_type):
+    def test_variables_to_fetch_match_function_parameters(self, zeebe_worker: ZeebeWorker, task_type: str):
         expected_variables_to_fetch = ["x"]
 
         @zeebe_worker.task(task_type)
         def _(x):
             pass
 
-        assert zeebe_worker.get_task(task_type).variables_to_fetch == expected_variables_to_fetch
-
-    def test_task_handler_is_callable(self, zeebe_worker, task):
-        zeebe_worker._add_task(task)
-
-        assert callable(task.handler)
-
-    def test_exception_handler_called(self, zeebe_worker, task, job_from_task):
-        task.inner_function.side_effect = Exception()
-        task.exception_handler = MagicMock()
-        zeebe_worker._add_task(task)
-
-        task.handler(job_from_task)
-
-        task.exception_handler.assert_called()
+        assert zeebe_worker.get_task(task_type).config.variables_to_fetch == expected_variables_to_fetch
 
 
 class TestDecorator:
@@ -106,36 +64,16 @@ class TestDecorator:
         assert len(zeebe_worker._after) == 1
         assert decorator in zeebe_worker._after
 
-    def test_create_before_decorator_runner(self, zeebe_worker, task, decorator, job_from_task):
-        task.before(decorator)
-
-        decorators = zeebe_worker._create_before_decorator_runner(task)
-
-        assert isinstance(decorators(job_from_task), Job)
-
-    def test_before_task_decorator_called(self, zeebe_worker, task, decorator, job_from_task):
-        task.before(decorator)
-        zeebe_worker._add_task(task)
-
-        task.handler(job_from_task)
-
-        decorator.assert_called_with(job_from_task)
-
-    def test_after_task_decorator_called(self, zeebe_worker, task, decorator, job_from_task):
-        task.after(decorator)
-        zeebe_worker._add_task(task)
-
-        task.handler(job_from_task)
-
-        decorator.assert_called_with(job_from_task)
-
     def test_decorator_failed(self, zeebe_worker, task, decorator, job_from_task):
         decorator.side_effect = Exception()
         zeebe_worker.before(decorator)
         zeebe_worker.after(decorator)
-        zeebe_worker._add_task(task)
 
-        assert isinstance(task.handler(job_from_task), Job)
+        @zeebe_worker.task("test")
+        def dummy_function():
+            pass
+
+        assert isinstance(task.job_handler(job_from_task), Job)
         assert decorator.call_count == 2
 
 
@@ -147,28 +85,28 @@ class TestHandleJobs:
 
     @pytest.fixture(autouse=True)
     def task_handler_mock(self, task):
-        task.handler = MagicMock(wraps=task.handler)
+        task.job_handler = MagicMock(wraps=task.job_handler)
 
     def test_handle_no_job(self, zeebe_worker, task, get_jobs_mock):
         get_jobs_mock.return_value = []
 
         zeebe_worker._handle_jobs(task)
 
-        task.handler.assert_not_called()
+        task.job_handler.assert_not_called()
 
     def test_handle_one_job(self, zeebe_worker, task, job_from_task, get_jobs_mock):
         get_jobs_mock.return_value = [job_from_task]
 
         zeebe_worker._handle_jobs(task)
 
-        task.handler.assert_called_with(job_from_task)
+        task.job_handler.assert_called_with(job_from_task)
 
     def test_handle_many_jobs(self, zeebe_worker, task, job_from_task, get_jobs_mock):
         get_jobs_mock.return_value = [job_from_task] * 10
 
         zeebe_worker._handle_jobs(task)
 
-        assert task.handler.call_count == 10
+        assert task.job_handler.call_count == 10
 
 
 class TestWorkerThreads:
@@ -220,14 +158,14 @@ class TestWorkerThreads:
 
 
 class TestGetJobs:
-    def test_activate_jobs_called(self, zeebe_worker, task):
+    def test_activate_jobs_called(self, zeebe_worker: ZeebeWorker, task: Task):
         zeebe_worker.zeebe_adapter.activate_jobs = MagicMock()
         zeebe_worker._get_jobs(task)
         zeebe_worker.zeebe_adapter.activate_jobs.assert_called_with(task_type=task.type, worker=zeebe_worker.name,
                                                                     timeout=task.config.timeout,
                                                                     max_jobs_to_activate=task.config.max_jobs_to_activate,
                                                                     variables_to_fetch=task.config.variables_to_fetch,
-                                                                    request_timeout=zeebe_worker.config.request_timeout)
+                                                                    request_timeout=zeebe_worker.request_timeout)
 
 
 class TestIncludeRouter:
@@ -246,7 +184,7 @@ class TestIncludeRouter:
         router.before(decorator)
         task = self.include_router_with_task(zeebe_worker, router)
 
-        task.handler(job_without_adapter)
+        task.job_handler(job_without_adapter)
 
         assert decorator.call_count == 1
 
@@ -254,7 +192,7 @@ class TestIncludeRouter:
         router.after(decorator)
         task = self.include_router_with_task(zeebe_worker, router)
 
-        task.handler(job_without_adapter)
+        task.job_handler(job_without_adapter)
 
         assert decorator.call_count == 1
 
