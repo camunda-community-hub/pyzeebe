@@ -7,6 +7,7 @@ from pyzeebe.credentials.oauth_credentials import OAuthCredentials
 from pyzeebe.job.job import Job
 from pyzeebe.job.job_status import JobStatus
 from pyzeebe.task.exception_handler import ExceptionHandler
+from pyzeebe.task.task_config import TaskConfig, default_exception_handler
 from pyzeebe.task.types import TaskDecorator
 from pyzeebe.worker.task_router import ZeebeTaskRouter
 from pyzeebe.worker.worker import ZeebeWorker
