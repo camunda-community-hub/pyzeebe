@@ -182,3 +182,9 @@ class TestGetFunctionParameters:
             pass
 
         assert task_builder.get_parameters_from_function(kwargs_func) == []
+
+    def test_get_standard_named_params(self):
+        def func(args, kwargs):
+            pass
+
+        assert task_builder.get_parameters_from_function(func) == ["args", "kwargs"]

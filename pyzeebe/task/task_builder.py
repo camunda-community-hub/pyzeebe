@@ -1,3 +1,4 @@
+import inspect
 import logging
 from typing import List, Callable, Dict, Tuple
 
@@ -68,10 +69,8 @@ def convert_to_dict_function(single_value_function: Callable, variable_name: str
 
 
 def get_parameters_from_function(fn: Callable) -> List[str]:
-    parameters = fn.__code__.co_varnames
-    if "args" in parameters:
-        return []
-    elif "kwargs" in parameters:
-        return []
-    else:
-        return list(parameters)
+    function_signature = inspect.signature(fn)
+    for parameter_name, parameter in function_signature.parameters.items():
+        if parameter.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
+            return []
+    return list(function_signature.parameters)
