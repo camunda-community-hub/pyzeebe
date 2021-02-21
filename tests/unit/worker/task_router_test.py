@@ -2,6 +2,7 @@ from uuid import uuid4
 
 import pytest
 
+from pyzeebe import TaskDecorator
 from pyzeebe.exceptions import TaskNotFound, DuplicateTaskType
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_router import ZeebeTaskRouter
@@ -72,3 +73,27 @@ def test_check_is_task_duplicate_with_duplicate(router: ZeebeTaskRouter, task: T
 
 def test_check_is_task_duplicate_no_duplicate(router: ZeebeTaskRouter, task: Task):
     router.tasks.append(task)
+
+
+def test_add_before_decorator(router: ZeebeTaskRouter, decorator: TaskDecorator):
+    router.before(decorator)
+
+    assert len(router._before) == 1
+
+
+def test_add_after_decorator(router: ZeebeTaskRouter, decorator: TaskDecorator):
+    router.after(decorator)
+
+    assert len(router._after) == 1
+
+
+def test_add_before_decorator_through_constructor(decorator: TaskDecorator):
+    router = ZeebeTaskRouter(before=[decorator])
+
+    assert len(router._before) == 1
+
+
+def test_add_after_decorator_through_constructor(decorator: TaskDecorator):
+    router = ZeebeTaskRouter(after=[decorator])
+
+    assert len(router._after) == 1

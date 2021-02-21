@@ -2,8 +2,10 @@ import logging
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from pyzeebe import ExceptionHandler, TaskDecorator, Job
 from pyzeebe.exceptions import NoVariableNameGiven
+from pyzeebe.job.job import Job
+from pyzeebe.task.exception_handler import ExceptionHandler
+from pyzeebe.task.types import TaskDecorator
 
 logger = logging.getLogger(__name__)
 

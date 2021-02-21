@@ -2,7 +2,6 @@ import logging
 from typing import Tuple, List, Callable, Union
 
 from pyzeebe import TaskDecorator
-from pyzeebe.decorators.zeebe_decorator_base import ZeebeDecoratorBase
 from pyzeebe.exceptions import TaskNotFound, DuplicateTaskType
 from pyzeebe.task import task_builder
 from pyzeebe.task.task import Task
@@ -11,14 +10,15 @@ from pyzeebe.task.task_config import TaskConfig
 logger = logging.getLogger(__name__)
 
 
-class ZeebeTaskRouter(ZeebeDecoratorBase):
+class ZeebeTaskRouter:
     def __init__(self, before: List[TaskDecorator] = None, after: List[TaskDecorator] = None):
         """
         Args:
             before (List[TaskDecorator]): Decorators to be performed before each task
             after (List[TaskDecorator]): Decorators to be performed after each task
         """
-        super().__init__(before, after)
+        self._before: List[TaskDecorator] = before or []
+        self._after: List[TaskDecorator] = after or []
         self.tasks: List[Task] = []
 
     def task(self, task_config: Union[TaskConfig, str]):
@@ -60,6 +60,12 @@ class ZeebeTaskRouter(ZeebeDecoratorBase):
             raise DuplicateTaskType(task_type)
         except TaskNotFound:
             return
+
+    def before(self, *decorators: TaskDecorator) -> None:
+        self._before.extend(decorators)
+
+    def after(self, *decorators: TaskDecorator) -> None:
+        self._after.extend(decorators)
 
     def remove_task(self, task_type: str) -> Task:
         """
