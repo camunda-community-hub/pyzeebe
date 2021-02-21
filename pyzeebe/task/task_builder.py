@@ -1,5 +1,5 @@
 import logging
-from typing import List, Callable, Dict
+from typing import List, Callable, Dict, Tuple
 
 from pyzeebe import Job, TaskDecorator
 from pyzeebe.task.task import Task
@@ -24,18 +24,23 @@ def build_job_handler(task_function: Callable, task_config: TaskConfig) -> JobHa
     after_decorator_runner = create_decorator_runner(task_config.after)
 
     def job_handler(job: Job) -> Job:
-        try:
-            job = before_decorator_runner(job)
-            job.variables = task_function(**job.variables)
-            job = after_decorator_runner(job)
+        job = before_decorator_runner(job)
+        job.variables, succeeded = run_original_task_function(task_function, task_config, job)
+        job = after_decorator_runner(job)
+        if succeeded:
             job.set_success_status()
-        except Exception as e:
-            logger.debug(f"Failed job: {job}. Error: {e}.")
-            task_config.exception_handler(e, job)
-        finally:
-            return job
+        return job
 
     return job_handler
+
+
+def run_original_task_function(task_function: Callable, task_config: TaskConfig, job: Job) -> Tuple[Dict, bool]:
+    try:
+        return task_function(**job.variables), True
+    except Exception as e:
+        logger.debug(f"Failed job: {job}. Error: {e}.")
+        task_config.exception_handler(e, job)
+        return job.variables, False
 
 
 def create_decorator_runner(decorators: List[TaskDecorator]) -> DecoratorRunner:

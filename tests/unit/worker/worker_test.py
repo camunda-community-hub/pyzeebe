@@ -4,6 +4,7 @@ from uuid import uuid4
 
 import pytest
 
+from pyzeebe import TaskDecorator
 from pyzeebe.exceptions import DuplicateTaskType, MaxConsecutiveTaskThreadError
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
@@ -64,16 +65,19 @@ class TestDecorator:
         assert len(zeebe_worker._after) == 1
         assert decorator in zeebe_worker._after
 
-    def test_decorator_failed(self, zeebe_worker, task, decorator, job_from_task):
+    def test_decorator_failed(self, zeebe_worker: ZeebeWorker, task: Task, decorator: TaskDecorator,
+                              job_from_task: Job):
         decorator.side_effect = Exception()
         zeebe_worker.before(decorator)
         zeebe_worker.after(decorator)
 
-        @zeebe_worker.task("test")
+        @zeebe_worker.task(task.config)
         def dummy_function():
             pass
 
-        assert isinstance(task.job_handler(job_from_task), Job)
+        task = zeebe_worker.get_task(task.type)
+        task.job_handler(job_from_task)
+
         assert decorator.call_count == 2
 
 
@@ -180,29 +184,29 @@ class TestIncludeRouter:
 
         assert len(zeebe_worker.tasks) == len(routers)
 
-    def test_router_before_decorator(self, zeebe_worker, router, decorator, job_without_adapter):
+    def test_router_before_decorator(self, zeebe_worker, router, decorator, mocked_job_with_adapter):
         router.before(decorator)
         task = self.include_router_with_task(zeebe_worker, router)
 
-        task.job_handler(job_without_adapter)
+        task.job_handler(mocked_job_with_adapter)
 
-        assert decorator.call_count == 1
+        decorator.assert_called_once()
 
-    def test_router_after_decorator(self, zeebe_worker, router, decorator, job_without_adapter):
+    def test_router_after_decorator(self, zeebe_worker, router, decorator, mocked_job_with_adapter):
         router.after(decorator)
         task = self.include_router_with_task(zeebe_worker, router)
 
-        task.job_handler(job_without_adapter)
+        task.job_handler(mocked_job_with_adapter)
 
-        assert decorator.call_count == 1
+        decorator.assert_called_once()
 
     @staticmethod
     def include_router_with_task(zeebe_worker, router, task_type=None):
         task_type = task_type or str(uuid4())
 
         @router.task(task_type)
-        def _(x):
-            return dict(x=x)
+        def _():
+            return {}
 
         zeebe_worker.include_router(router)
         return zeebe_worker.get_task(task_type)
