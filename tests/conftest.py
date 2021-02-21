@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import pytest
 
-from pyzeebe import ZeebeClient, ZeebeWorker, ZeebeTaskRouter, Job
+from pyzeebe import ZeebeClient, ZeebeWorker, Job
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.task import task_builder
 from pyzeebe.task.task_config import TaskConfig
@@ -120,11 +120,6 @@ def router():
 @pytest.fixture
 def routers():
     return [ZeebeTaskRouter() for _ in range(0, randint(2, 100))]
-
-
-@pytest.fixture
-def task_handler():
-    return ZeebeTaskRouter()
 
 
 @pytest.fixture

@@ -4,17 +4,11 @@ from typing import Tuple, List, Callable, Union
 from pyzeebe import TaskDecorator
 from pyzeebe.decorators.zeebe_decorator_base import ZeebeDecoratorBase
 from pyzeebe.exceptions import TaskNotFound, DuplicateTaskType
-from pyzeebe.job.job import Job
 from pyzeebe.task import task_builder
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_config import TaskConfig
 
 logger = logging.getLogger(__name__)
-
-
-def default_exception_handler(e: Exception, job: Job) -> None:
-    logger.warning(f"Task type: {job.type} - failed job {job}. Error: {e}.")
-    job.set_failure_status(f"Failed job. Error: {e}")
 
 
 class ZeebeTaskRouter(ZeebeDecoratorBase):
