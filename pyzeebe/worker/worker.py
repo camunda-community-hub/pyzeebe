@@ -194,43 +194,6 @@ class ZeebeWorker(ZeebeTaskHandler):
             for task in router.tasks:
                 self._add_task(task)
 
-    def _dict_task(self, task_type: str, exception_handler: ExceptionHandler = default_exception_handler,
-                   timeout: int = 10000, max_jobs_to_activate: int = 32, before: List[TaskDecorator] = None,
-                   after: List[TaskDecorator] = None, variables_to_fetch: List[str] = None):
-        def wrapper(fn: Callable[..., Dict]):
-            nonlocal variables_to_fetch
-            if not variables_to_fetch:
-                variables_to_fetch = self._get_parameters_from_function(fn)
-
-            task = Task(task_type=task_type, task_handler=fn, exception_handler=exception_handler, timeout=timeout,
-                        max_jobs_to_activate=max_jobs_to_activate, before=before, after=after,
-                        variables_to_fetch=variables_to_fetch)
-            self._add_task(task)
-
-            return fn
-
-        return wrapper
-
-    def _non_dict_task(self, task_type: str, variable_name: str,
-                       exception_handler: ExceptionHandler = default_exception_handler, timeout: int = 10000,
-                       max_jobs_to_activate: int = 32, before: List[TaskDecorator] = None,
-                       after: List[TaskDecorator] = None, variables_to_fetch: List[str] = None):
-        def wrapper(fn: Callable[..., Union[str, bool, int, List]]):
-            nonlocal variables_to_fetch
-            if not variables_to_fetch:
-                variables_to_fetch = self._get_parameters_from_function(fn)
-
-            dict_fn = self._single_value_function_to_dict(variable_name=variable_name, fn=fn)
-
-            task = Task(task_type=task_type, task_handler=dict_fn, exception_handler=exception_handler, timeout=timeout,
-                        max_jobs_to_activate=max_jobs_to_activate, before=before, after=after,
-                        variables_to_fetch=variables_to_fetch)
-            self._add_task(task)
-
-            return fn
-
-        return wrapper
-
     def _add_task(self, task: Task) -> None:
         self._is_task_duplicate(task.type)
         task.handler = self._create_task_handler(task)

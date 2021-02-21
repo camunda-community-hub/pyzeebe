@@ -120,6 +120,12 @@ class TestConvertToDictFunction:
 
 
 class TestGetFunctionParameters:
+    def test_get_no_param(self):
+        def no_parameters():
+            pass
+
+        assert task_builder.get_parameters_from_function(no_parameters) == []
+
     def test_get_single_param(self):
         def dummy_function(x):
             pass
@@ -134,3 +140,45 @@ class TestGetFunctionParameters:
 
     def test_get_param_from_lambda(self):
         assert task_builder.get_parameters_from_function(lambda x: None) == ["x"]
+
+    def test_get_one_positional_param(self):
+        def one_pos_func(x):
+            pass
+
+        assert task_builder.get_parameters_from_function(one_pos_func) == ["x"]
+
+    def test_get_multiple_positional_params(self):
+        def mul_pos_func(x, y, z):
+            pass
+
+        assert task_builder.get_parameters_from_function(mul_pos_func) == ["x", "y", "z"]
+
+    def test_get_one_keyword_param(self):
+        def one_key_func(x=0):
+            pass
+
+        assert task_builder.get_parameters_from_function(one_key_func) == ["x"]
+
+    def test_get_multiple_keyword_params(self):
+        def mul_key_func(x=0, y=0, z=0):
+            pass
+
+        assert task_builder.get_parameters_from_function(mul_key_func) == ["x", "y", "z"]
+
+    def test_get_positional_and_keyword_params(self):
+        def pos_and_key_func(x, y=0):
+            pass
+
+        assert task_builder.get_parameters_from_function(pos_and_key_func) == ["x", "y"]
+
+    def test_get_params_from_args(self):
+        def args_func(*args):
+            pass
+
+        assert task_builder.get_parameters_from_function(args_func) == []
+
+    def test_get_params_from_kwargs(self):
+        def kwargs_func(**kwargs):
+            pass
+
+        assert task_builder.get_parameters_from_function(kwargs_func) == []

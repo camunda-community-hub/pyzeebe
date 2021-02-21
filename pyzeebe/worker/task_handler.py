@@ -1,13 +1,13 @@
 import logging
-from abc import abstractmethod
-from typing import Tuple, List, Callable, Dict
+from typing import Tuple, List, Callable, Union
 
-from pyzeebe.decorators.zeebe_decorator_base import ZeebeDecoratorBase
-from pyzeebe.exceptions import NoVariableNameGiven, TaskNotFound, DuplicateTaskType
-from pyzeebe.job.job import Job
-from pyzeebe.task.exception_handler import ExceptionHandler
-from pyzeebe.task.task import Task
 from pyzeebe import TaskDecorator
+from pyzeebe.decorators.zeebe_decorator_base import ZeebeDecoratorBase
+from pyzeebe.exceptions import TaskNotFound, DuplicateTaskType
+from pyzeebe.job.job import Job
+from pyzeebe.task import task_builder
+from pyzeebe.task.task import Task
+from pyzeebe.task.task_config import TaskConfig
 
 logger = logging.getLogger(__name__)
 
@@ -27,73 +27,37 @@ class ZeebeTaskHandler(ZeebeDecoratorBase):
         super().__init__(before, after)
         self.tasks: List[Task] = []
 
-    def task(self, task_type: str, exception_handler: ExceptionHandler = default_exception_handler,
-             variables_to_fetch: List[str] = None, timeout: int = 10000, max_jobs_to_activate: int = 32,
-             before: List[TaskDecorator] = None, after: List[TaskDecorator] = None, single_value: bool = False,
-             variable_name: str = None):
+    def task(self, task_config: Union[TaskConfig, str]):
         """
         Decorator to create a task
 
         Args:
-            before (List[TaskDecorator]): All decorators which should be performed before the task.
-            after (List[TaskDecorator]): All decorators which should be performed after the task.
-            timeout (int): How long Zeebe should wait before the job is retried. Default: 10000 milliseconds
-            single_value (bool): If the function returns a single value (int, string, list) and not a dictionary set
-                                 this to True. Default: False
-            variable_name (str): If single_value then this will be the variable name given to zeebe:
-                                        { <variable_name>: <function_return_value> }
-            timeout (int): Maximum duration of the task in milliseconds. If the timeout is surpasses Zeebe will give up
-                            on the job and retry it. Default: 10000
-            max_jobs_to_activate (int):  Maximum jobs the worker will execute in parallel (of this task). Default: 32
+            task_config (Union[str, TaskConfig]): Either the task type or a task configuration object
 
         Raises:
             DuplicateTaskType: If a task from the router already exists in the worker
 
         """
-        self._is_task_duplicate(task_type)
+        if isinstance(task_config, str):
+            task_config = TaskConfig(task_config)
 
-        if single_value and not variable_name:
-            raise NoVariableNameGiven(task_type=task_type)
+        self._is_task_duplicate(task_config.type)
 
-        elif single_value and variable_name:
-            return self._non_dict_task(task_type=task_type, variable_name=variable_name, timeout=timeout,
-                                       max_jobs_to_activate=max_jobs_to_activate, exception_handler=exception_handler,
-                                       before=before, after=after, variables_to_fetch=variables_to_fetch)
+        task_config = self._add_decorators_to_config(task_config)
 
-        else:
-            return self._dict_task(task_type=task_type, exception_handler=exception_handler, before=before, after=after,
-                                   timeout=timeout, max_jobs_to_activate=max_jobs_to_activate,
-                                   variables_to_fetch=variables_to_fetch)
+        def wrapper(fn: Callable):
+            task = task_builder.build_task(fn, task_config)
+            self.tasks.append(task)
+            return fn
 
-    @abstractmethod
-    def _dict_task(self, task_type: str, exception_handler: ExceptionHandler = default_exception_handler,
-                   timeout: int = 10000, max_jobs_to_activate: int = 32, before: List[TaskDecorator] = None,
-                   after: List[TaskDecorator] = None, variables_to_fetch: List[str] = None):
-        raise NotImplemented()
+        return wrapper
 
-    @abstractmethod
-    def _non_dict_task(self, task_type: str, variable_name: str,
-                       exception_handler: ExceptionHandler = default_exception_handler, timeout: int = 10000,
-                       max_jobs_to_activate: int = 32, before: List[TaskDecorator] = None,
-                       after: List[TaskDecorator] = None, variables_to_fetch: List[str] = None):
-        raise NotImplemented()
-
-    @staticmethod
-    def _single_value_function_to_dict(variable_name: str, fn: Callable) -> Callable[..., Dict]:
-        def inner_fn(*args, **kwargs):
-            return {variable_name: fn(*args, **kwargs)}
-
-        return inner_fn
-
-    @staticmethod
-    def _get_parameters_from_function(fn: Callable) -> List[str]:
-        parameters = fn.__code__.co_varnames
-        if "args" in parameters:
-            return []
-        elif "kwargs" in parameters:
-            return []
-        else:
-            return list(parameters)
+    def _add_decorators_to_config(self, config: TaskConfig) -> TaskConfig:
+        before_decorators = self._before.copy()
+        before_decorators.extend(config.before)
+        config.before = before_decorators
+        config.after.extend(self._after)
+        return config
 
     def _is_task_duplicate(self, task_type: str) -> None:
         try:
