@@ -1,4 +1,4 @@
-from collections import Callable
+from typing import Callable
 
 from pyzeebe import Job, TaskDecorator
 from pyzeebe.task import task_builder
