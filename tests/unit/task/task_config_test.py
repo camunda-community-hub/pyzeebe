@@ -13,7 +13,7 @@ def test_add_non_dict_task_without_variable_name():
         TaskConfig(str(uuid4()), single_value=True)
 
 
-def test_default_exception_handler(mocked_job_with_adapter: Job):
+def test_default_exception_handler_logs_a_warning(mocked_job_with_adapter: Job):
     with patch("pyzeebe.task.task_config.logger.warning") as logging_mock:
         default_exception_handler(Exception(), mocked_job_with_adapter)
 
