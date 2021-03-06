@@ -41,35 +41,43 @@ class TestBuildJobHandler:
                                       mocked_job_with_adapter: Job):
         exception = Exception()
         original_task_function.side_effect = exception
+        job_handler = task_builder.build_job_handler(original_task_function, task_config)
 
-        task_builder.build_job_handler(original_task_function, task_config)(mocked_job_with_adapter)
+        job_handler(mocked_job_with_adapter)
 
         task_config.exception_handler.assert_called_with(exception, mocked_job_with_adapter)
 
     def test_parameters_are_provided_to_task(self, original_task_function: Callable, task_config: TaskConfig,
                                              mocked_job_with_adapter: Job):
         mocked_job_with_adapter.variables = {"x": 1}
+        job_handler = task_builder.build_job_handler(original_task_function, task_config)
 
-        task_builder.build_job_handler(original_task_function, task_config)(mocked_job_with_adapter)
+        job_handler(mocked_job_with_adapter)
 
         original_task_function.assert_called_with(x=1)
 
     def test_variables_are_added_to_result(self, original_task_function: Callable, task_config: TaskConfig,
                                            mocked_job_with_adapter: Job):
         original_task_function.return_value = {"x": 1}
+        job_handler = task_builder.build_job_handler(original_task_function, task_config)
 
-        job = task_builder.build_job_handler(original_task_function, task_config)(mocked_job_with_adapter)
+        job = job_handler(mocked_job_with_adapter)
 
         assert job.variables.pop("x") == 1
 
     def test_complete_job_called(self, original_task_function: Callable, task_config: TaskConfig,
                                  mocked_job_with_adapter: Job):
-        task_builder.build_job_handler(original_task_function, task_config)(mocked_job_with_adapter)
+        job_handler = task_builder.build_job_handler(original_task_function, task_config)
+
+        job_handler(mocked_job_with_adapter)
+
         mocked_job_with_adapter.set_success_status.assert_called_once()
 
     def test_returned_task_runs_original_function(self, original_task_function: Callable, task_config: TaskConfig,
                                                   mocked_job_with_adapter: Job):
-        task_builder.build_job_handler(original_task_function, task_config)(mocked_job_with_adapter)
+        job_handler = task_builder.build_job_handler(original_task_function, task_config)
+
+        job_handler(mocked_job_with_adapter)
 
         original_task_function.assert_called_once()
 
@@ -77,8 +85,9 @@ class TestBuildJobHandler:
                                      task_config: TaskConfig,
                                      mocked_job_with_adapter: Job):
         task_config.before.append(decorator)
+        job_handler = task_builder.build_job_handler(original_task_function, task_config)
 
-        task_builder.build_job_handler(original_task_function, task_config)(mocked_job_with_adapter)
+        job_handler(mocked_job_with_adapter)
 
         task_config.before.pop().assert_called_once()
 
@@ -86,8 +95,9 @@ class TestBuildJobHandler:
                                     task_config: TaskConfig,
                                     mocked_job_with_adapter: Job):
         task_config.after.append(decorator)
+        job_handler = task_builder.build_job_handler(original_task_function, task_config)
 
-        task_builder.build_job_handler(original_task_function, task_config)(mocked_job_with_adapter)
+        job_handler(mocked_job_with_adapter)
 
         task_config.after.pop().assert_called_once()
 
@@ -95,19 +105,21 @@ class TestBuildJobHandler:
                                          task_config: TaskConfig, mocked_job_with_adapter: Job):
         decorator.side_effect = Exception()
         task_config.before.append(decorator)
+        job_handler = task_builder.build_job_handler(original_task_function, task_config)
 
-        # Assert no exception is raised
-        task_builder.build_job_handler(original_task_function, task_config)(mocked_job_with_adapter)
+        job_handler(mocked_job_with_adapter)
+
         decorator.assert_called_once()
         task_config.exception_handler.assert_not_called()
 
     def test_decorator_variables_are_added(self, original_task_function: Callable, decorator: TaskDecorator,
                                            task_config: TaskConfig, mocked_job_with_adapter: Job):
+        mocked_job_with_adapter.variables = {"x": 2}
         decorator_return_value = mocked_job_with_adapter
-        decorator_return_value.variables = {"x": 2}
         decorator.return_value = decorator_return_value
+        job_handler = task_builder.build_job_handler(original_task_function, task_config)
 
-        job = task_builder.build_job_handler(original_task_function, task_config)(mocked_job_with_adapter)
+        job = job_handler(mocked_job_with_adapter)
 
         assert "x" in job.variables
 
