@@ -7,7 +7,7 @@ from uuid import uuid4
 import pytest
 
 from pyzeebe import TaskDecorator, ZeebeTaskRouter
-from pyzeebe.exceptions import DuplicateTaskType, MaxConsecutiveTaskThreadError
+from pyzeebe.exceptions import DuplicateTaskTypeError, MaxConsecutiveTaskThreadError
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
 from pyzeebe.worker.worker import ZeebeWorker
@@ -21,7 +21,7 @@ class TestAddTask:
 
     def test_raises_on_duplicate(self, zeebe_worker: ZeebeWorker, task: Task):
         zeebe_worker._add_task(task)
-        with pytest.raises(DuplicateTaskType):
+        with pytest.raises(DuplicateTaskTypeError):
             zeebe_worker._add_task(task)
 
     def test_only_one_task_added(self, zeebe_worker: ZeebeWorker):

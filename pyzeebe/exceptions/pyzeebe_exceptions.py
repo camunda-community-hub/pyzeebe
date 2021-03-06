@@ -12,14 +12,15 @@ class NoVariableNameGivenError(PyZeebeException):
         self.task_type = task_type
 
 
-class NoZeebeAdapter(PyZeebeException):
+class NoZeebeAdapterError(PyZeebeException):
     pass
 
 
-class DuplicateTaskType(PyZeebeException):
+class DuplicateTaskTypeError(PyZeebeException):
     def __init__(self, task_type: str):
         super().__init__(f"Task with type {task_type} already exists")
         self.task_type = task_type
+
 
 class MaxConsecutiveTaskThreadError(PyZeebeException):
     pass

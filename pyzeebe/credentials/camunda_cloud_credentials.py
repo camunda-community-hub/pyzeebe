@@ -1,5 +1,5 @@
 from pyzeebe.credentials.oauth_credentials import OAuthCredentials
-from pyzeebe.exceptions import InvalidOAuthCredentials, InvalidCamundaCloudCredentials
+from pyzeebe.exceptions import InvalidOAuthCredentialsError, InvalidCamundaCloudCredentialsError
 
 
 class CamundaCloudCredentials(OAuthCredentials):
@@ -7,8 +7,8 @@ class CamundaCloudCredentials(OAuthCredentials):
         try:
             super().__init__(url="https://login.cloud.camunda.io/oauth/token", client_id=client_id,
                              client_secret=client_secret, audience=f"{cluster_id}.zeebe.camunda.io")
-        except InvalidOAuthCredentials:
-            raise InvalidCamundaCloudCredentials(client_id=client_id, cluster_id=cluster_id)
+        except InvalidOAuthCredentialsError:
+            raise InvalidCamundaCloudCredentialsError(client_id=client_id, cluster_id=cluster_id)
 
     def get_connection_uri(self) -> str:
         return f"{self.audience}:443"

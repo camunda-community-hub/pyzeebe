@@ -4,7 +4,7 @@ from requests import HTTPError
 from requests_oauthlib import OAuth2Session
 
 from pyzeebe.credentials.base_credentials import BaseCredentials
-from pyzeebe.exceptions import InvalidOAuthCredentials
+from pyzeebe.exceptions import InvalidOAuthCredentialsError
 
 
 class OAuthCredentials(BaseCredentials):
@@ -34,7 +34,7 @@ class OAuthCredentials(BaseCredentials):
                 response.raise_for_status()
                 return response.json()["access_token"]
         except HTTPError:
-            raise InvalidOAuthCredentials(url=url, client_id=client_id, audience=audience)
+            raise InvalidOAuthCredentialsError(url=url, client_id=client_id, audience=audience)
 
     def get_connection_uri(self) -> str:
         return None

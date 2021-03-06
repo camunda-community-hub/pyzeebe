@@ -6,8 +6,8 @@ import grpc
 from zeebe_grpc.gateway_pb2 import CreateWorkflowInstanceRequest, CreateWorkflowInstanceWithResultRequest, \
     CancelWorkflowInstanceRequest, WorkflowRequestObject, DeployWorkflowRequest, DeployWorkflowResponse
 
-from pyzeebe.exceptions import InvalidJSON, WorkflowNotFound, WorkflowInstanceNotFound, WorkflowHasNoStartEvent, \
-    WorkflowInvalid
+from pyzeebe.exceptions import InvalidJSONError, WorkflowNotFoundError, WorkflowInstanceNotFoundError, WorkflowHasNoStartEventError, \
+    WorkflowInvalidError
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 
 
@@ -36,12 +36,12 @@ class ZeebeWorkflowAdapter(ZeebeAdapterBase):
     def _create_workflow_errors(self, rpc_error: grpc.RpcError, bpmn_process_id: str, version: int,
                                 variables: Dict) -> None:
         if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
-            raise WorkflowNotFound(bpmn_process_id=bpmn_process_id, version=version)
+            raise WorkflowNotFoundError(bpmn_process_id=bpmn_process_id, version=version)
         elif self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
-            raise InvalidJSON(
+            raise InvalidJSONError(
                 f"Cannot start workflow: {bpmn_process_id} with version {version}. Variables: {variables}")
         elif self.is_error_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
-            raise WorkflowHasNoStartEvent(bpmn_process_id=bpmn_process_id)
+            raise WorkflowHasNoStartEventError(bpmn_process_id=bpmn_process_id)
         else:
             self._common_zeebe_grpc_errors(rpc_error)
 
@@ -51,7 +51,7 @@ class ZeebeWorkflowAdapter(ZeebeAdapterBase):
                 CancelWorkflowInstanceRequest(workflowInstanceKey=workflow_instance_key))
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
-                raise WorkflowInstanceNotFound(workflow_instance_key=workflow_instance_key)
+                raise WorkflowInstanceNotFoundError(workflow_instance_key=workflow_instance_key)
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 
@@ -61,7 +61,7 @@ class ZeebeWorkflowAdapter(ZeebeAdapterBase):
                 DeployWorkflowRequest(workflows=map(self._get_workflow_request_object, workflow_file_path)))
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
-                raise WorkflowInvalid()
+                raise WorkflowInvalidError()
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 

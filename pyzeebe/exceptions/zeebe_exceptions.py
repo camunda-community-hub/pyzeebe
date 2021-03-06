@@ -1,11 +1,11 @@
 from pyzeebe.exceptions.pyzeebe_exceptions import PyZeebeException
 
 
-class ZeebeBackPressure(PyZeebeException):
+class ZeebeBackPressureError(PyZeebeException):
     pass
 
 
-class ZeebeGatewayUnavailable(PyZeebeException):
+class ZeebeGatewayUnavailableError(PyZeebeException):
     pass
 
 

@@ -1,7 +1,7 @@
 from pyzeebe.exceptions.pyzeebe_exceptions import PyZeebeException
 
 
-class ActivateJobsRequestInvalid(PyZeebeException):
+class ActivateJobsRequestInvalidError(PyZeebeException):
     def __init__(self, task_type: str, worker: str, timeout: int, max_jobs_to_activate: int):
         msg = "Failed to activate jobs. Reasons:"
         if task_type == "" or task_type is None:
@@ -16,13 +16,13 @@ class ActivateJobsRequestInvalid(PyZeebeException):
         super().__init__(msg)
 
 
-class JobAlreadyDeactivated(PyZeebeException):
+class JobAlreadyDeactivatedError(PyZeebeException):
     def __init__(self, job_key: int):
         super().__init__(f"Job {job_key} was already stopped (Completed/Failed/Error)")
         self.job_key = job_key
 
 
-class JobNotFound(PyZeebeException):
+class JobNotFoundError(PyZeebeException):
     def __init__(self, job_key: int):
         super().__init__(f"Job {job_key} not found")
         self.job_key = job_key

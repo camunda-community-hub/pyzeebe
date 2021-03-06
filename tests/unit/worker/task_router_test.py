@@ -3,7 +3,7 @@ from uuid import uuid4
 import pytest
 
 from pyzeebe import TaskDecorator
-from pyzeebe.exceptions import TaskNotFoundError, DuplicateTaskType
+from pyzeebe.exceptions import TaskNotFoundError, DuplicateTaskTypeError
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_router import ZeebeTaskRouter
 from tests.unit.utils.random_utils import randint
@@ -67,7 +67,7 @@ def test_remove_fake_task(router: ZeebeTaskRouter):
 
 def test_check_is_task_duplicate_with_duplicate(router: ZeebeTaskRouter, task: Task):
     router.tasks.append(task)
-    with pytest.raises(DuplicateTaskType):
+    with pytest.raises(DuplicateTaskTypeError):
         router._is_task_duplicate(task.type)
 
 

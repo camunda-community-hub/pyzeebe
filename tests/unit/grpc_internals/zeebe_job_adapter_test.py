@@ -6,7 +6,7 @@ import grpc
 import pytest
 from zeebe_grpc.gateway_pb2 import *
 
-from pyzeebe.exceptions import ActivateJobsRequestInvalid, JobAlreadyDeactivated, JobNotFound
+from pyzeebe.exceptions import ActivateJobsRequestInvalidError, JobAlreadyDeactivatedError, JobNotFoundError
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
 from tests.unit.utils.grpc_utils import GRPCStatusCode
@@ -38,26 +38,26 @@ def test_activate_jobs(zeebe_adapter, grpc_servicer, task):
 
 
 def test_activate_jobs_invalid_worker(zeebe_adapter):
-    with pytest.raises(ActivateJobsRequestInvalid):
+    with pytest.raises(ActivateJobsRequestInvalidError):
         next(zeebe_adapter.activate_jobs(task_type=str(uuid4()), worker=None, timeout=randint(10, 100),
                                          request_timeout=100,
                                          max_jobs_to_activate=1, variables_to_fetch=[]))
 
 
 def test_activate_jobs_invalid_job_timeout(zeebe_adapter):
-    with pytest.raises(ActivateJobsRequestInvalid):
+    with pytest.raises(ActivateJobsRequestInvalidError):
         next(zeebe_adapter.activate_jobs(task_type=str(uuid4()), worker=str(uuid4()), timeout=0,
                                          request_timeout=100, max_jobs_to_activate=1, variables_to_fetch=[]))
 
 
 def test_activate_jobs_invalid_task_type(zeebe_adapter):
-    with pytest.raises(ActivateJobsRequestInvalid):
+    with pytest.raises(ActivateJobsRequestInvalidError):
         next(zeebe_adapter.activate_jobs(task_type=None, worker=str(uuid4()), timeout=randint(10, 100),
                                          request_timeout=100, max_jobs_to_activate=1, variables_to_fetch=[]))
 
 
 def test_activate_jobs_invalid_max_jobs(zeebe_adapter):
-    with pytest.raises(ActivateJobsRequestInvalid):
+    with pytest.raises(ActivateJobsRequestInvalidError):
         next(zeebe_adapter.activate_jobs(task_type=str(uuid4()), worker=str(uuid4()), timeout=randint(10, 100),
                                          request_timeout=100, max_jobs_to_activate=0, variables_to_fetch=[]))
 
@@ -82,13 +82,13 @@ def test_complete_job(zeebe_adapter, first_active_job: Job):
 
 
 def test_complete_job_not_found(zeebe_adapter):
-    with pytest.raises(JobNotFound):
+    with pytest.raises(JobNotFoundError):
         zeebe_adapter.complete_job(job_key=randint(0, RANDOM_RANGE), variables={})
 
 
 def test_complete_job_already_completed(zeebe_adapter, first_active_job: Job):
     zeebe_adapter.complete_job(job_key=first_active_job.key, variables={})
-    with pytest.raises(JobAlreadyDeactivated):
+    with pytest.raises(JobAlreadyDeactivatedError):
         zeebe_adapter.complete_job(job_key=first_active_job.key, variables={})
 
 
@@ -110,13 +110,13 @@ def test_fail_job(zeebe_adapter, first_active_job: Job):
 
 
 def test_fail_job_not_found(zeebe_adapter):
-    with pytest.raises(JobNotFound):
+    with pytest.raises(JobNotFoundError):
         zeebe_adapter.fail_job(job_key=randint(0, RANDOM_RANGE), message=str(uuid4()))
 
 
 def test_fail_job_already_failed(zeebe_adapter, first_active_job: Job):
     zeebe_adapter.fail_job(job_key=first_active_job.key, message=str(uuid4()))
-    with pytest.raises(JobAlreadyDeactivated):
+    with pytest.raises(JobAlreadyDeactivatedError):
         zeebe_adapter.fail_job(job_key=first_active_job.key, message=str(uuid4()))
 
 
@@ -138,13 +138,13 @@ def test_throw_error(zeebe_adapter, first_active_job: Job):
 
 
 def test_throw_error_job_not_found(zeebe_adapter):
-    with pytest.raises(JobNotFound):
+    with pytest.raises(JobNotFoundError):
         zeebe_adapter.throw_error(job_key=randint(0, RANDOM_RANGE), message=str(uuid4()))
 
 
 def test_throw_error_already_thrown(zeebe_adapter, first_active_job: Job):
     zeebe_adapter.throw_error(job_key=first_active_job.key, message=str(uuid4()))
-    with pytest.raises(JobAlreadyDeactivated):
+    with pytest.raises(JobAlreadyDeactivatedError):
         zeebe_adapter.throw_error(job_key=first_active_job.key, message=str(uuid4()))
 
 

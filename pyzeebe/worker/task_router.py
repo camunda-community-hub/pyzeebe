@@ -2,7 +2,7 @@ import logging
 from typing import Tuple, List, Callable, Union
 
 from pyzeebe import TaskDecorator
-from pyzeebe.exceptions import TaskNotFoundError, DuplicateTaskType
+from pyzeebe.exceptions import TaskNotFoundError, DuplicateTaskTypeError
 from pyzeebe.task import task_builder
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_config import TaskConfig
@@ -57,7 +57,7 @@ class ZeebeTaskRouter:
     def _is_task_duplicate(self, task_type: str) -> None:
         try:
             self.get_task(task_type)
-            raise DuplicateTaskType(task_type)
+            raise DuplicateTaskTypeError(task_type)
         except TaskNotFoundError:
             return
 

@@ -1,6 +1,6 @@
 from typing import Dict
 
-from pyzeebe.exceptions import NoZeebeAdapter
+from pyzeebe.exceptions import NoZeebeAdapterError
 from pyzeebe.job.job_status import JobStatus
 
 
@@ -39,7 +39,7 @@ class Job(object):
         if self.zeebe_adapter:
             self.zeebe_adapter.complete_job(job_key=self.key, variables=self.variables)
         else:
-            raise NoZeebeAdapter()
+            raise NoZeebeAdapterError()
 
     def set_failure_status(self, message: str) -> None:
         """
@@ -59,7 +59,7 @@ class Job(object):
         if self.zeebe_adapter:
             self.zeebe_adapter.fail_job(job_key=self.key, message=message)
         else:
-            raise NoZeebeAdapter()
+            raise NoZeebeAdapterError()
 
     def set_error_status(self, message: str) -> None:
         """
@@ -79,7 +79,7 @@ class Job(object):
         if self.zeebe_adapter:
             self.zeebe_adapter.throw_error(job_key=self.key, message=message)
         else:
-            raise NoZeebeAdapter()
+            raise NoZeebeAdapterError()
 
     def __repr__(self):
         return str({"jobKey": self.key, "taskType": self.type, "workflowInstanceKey": self.workflow_instance_key,
