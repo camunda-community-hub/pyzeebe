@@ -4,12 +4,12 @@ from uuid import uuid4
 import pytest
 
 from pyzeebe import Job
-from pyzeebe.exceptions import NoVariableNameGiven
+from pyzeebe.exceptions import NoVariableNameGivenError
 from pyzeebe.task.task_config import TaskConfig, default_exception_handler
 
 
 def test_add_non_dict_task_without_variable_name():
-    with pytest.raises(NoVariableNameGiven):
+    with pytest.raises(NoVariableNameGivenError):
         TaskConfig(str(uuid4()), single_value=True)
 
 

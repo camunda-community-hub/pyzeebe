@@ -8,7 +8,7 @@ All ``pyzeebe`` exceptions inherit from :py:class:`PyZeebeException`
 
 .. autoexception:: pyzeebe.exceptions.TaskNotFound
 
-.. autoexception:: pyzeebe.exceptions.NoVariableNameGiven
+.. autoexception:: pyzeebe.exceptions.NoVariableNameGivenError
 
 .. autoexception:: pyzeebe.exceptions.NoZeebeAdapter
 

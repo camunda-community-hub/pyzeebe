@@ -1,7 +1,7 @@
 import logging
 from typing import List, Optional
 
-from pyzeebe.exceptions import NoVariableNameGiven
+from pyzeebe.exceptions import NoVariableNameGivenError
 from pyzeebe.job.job import Job
 from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.task.types import TaskDecorator
@@ -20,7 +20,7 @@ class TaskConfig:
                  single_value: bool = False, variable_name: Optional[str] = None, before: List[TaskDecorator] = None,
                  after: List[TaskDecorator] = None):
         if single_value and not variable_name:
-            raise NoVariableNameGiven(type)
+            raise NoVariableNameGivenError(type)
 
         self.type = type
         self.exception_handler = exception_handler
