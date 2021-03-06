@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pytest
 
-from pyzeebe.exceptions import WorkflowNotFoundError
+from pyzeebe.errors import WorkflowNotFoundError
 
 
 def test_run_workflow(zeebe_client, grpc_servicer):

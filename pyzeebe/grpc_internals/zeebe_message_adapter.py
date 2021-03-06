@@ -4,7 +4,7 @@ from typing import Dict
 import grpc
 from zeebe_grpc.gateway_pb2 import PublishMessageRequest, PublishMessageResponse
 
-from pyzeebe.exceptions import MessageAlreadyExistsError
+from pyzeebe.errors import MessageAlreadyExistsError
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 
 

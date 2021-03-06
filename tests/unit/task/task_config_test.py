@@ -4,7 +4,7 @@ from uuid import uuid4
 import pytest
 
 from pyzeebe import Job
-from pyzeebe.exceptions import NoVariableNameGivenError
+from pyzeebe.errors import NoVariableNameGivenError
 from pyzeebe.task.task_config import TaskConfig, default_exception_handler
 
 

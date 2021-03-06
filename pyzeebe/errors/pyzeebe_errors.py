@@ -1,26 +1,26 @@
-class PyZeebeException(Exception):
+class PyZeebeError(Exception):
     pass
 
 
-class TaskNotFoundError(PyZeebeException):
+class TaskNotFoundError(PyZeebeError):
     pass
 
 
-class NoVariableNameGivenError(PyZeebeException):
+class NoVariableNameGivenError(PyZeebeError):
     def __init__(self, task_type: str):
         super().__init__(f"No variable name given for single_value task {task_type}")
         self.task_type = task_type
 
 
-class NoZeebeAdapterError(PyZeebeException):
+class NoZeebeAdapterError(PyZeebeError):
     pass
 
 
-class DuplicateTaskTypeError(PyZeebeException):
+class DuplicateTaskTypeError(PyZeebeError):
     def __init__(self, task_type: str):
         super().__init__(f"Task with type {task_type} already exists")
         self.task_type = task_type
 
 
-class MaxConsecutiveTaskThreadError(PyZeebeException):
+class MaxConsecutiveTaskThreadError(PyZeebeError):
     pass

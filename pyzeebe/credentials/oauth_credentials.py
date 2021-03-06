@@ -4,7 +4,7 @@ from requests import HTTPError
 from requests_oauthlib import OAuth2Session
 
 from pyzeebe.credentials.base_credentials import BaseCredentials
-from pyzeebe.exceptions import InvalidOAuthCredentialsError
+from pyzeebe.errors import InvalidOAuthCredentialsError
 
 
 class OAuthCredentials(BaseCredentials):

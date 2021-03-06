@@ -6,7 +6,7 @@ import grpc
 import pytest
 from zeebe_grpc.gateway_pb2 import *
 
-from pyzeebe.exceptions import MessageAlreadyExistsError
+from pyzeebe.errors import MessageAlreadyExistsError
 from tests.unit.utils.grpc_utils import GRPCStatusCode
 from tests.unit.utils.random_utils import RANDOM_RANGE
 

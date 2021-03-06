@@ -4,7 +4,7 @@ from uuid import uuid4
 import pytest
 
 from pyzeebe.credentials.camunda_cloud_credentials import CamundaCloudCredentials
-from pyzeebe.exceptions import InvalidOAuthCredentialsError, InvalidCamundaCloudCredentialsError
+from pyzeebe.errors import InvalidOAuthCredentialsError, InvalidCamundaCloudCredentialsError
 
 
 def test_init():

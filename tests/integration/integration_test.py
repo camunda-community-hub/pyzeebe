@@ -5,7 +5,7 @@ from uuid import uuid4
 import pytest
 
 from pyzeebe import ZeebeClient, ZeebeWorker, Job, TaskConfig
-from pyzeebe.exceptions import WorkflowNotFoundError
+from pyzeebe.errors import WorkflowNotFoundError
 
 
 @pytest.fixture(scope="session")

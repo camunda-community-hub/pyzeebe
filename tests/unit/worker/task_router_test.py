@@ -3,7 +3,7 @@ from uuid import uuid4
 import pytest
 
 from pyzeebe import TaskDecorator
-from pyzeebe.exceptions import TaskNotFoundError, DuplicateTaskTypeError
+from pyzeebe.errors import TaskNotFoundError, DuplicateTaskTypeError
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_router import ZeebeTaskRouter
 from tests.unit.utils.random_utils import randint

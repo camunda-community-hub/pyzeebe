@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import pytest
 
-from pyzeebe.exceptions import NoZeebeAdapterError
+from pyzeebe.errors import NoZeebeAdapterError
 
 
 def test_success(job_with_adapter):

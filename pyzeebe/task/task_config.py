@@ -1,7 +1,7 @@
 import logging
 from typing import List, Optional
 
-from pyzeebe.exceptions import NoVariableNameGivenError
+from pyzeebe.errors import NoVariableNameGivenError
 from pyzeebe.job.job import Job
 from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.task.types import TaskDecorator

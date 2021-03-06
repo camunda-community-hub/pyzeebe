@@ -1,6 +1,6 @@
 from typing import Dict
 
-from pyzeebe.exceptions import NoZeebeAdapterError
+from pyzeebe.errors import NoZeebeAdapterError
 from pyzeebe.job.job_status import JobStatus
 
 
@@ -30,9 +30,9 @@ class Job(object):
         Success status means that the job has been completed as intended.
 
         Raises:
-            NoZeebeAdapter: If the job does not have a configured ZeebeAdapter
-            ZeebeBackPressure: If Zeebe is currently in back pressure (too many requests)
-            ZeebeGatewayUnavailable: If the Zeebe gateway is unavailable
+            NoZeebeAdapterError: If the job does not have a configured ZeebeAdapter
+            ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
@@ -50,9 +50,9 @@ class Job(object):
             message (str): The failure message that Zeebe will receive
 
         Raises:
-            NoZeebeAdapter: If the job does not have a configured ZeebeAdapter
-            ZeebeBackPressure: If Zeebe is currently in back pressure (too many requests)
-            ZeebeGatewayUnavailable: If the Zeebe gateway is unavailable
+            NoZeebeAdapterError: If the job does not have a configured ZeebeAdapter
+            ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
@@ -70,9 +70,9 @@ class Job(object):
             message (str): The error message that Zeebe will receive
 
         Raises:
-            NoZeebeAdapter: If the job does not have a configured ZeebeAdapter
-            ZeebeBackPressure: If Zeebe is currently in back pressure (too many requests)
-            ZeebeGatewayUnavailable: If the Zeebe gateway is unavailable
+            NoZeebeAdapterError: If the job does not have a configured ZeebeAdapter
+            ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """

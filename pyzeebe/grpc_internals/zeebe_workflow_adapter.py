@@ -6,7 +6,7 @@ import grpc
 from zeebe_grpc.gateway_pb2 import CreateWorkflowInstanceRequest, CreateWorkflowInstanceWithResultRequest, \
     CancelWorkflowInstanceRequest, WorkflowRequestObject, DeployWorkflowRequest, DeployWorkflowResponse
 
-from pyzeebe.exceptions import InvalidJSONError, WorkflowNotFoundError, WorkflowInstanceNotFoundError, WorkflowHasNoStartEventError, \
+from pyzeebe.errors import InvalidJSONError, WorkflowNotFoundError, WorkflowInstanceNotFoundError, WorkflowHasNoStartEventError, \
     WorkflowInvalidError
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 

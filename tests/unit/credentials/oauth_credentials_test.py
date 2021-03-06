@@ -5,7 +5,7 @@ import pytest
 from requests import HTTPError
 
 from pyzeebe.credentials.oauth_credentials import OAuthCredentials
-from pyzeebe.exceptions import InvalidOAuthCredentialsError
+from pyzeebe.errors import InvalidOAuthCredentialsError
 
 
 def test_get_access_token():

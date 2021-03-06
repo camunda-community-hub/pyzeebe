@@ -2,7 +2,7 @@ import logging
 from typing import Tuple, List, Callable, Union
 
 from pyzeebe import TaskDecorator
-from pyzeebe.exceptions import TaskNotFoundError, DuplicateTaskTypeError
+from pyzeebe.errors import TaskNotFoundError, DuplicateTaskTypeError
 from pyzeebe.task import task_builder
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_config import TaskConfig
@@ -29,7 +29,7 @@ class ZeebeTaskRouter:
             task_config (Union[str, TaskConfig]): Either the task type or a task configuration object
 
         Raises:
-            DuplicateTaskType: If a task from the router already exists in the worker
+            DuplicateTaskTypeError: If a task from the router already exists in the worker
 
         """
         if isinstance(task_config, str):

@@ -1,43 +1,43 @@
 ==========
-Exceptions
+errors
 ==========
 
 All ``pyzeebe`` exceptions inherit from :py:class:`PyZeebeError`
 
-.. autoexception:: pyzeebe.exceptions.PyZeebeError
+.. autoexception:: pyzeebe.errors.PyZeebeError
 
-.. autoexception:: pyzeebe.exceptions.TaskNotFoundError
+.. autoexception:: pyzeebe.errors.TaskNotFoundError
 
-.. autoexception:: pyzeebe.exceptions.NoVariableNameGivenError
+.. autoexception:: pyzeebe.errors.NoVariableNameGivenError
 
-.. autoexception:: pyzeebe.exceptions.NoZeebeAdapterError
+.. autoexception:: pyzeebe.errors.NoZeebeAdapterError
 
-.. autoexception:: pyzeebe.exceptions.DuplicateTaskTypeError
+.. autoexception:: pyzeebe.errors.DuplicateTaskTypeError
 
-.. autoexception:: pyzeebe.exceptions.ActivateJobsRequestInvalidError
+.. autoexception:: pyzeebe.errors.ActivateJobsRequestInvalidError
 
-.. autoexception:: pyzeebe.exceptions.JobAlreadyDeactivatedError
+.. autoexception:: pyzeebe.errors.JobAlreadyDeactivatedError
 
-.. autoexception:: pyzeebe.exceptions.JobNotFoundError
+.. autoexception:: pyzeebe.errors.JobNotFoundError
 
-.. autoexception:: pyzeebe.exceptions.MessageAlreadyExistsError
+.. autoexception:: pyzeebe.errors.MessageAlreadyExistsError
 
-.. autoexception:: pyzeebe.exceptions.WorkflowNotFoundError
+.. autoexception:: pyzeebe.errors.WorkflowNotFoundError
 
-.. autoexception:: pyzeebe.exceptions.WorkflowInstanceNotFoundError
+.. autoexception:: pyzeebe.errors.WorkflowInstanceNotFoundError
 
-.. autoexception:: pyzeebe.exceptions.WorkflowHasNoStartEventError
+.. autoexception:: pyzeebe.errors.WorkflowHasNoStartEventError
 
-.. autoexception:: pyzeebe.exceptions.WorkflowInvalidError
+.. autoexception:: pyzeebe.errors.WorkflowInvalidError
 
-.. autoexception:: pyzeebe.exceptions.InvalidJSONError
+.. autoexception:: pyzeebe.errors.InvalidJSONError
 
-.. autoexception:: pyzeebe.exceptions.ZeebeBackPressureError
+.. autoexception:: pyzeebe.errors.ZeebeBackPressureError
 
-.. autoexception:: pyzeebe.exceptions.ZeebeGatewayUnavailableError
+.. autoexception:: pyzeebe.errors.ZeebeGatewayUnavailableError
 
-.. autoexception:: pyzeebe.exceptions.ZeebeInternalError
+.. autoexception:: pyzeebe.errors.ZeebeInternalError
 
-.. autoexception:: pyzeebe.exceptions.InvalidOAuthCredentialsError
+.. autoexception:: pyzeebe.errors.InvalidOAuthCredentialsError
 
-.. autoexception:: pyzeebe.exceptions.InvalidCamundaCloudCredentialsError
+.. autoexception:: pyzeebe.errors.InvalidCamundaCloudCredentialsError

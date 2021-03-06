@@ -6,7 +6,7 @@ from uuid import uuid4
 import grpc
 import pytest
 
-from pyzeebe.exceptions import InvalidJSONError, WorkflowNotFoundError, WorkflowInstanceNotFoundError, WorkflowHasNoStartEventError, \
+from pyzeebe.errors import InvalidJSONError, WorkflowNotFoundError, WorkflowInstanceNotFoundError, WorkflowHasNoStartEventError, \
     WorkflowInvalidError
 from tests.unit.utils.grpc_utils import GRPCStatusCode
 from tests.unit.utils.random_utils import RANDOM_RANGE

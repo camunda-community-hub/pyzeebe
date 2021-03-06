@@ -6,7 +6,7 @@ from typing import List, Generator, Dict
 
 from pyzeebe import TaskDecorator
 from pyzeebe.credentials.base_credentials import BaseCredentials
-from pyzeebe.exceptions.pyzeebe_exceptions import MaxConsecutiveTaskThreadError
+from pyzeebe.errors.pyzeebe_errors import MaxConsecutiveTaskThreadError
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
@@ -51,9 +51,9 @@ class ZeebeWorker(ZeebeTaskRouter):
             watch (bool): Start a watcher thread that restarts task threads on error
 
         Raises:
-            ActivateJobsRequestInvalid: If one of the worker's task has invalid types
-            ZeebeBackPressure: If Zeebe is currently in back pressure (too many requests)
-            ZeebeGatewayUnavailable: If the Zeebe gateway is unavailable
+            ActivateJobsRequestInvalidError: If one of the worker's task has invalid types
+            ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
@@ -185,7 +185,7 @@ class ZeebeWorker(ZeebeTaskRouter):
         Adds all router's tasks to the worker.
 
         Raises:
-            DuplicateTaskType: If a task from the router already exists in the worker
+            DuplicateTaskTypeError: If a task from the router already exists in the worker
 
         """
         for router in routers:
