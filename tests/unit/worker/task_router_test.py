@@ -50,7 +50,7 @@ def test_remove_task(router: ZeebeTaskRouter, task: Task):
 def test_remove_task_from_many(router: ZeebeTaskRouter, task: Task):
     router.tasks.append(task)
 
-    for i in range(0, randint(0, 100)):
+    for _ in range(1, randint(0, 100)):
         @router.task(str(uuid4()))
         def dummy_function():
             pass
