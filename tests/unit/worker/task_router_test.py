@@ -3,7 +3,7 @@ from uuid import uuid4
 import pytest
 
 from pyzeebe import TaskDecorator
-from pyzeebe.exceptions import TaskNotFound, DuplicateTaskType
+from pyzeebe.exceptions import TaskNotFoundError, DuplicateTaskType
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_router import ZeebeTaskRouter
 from tests.unit.utils.random_utils import randint
@@ -18,7 +18,7 @@ def test_get_task(router: ZeebeTaskRouter, task: Task):
 
 
 def test_get_fake_task(router: ZeebeTaskRouter):
-    with pytest.raises(TaskNotFound):
+    with pytest.raises(TaskNotFoundError):
         router.get_task(str(uuid4()))
 
 
@@ -61,7 +61,7 @@ def test_remove_task_from_many(router: ZeebeTaskRouter, task: Task):
 
 
 def test_remove_fake_task(router: ZeebeTaskRouter):
-    with pytest.raises(TaskNotFound):
+    with pytest.raises(TaskNotFoundError):
         router.remove_task(str(uuid4()))
 
 

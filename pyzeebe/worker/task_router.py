@@ -2,7 +2,7 @@ import logging
 from typing import Tuple, List, Callable, Union
 
 from pyzeebe import TaskDecorator
-from pyzeebe.exceptions import TaskNotFound, DuplicateTaskType
+from pyzeebe.exceptions import TaskNotFoundError, DuplicateTaskType
 from pyzeebe.task import task_builder
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_config import TaskConfig
@@ -58,7 +58,7 @@ class ZeebeTaskRouter:
         try:
             self.get_task(task_type)
             raise DuplicateTaskType(task_type)
-        except TaskNotFound:
+        except TaskNotFoundError:
             return
 
     def before(self, *decorators: TaskDecorator) -> None:
@@ -78,7 +78,7 @@ class ZeebeTaskRouter:
             Task: The task that was removed
 
         Raises:
-             TaskNotFound: If no task with specified type exists
+             TaskNotFoundError: If no task with specified type exists
 
         """
         task_index = self._get_task_index(task_type)
@@ -95,7 +95,7 @@ class ZeebeTaskRouter:
             Task: The wanted task
 
         Raises:
-             TaskNotFound: If no task with specified type exists
+             TaskNotFoundError: If no task with specified type exists
 
         """
         return self._get_task_and_index(task_type)[0]
@@ -107,4 +107,4 @@ class ZeebeTaskRouter:
         for index, task in enumerate(self.tasks):
             if task.type == task_type:
                 return task, index
-        raise TaskNotFound(f"Could not find task {task_type}")
+        raise TaskNotFoundError(f"Could not find task {task_type}")

@@ -2,7 +2,7 @@ class PyZeebeException(Exception):
     pass
 
 
-class TaskNotFound(PyZeebeException):
+class TaskNotFoundError(PyZeebeException):
     pass
 
 
