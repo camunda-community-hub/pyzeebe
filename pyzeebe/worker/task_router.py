@@ -101,7 +101,7 @@ class ZeebeTaskRouter:
         return self._get_task_and_index(task_type)[0]
 
     def _get_task_index(self, task_type: str) -> int:
-        return self._get_task_and_index(task_type)[-1]
+        return self._get_task_and_index(task_type)[1]
 
     def _get_task_and_index(self, task_type: str) -> Tuple[Task, int]:
         for index, task in enumerate(self.tasks):
