@@ -1,9 +1,12 @@
-from typing import Callable
+from typing import Callable, List
+
+import pytest
 
 from pyzeebe import Job, TaskDecorator
 from pyzeebe.task import task_builder
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_config import TaskConfig
+from tests.unit.utils import dummy_functions
 
 
 class TestBuildTask:
@@ -132,71 +135,22 @@ class TestConvertToDictFunction:
 
 
 class TestGetFunctionParameters:
-    def test_get_no_param(self):
-        def no_parameters():
-            pass
-
-        assert task_builder.get_parameters_from_function(no_parameters) == []
-
-    def test_get_single_param(self):
-        def dummy_function(x):
-            pass
-
-        assert task_builder.get_parameters_from_function(dummy_function) == ["x"]
-
-    def test_get_multiple_params(self):
-        def dummy_function(x, y, z):
-            pass
-
-        assert task_builder.get_parameters_from_function(dummy_function) == ["x", "y", "z"]
-
-    def test_get_param_from_lambda(self):
-        assert task_builder.get_parameters_from_function(lambda x: None) == ["x"]
-
-    def test_get_one_positional_param(self):
-        def one_pos_func(x):
-            pass
-
-        assert task_builder.get_parameters_from_function(one_pos_func) == ["x"]
-
-    def test_get_multiple_positional_params(self):
-        def mul_pos_func(x, y, z):
-            pass
-
-        assert task_builder.get_parameters_from_function(mul_pos_func) == ["x", "y", "z"]
-
-    def test_get_one_keyword_param(self):
-        def one_key_func(x=0):
-            pass
-
-        assert task_builder.get_parameters_from_function(one_key_func) == ["x"]
-
-    def test_get_multiple_keyword_params(self):
-        def mul_key_func(x=0, y=0, z=0):
-            pass
-
-        assert task_builder.get_parameters_from_function(mul_key_func) == ["x", "y", "z"]
-
-    def test_get_positional_and_keyword_params(self):
-        def pos_and_key_func(x, y=0):
-            pass
-
-        assert task_builder.get_parameters_from_function(pos_and_key_func) == ["x", "y"]
-
-    def test_get_params_from_args(self):
-        def args_func(*args):
-            pass
-
-        assert task_builder.get_parameters_from_function(args_func) == []
-
-    def test_get_params_from_kwargs(self):
-        def kwargs_func(**kwargs):
-            pass
-
-        assert task_builder.get_parameters_from_function(kwargs_func) == []
-
-    def test_get_standard_named_params(self):
-        def func(args, kwargs):
-            pass
-
-        assert task_builder.get_parameters_from_function(func) == ["args", "kwargs"]
+    @pytest.mark.parametrize("fn,expected", [
+        (dummy_functions.no_param, []),
+        (dummy_functions.one_param, ["x"]),
+        (dummy_functions.multiple_params, ["x", "y", "z"]),
+        (dummy_functions.one_keyword_param, ["x"]),
+        (dummy_functions.multiple_keyword_param, ["x", "y", "z"]),
+        (dummy_functions.positional_and_keyword_params, ["x", "y"]),
+        (dummy_functions.args_param, []),
+        (dummy_functions.kwargs_param, []),
+        (dummy_functions.standard_named_params, ["args", "kwargs"]),
+        (dummy_functions.lambda_no_params, []),
+        (dummy_functions.lambda_one_param, ["x"]),
+        (dummy_functions.lambda_multiple_params, ["x", "y", "z"]),
+        (dummy_functions.lambda_one_keyword_param, ["x"]),
+        (dummy_functions.lambda_multiple_keyword_params, ["x", "y", "z"]),
+        (dummy_functions.lambda_positional_and_keyword_params, ["x", "y"])
+    ])
+    def test_get_params(self, fn: Callable, expected: List[str]):
+        assert task_builder.get_parameters_from_function(fn) == expected
