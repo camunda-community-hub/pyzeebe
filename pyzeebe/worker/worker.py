@@ -23,7 +23,7 @@ class ZeebeWorker(ZeebeTaskHandler):
     def __init__(self, name: str = None, request_timeout: int = 0, hostname: str = None, port: int = None,
                  credentials: BaseCredentials = None, secure_connection: bool = False,
                  before: List[TaskDecorator] = None, after: List[TaskDecorator] = None,
-                 max_connection_retries: int = 10, watcher_max_errors_factor: int = 3):
+                 max_connection_retries: int = 10, watcher_max_errors_per_task: int = 3):
         """
         Args:
             hostname (str): Zeebe instance hostname
@@ -42,7 +42,7 @@ class ZeebeWorker(ZeebeTaskHandler):
         self.request_timeout = request_timeout
         self.stop_event = Event()
         self._task_threads: Dict[str, Thread] = {}
-        self.watcher_max_errors_factor = watcher_max_errors_factor
+        self.watcher_max_errors_per_task = watcher_max_errors_per_task
         self._watcher_thread  = None
 
     def work(self, watch: bool = False) -> None:
@@ -120,20 +120,21 @@ class ZeebeWorker(ZeebeTaskHandler):
         return not self.stop_event.is_set() and bool(self._task_threads)
 
     def _watch_task_threads_runner(self, frequency: int = 10) -> None:
-        consecutive_errors = 0
+        consecutive_errors = {}
         while self._should_watch_threads():
             logger.debug("Checking task thread status")
             # converting to list to avoid "RuntimeError: dictionary changed size during iteration"
             for task_type in list(self._task_threads.keys()):
                 # thread might be none, if dict changed size, in that case we'll consider it
                 # an error, and check if we should handle it
+                consecutive_errors.setdefault(task_type, 0)
                 thread = self._task_threads.get(task_type)
                 if not thread or not thread.is_alive():
-                    consecutive_errors += 1
-                    self._check_max_errors(consecutive_errors)
+                    consecutive_errors[task_type] += 1
+                    self._check_max_errors(consecutive_errors[task_type], task_type)
                     self._handle_not_alive_thread(task_type)
                 else:
-                    consecutive_errors = 0
+                    consecutive_errors[task_type] = 0
             time.sleep(frequency)
 
     def _handle_not_alive_thread(self, task_type: str):
@@ -143,11 +144,11 @@ class ZeebeWorker(ZeebeTaskHandler):
         else:
             logger.warning(f"Task thread {task_type} is not alive, but condition not met for restarting")
 
-    def _check_max_errors(self, consecutive_errors: int):
-        max_errors = self.watcher_max_errors_factor * len(self.tasks)
-        if consecutive_errors >= max_errors:
+    def _check_max_errors(self, consecutive_errors: int, task_type: str):
+        if consecutive_errors >= self.watcher_max_errors_per_task:
             raise MaxConsecutiveTaskThreadError(f"Number of consecutive errors ({consecutive_errors}) exceeded "
-                                           f"max allowed number of errors ({max_errors})")
+                                                f"max allowed number of errors ({self.watcher_max_errors_per_task}) "
+                                                f" for task {task_type}", task_type)
 
     def _restart_task_thread(self, task_type: str) -> None:
         task = self.get_task(task_type)
