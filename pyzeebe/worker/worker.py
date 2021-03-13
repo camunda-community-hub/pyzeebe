@@ -126,9 +126,9 @@ class ZeebeWorker(ZeebeTaskHandler):
             logger.debug("Checking task thread status")
             # converting to list to avoid "RuntimeError: dictionary changed size during iteration"
             for task_type in list(self._task_threads.keys()):
+                consecutive_errors.setdefault(task_type, 0)
                 # thread might be none, if dict changed size, in that case we'll consider it
                 # an error, and check if we should handle it
-                consecutive_errors.setdefault(task_type, 0)
                 thread = self._task_threads.get(task_type)
                 if not thread or not thread.is_alive():
                     consecutive_errors[task_type] += 1
