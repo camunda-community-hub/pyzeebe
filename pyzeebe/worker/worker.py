@@ -23,7 +23,7 @@ class ZeebeWorker(ZeebeTaskHandler):
     def __init__(self, name: str = None, request_timeout: int = 0, hostname: str = None, port: int = None,
                  credentials: BaseCredentials = None, secure_connection: bool = False,
                  before: List[TaskDecorator] = None, after: List[TaskDecorator] = None,
-                 max_connection_retries: int = 10, watcher_max_errors_per_task: int = 3):
+                 max_connection_retries: int = 10, watcher_max_errors_factor: int = 3):
         """
         Args:
             hostname (str): Zeebe instance hostname
@@ -33,6 +33,7 @@ class ZeebeWorker(ZeebeTaskHandler):
             before (List[TaskDecorator]): Decorators to be performed before each task
             after (List[TaskDecorator]): Decorators to be performed after each task
             max_connection_retries (int): Amount of connection retries before worker gives up on connecting to zeebe. To setup with infinite retries use -1
+            watcher_max_errors_factor (int): Number of consequtive errors for a task watcher will accept before raising MaxConsecutiveTaskThreadError
         """
         super().__init__(before, after)
         self.zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port, credentials=credentials,
@@ -42,7 +43,7 @@ class ZeebeWorker(ZeebeTaskHandler):
         self.request_timeout = request_timeout
         self.stop_event = Event()
         self._task_threads: Dict[str, Thread] = {}
-        self.watcher_max_errors_per_task = watcher_max_errors_per_task
+        self.watcher_max_errors_factor = watcher_max_errors_factor
         self._watcher_thread  = None
 
     def work(self, watch: bool = False) -> None:
@@ -145,9 +146,9 @@ class ZeebeWorker(ZeebeTaskHandler):
             logger.warning(f"Task thread {task_type} is not alive, but condition not met for restarting")
 
     def _check_max_errors(self, consecutive_errors: int, task_type: str):
-        if consecutive_errors >= self.watcher_max_errors_per_task:
+        if consecutive_errors >= self.watcher_max_errors_factor:
             raise MaxConsecutiveTaskThreadError(f"Number of consecutive errors ({consecutive_errors}) exceeded "
-                                                f"max allowed number of errors ({self.watcher_max_errors_per_task}) "
+                                                f"max allowed number of errors ({self.watcher_max_errors_factor}) "
                                                 f" for task {task_type}", task_type)
 
     def _restart_task_thread(self, task_type: str) -> None:
