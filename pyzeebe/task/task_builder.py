@@ -68,9 +68,9 @@ def convert_to_dict_function(single_value_function: Callable, variable_name: str
     return inner_fn
 
 
-def get_parameters_from_function(fn: Callable) -> List[str]:
-    function_signature = inspect.signature(fn)
-    for parameter_name, parameter in function_signature.parameters.items():
+def get_parameters_from_function(task_function: Callable) -> List[str]:
+    function_signature = inspect.signature(task_function)
+    for _, parameter in function_signature.parameters.items():
         if parameter.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
             return []
     return list(function_signature.parameters)
