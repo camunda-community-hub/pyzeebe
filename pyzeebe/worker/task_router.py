@@ -36,12 +36,12 @@ class ZeebeTaskRouter:
             task_config = TaskConfig(task_config)
         config_with_decorators = self._add_decorators_to_config(task_config)
 
-        def wrapper(fn: Callable):
+        def task_wrapper(fn: Callable):
             task = task_builder.build_task(fn, config_with_decorators)
             self._add_task(task)
             return fn
 
-        return wrapper
+        return task_wrapper
 
     def _add_task(self, task: Task):
         self._is_task_duplicate(task.type)
