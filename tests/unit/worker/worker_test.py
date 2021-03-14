@@ -171,7 +171,7 @@ class TestGetJobs:
         zeebe_worker.zeebe_adapter.activate_jobs = MagicMock()
         zeebe_worker._get_jobs(task)
         zeebe_worker.zeebe_adapter.activate_jobs.assert_called_with(task_type=task.type, worker=zeebe_worker.name,
-                                                                    timeout=task.config.timeout,
+                                                                    timeout=task.config.timeout_ms,
                                                                     max_jobs_to_activate=task.config.max_jobs_to_activate,
                                                                     variables_to_fetch=task.config.variables_to_fetch,
                                                                     request_timeout=zeebe_worker.request_timeout)

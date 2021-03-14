@@ -175,7 +175,7 @@ class ZeebeWorker(ZeebeTaskRouter):
 
     def _get_jobs(self, task: Task) -> Generator[Job, None, None]:
         logger.debug(f"Activating jobs for task: {task}")
-        return self.zeebe_adapter.activate_jobs(task_type=task.type, worker=self.name, timeout=task.config.timeout,
+        return self.zeebe_adapter.activate_jobs(task_type=task.type, worker=self.name, timeout=task.config.timeout_ms,
                                                 max_jobs_to_activate=task.config.max_jobs_to_activate,
                                                 variables_to_fetch=task.config.variables_to_fetch,
                                                 request_timeout=self.request_timeout)

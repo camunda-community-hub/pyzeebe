@@ -16,7 +16,7 @@ def default_exception_handler(e: Exception, job: Job) -> None:
 
 class TaskConfig:
     def __init__(self, type: str, exception_handler: ExceptionHandler = default_exception_handler,
-                 timeout: int = 10000, max_jobs_to_activate: int = 32, variables_to_fetch: Optional[List[str]] = None,
+                 timeout_ms: int = 10000, max_jobs_to_activate: int = 32, variables_to_fetch: Optional[List[str]] = None,
                  single_value: bool = False, variable_name: Optional[str] = None, before: List[TaskDecorator] = None,
                  after: List[TaskDecorator] = None):
         if single_value and not variable_name:
@@ -24,7 +24,7 @@ class TaskConfig:
 
         self.type = type
         self.exception_handler = exception_handler
-        self.timeout = timeout
+        self.timeout_ms = timeout_ms
         self.max_jobs_to_activate = max_jobs_to_activate
         self.variables_to_fetch = variables_to_fetch
         self.single_value = single_value

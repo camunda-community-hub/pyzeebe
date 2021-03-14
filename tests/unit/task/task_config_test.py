@@ -12,7 +12,7 @@ def test_add_dict_task_with_correct_parameters(task_type: str):
     expected_config_as_dict = {
         "type": task_type,
         "exception_handler": default_exception_handler,
-        "timeout": 10000,
+        "timeout_ms": 10000,
         "max_jobs_to_activate": 32,
         "variables_to_fetch": None,
         "single_value": False,
