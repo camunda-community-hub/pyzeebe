@@ -5,7 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 autopep8 = "~=1.5.4"
-pylint = "~=2.6.0"
+pylint = "~=2.7.2"
 coverage = "~=5.5"
 pytest = "~=6.2.2"
 pytest-grpc = "~=0.8.0"
