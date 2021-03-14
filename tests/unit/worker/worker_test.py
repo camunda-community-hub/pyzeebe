@@ -90,7 +90,7 @@ class TestHandleJobs:
         return zeebe_worker._get_jobs
 
     @pytest.fixture(autouse=True)
-    def task_handler_mock(self, task: Task):
+    def job_handler_spy(self, task: Task):
         task.job_handler = MagicMock(wraps=task.job_handler)
 
     def test_handle_no_job(self, zeebe_worker: ZeebeWorker, task: Task, get_jobs_mock: MagicMock):
