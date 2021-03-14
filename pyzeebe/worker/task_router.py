@@ -62,9 +62,21 @@ class ZeebeTaskRouter:
             return
 
     def before(self, *decorators: TaskDecorator) -> None:
+        """
+        Add decorators to be performed before a job is run
+
+        Args:
+            decorators (Iterable[TaskDecorator]): The decorators to be performed before each job is run
+        """
         self._before.extend(decorators)
 
     def after(self, *decorators: TaskDecorator) -> None:
+        """
+        Add decorators to be performed after a job is run
+
+        Args:
+            decorators (Iterable[TaskDecorator]): The decorators to be performed after each job is run
+        """
         self._after.extend(decorators)
 
     def remove_task(self, task_type: str) -> Task:
