@@ -13,7 +13,7 @@ mypy = "~=0.812"
 coveralls = "~=2.2.0"
 importlib-metadata = "~=3.7.3"
 pyzeebe = {editable = true, path = "."}
-sphinx = "~=3.5.1"
+sphinx = "~=3.5.2"
 sphinx-rtd-theme = "*"
 pytest-mock = "*"
 
