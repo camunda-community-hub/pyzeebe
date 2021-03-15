@@ -38,10 +38,10 @@ def test_create_workflow_instance_with_result(grpc_servicer, zeebe_adapter):
     bpmn_process_id = str(uuid4())
     version = randint(0, 10)
     grpc_servicer.mock_deploy_workflow(bpmn_process_id, version, [])
-    response = zeebe_adapter.create_workflow_instance_with_result(bpmn_process_id=bpmn_process_id,
-                                                                  variables={},
-                                                                  version=version, timeout=0,
-                                                                  variables_to_fetch=[])
+    _, response = zeebe_adapter.create_workflow_instance_with_result(bpmn_process_id=bpmn_process_id,
+                                                                     variables={},
+                                                                     version=version, timeout=0,
+                                                                     variables_to_fetch=[])
     assert isinstance(response, dict)
 
 
