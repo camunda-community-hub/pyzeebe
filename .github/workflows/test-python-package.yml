@@ -2,9 +2,9 @@ name: Test pyzeebe
 
 on:
   push:
-    branches: [ master, development, feature/*, bugfix/*, maintenance/* ]
+    branches: [ master, development, feature/*, bugfix/*, maintenance/*, * ]
   pull_request:
-    branches: [ master, development, feature/*, bugfix/*, maintenance/* ]
+    branches: [ master, development, feature/*, bugfix/*, maintenance/*, pre-release/* ]
 
 jobs:
   build:
