@@ -71,8 +71,8 @@ def test_check_is_task_duplicate_with_duplicate(router: ZeebeTaskRouter, task: T
         router._is_task_duplicate(task.type)
 
 
-def test_check_is_task_duplicate_no_duplicate(router: ZeebeTaskRouter, task: Task):
-    router.tasks.append(task)
+def test_no_duplicate_task_type_error_is_raised(router: ZeebeTaskRouter, task: Task):
+    router._is_task_duplicate(task.type)
 
 
 def test_add_before_decorator(router: ZeebeTaskRouter, decorator: TaskDecorator):
