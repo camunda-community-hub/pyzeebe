@@ -2,7 +2,7 @@ name: Integration test pyzeebe
 
 on:
   push:
-    branches: [ master, development, feature/*, bugfix/*, maintenance/*, * ]
+    branches: [ master, development, feature/*, bugfix/*, maintenance/*, pre-release/* ]
   pull_request:
     branches: [ master, development, feature/*, bugfix/*, maintenance/*, pre-release/* ]
 
