@@ -43,7 +43,8 @@ class TestAddTask:
         def dummy_function(x):
             pass
 
-        assert zeebe_worker.get_task(task_type).config.variables_to_fetch == expected_variables_to_fetch
+        assert zeebe_worker.get_task(
+            task_type).config.variables_to_fetch == expected_variables_to_fetch
 
 
 class TestDecorator:
@@ -66,21 +67,6 @@ class TestDecorator:
         zeebe_worker = ZeebeWorker(after=[decorator])
         assert len(zeebe_worker._after) == 1
         assert decorator in zeebe_worker._after
-
-    def test_decorator_failed(self, zeebe_worker: ZeebeWorker, task: Task, decorator: TaskDecorator,
-                              job_from_task: Job):
-        decorator.side_effect = Exception()
-        zeebe_worker.before(decorator)
-        zeebe_worker.after(decorator)
-
-        @zeebe_worker.task(task.config)
-        def dummy_function():
-            pass
-
-        task = zeebe_worker.get_task(task.type)
-        task.job_handler(job_from_task)
-
-        assert decorator.call_count == 2
 
 
 class TestHandleJobs:

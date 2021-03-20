@@ -1,11 +1,13 @@
+from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
-
 from pyzeebe import TaskDecorator
-from pyzeebe.errors import TaskNotFoundError, DuplicateTaskTypeError
+from pyzeebe.errors import DuplicateTaskTypeError, TaskNotFoundError
+from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
-from pyzeebe.worker.task_router import ZeebeTaskRouter
+from pyzeebe.worker.task_router import (ZeebeTaskRouter,
+                                        default_exception_handler)
 from tests.unit.utils.random_utils import randint
 
 
@@ -97,3 +99,11 @@ def test_add_after_decorator_through_constructor(decorator: TaskDecorator):
     router = ZeebeTaskRouter(after=[decorator])
 
     assert len(router._after) == 1
+
+
+def test_default_exception_handler_logs_a_warning(mocked_job_with_adapter: Job):
+    with patch("pyzeebe.worker.task_router.logger.warning") as logging_mock:
+        default_exception_handler(Exception(), mocked_job_with_adapter)
+
+        mocked_job_with_adapter.set_failure_status.assert_called()
+        logging_mock.assert_called()

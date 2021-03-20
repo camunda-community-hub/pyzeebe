@@ -1,13 +1,21 @@
 import logging
-from typing import Tuple, List, Callable, Union
+from typing import Callable, List, Tuple, Optional
 
 from pyzeebe import TaskDecorator
-from pyzeebe.errors import TaskNotFoundError, DuplicateTaskTypeError
+from pyzeebe.errors import (DuplicateTaskTypeError, NoVariableNameGivenError,
+                            TaskNotFoundError)
+from pyzeebe.job.job import Job
 from pyzeebe.task import task_builder
+from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_config import TaskConfig
 
 logger = logging.getLogger(__name__)
+
+
+def default_exception_handler(e: Exception, job: Job) -> None:
+    logger.warning(f"Task type: {job.type} - failed job {job}. Error: {e}.")
+    job.set_failure_status(f"Failed job. Error: {e}")
 
 
 class ZeebeTaskRouter:
@@ -21,25 +29,60 @@ class ZeebeTaskRouter:
         self._after: List[TaskDecorator] = after or []
         self.tasks: List[Task] = []
 
-    def task(self, task_config: Union[TaskConfig, str]):
+    def task(self, task_type: str, exception_handler: ExceptionHandler = default_exception_handler,
+             variables_to_fetch: Optional[List[str]] = None, timeout_ms: int = 10000, max_jobs_to_activate: int = 32,
+             before: List[TaskDecorator] = None, after: List[TaskDecorator] = None, single_value: bool = False,
+             variable_name: str = None):
         """
         Decorator to create a task
-
         Args:
-            task_config (Union[str, TaskConfig]): Either the task type or a task configuration object
+            task_type (str): The task type
 
+            exception_handler (ExceptionHandler): Handler that will be called when a job fails. 
+
+            variables_to_fetch (Optional[List[str]]): The variables to request from Zeebe when activating jobs.
+
+            timeout_ms (int): Maximum duration of the task in milliseconds. If the timeout is surpassed Zeebe will give up 
+                                on the worker and retry it. Default: 10000 (10 seconds).
+
+            max_jobs_to_activate (int):  Maximum jobs the worker will execute in parallel (of this task). Default: 32
+
+            before (List[TaskDecorator]): All decorators which should be performed before the task.
+
+            after (List[TaskDecorator]): All decorators which should be performed after the task.
+
+            single_value (bool): If the function returns a single value (int, string, list) and not a dictionary set
+                                 this to True. Default: False
+
+            variable_name (str): If single_value then this will be the variable name given to zeebe:
+                                        { <variable_name>: <function_return_value> }
         Raises:
             DuplicateTaskTypeError: If a task from the router already exists in the worker
-
+            NoVariableNameGivenError: When single_value is set, but no variable_name is given
         """
-        if isinstance(task_config, str):
-            task_config = TaskConfig(task_config)
-        config_with_decorators = self._add_decorators_to_config(task_config)
+        if single_value and not variable_name:
+            raise NoVariableNameGivenError(task_type)
 
-        def task_wrapper(fn: Callable):
-            task = task_builder.build_task(fn, config_with_decorators)
+        def task_wrapper(task_function: Callable):
+            config = TaskConfig(
+                task_type,
+                exception_handler,
+                timeout_ms,
+                max_jobs_to_activate,
+                variables_to_fetch or task_builder.get_parameters_from_function(
+                    task_function),
+                single_value,
+                variable_name or "",
+                before or [],
+                after or []
+            )
+            config_with_decorators = self._add_decorators_to_config(config)
+
+            task = task_builder.build_task(
+                task_function, config_with_decorators
+            )
             self._add_task(task)
-            return fn
+            return task_function
 
         return task_wrapper
 
