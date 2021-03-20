@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pytest
 
-from pyzeebe import ZeebeClient, ZeebeWorker, Job, TaskConfig
+from pyzeebe import ZeebeClient, ZeebeWorker, Job
 from pyzeebe.errors import WorkflowNotFoundError
 
 
@@ -20,7 +20,7 @@ def zeebe_worker():
     def exception_handler(exc: Exception, job: Job) -> None:
         job.set_error_status(f"Failed to run task {job.type}. Reason: {exc}")
 
-    @worker.task(TaskConfig("test", exception_handler))
+    @worker.task("test", exception_handler)
     def task_handler(should_throw: bool, input: str) -> Dict:
         if should_throw:
             raise Exception("Error thrown")
