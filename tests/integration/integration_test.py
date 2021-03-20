@@ -36,7 +36,9 @@ def setup(zeebe_worker, zeebe_client):
 
     try:
         integration_tests_path = os.path.join("tests", "integration")
-        zeebe_client.deploy_workflow(os.path.join(integration_tests_path, "test.bpmn"))
+        zeebe_client.deploy_workflow(
+            os.path.join(integration_tests_path, "test.bpmn")
+        )
     except FileNotFoundError:
         zeebe_client.deploy_workflow("test.bpmn")
 
@@ -46,7 +48,10 @@ def setup(zeebe_worker, zeebe_client):
 
 
 def test_run_workflow(zeebe_client: ZeebeClient):
-    workflow_key = zeebe_client.run_workflow("test", {"input": str(uuid4()), "should_throw": False})
+    workflow_key = zeebe_client.run_workflow(
+        "test",
+        {"input": str(uuid4()), "should_throw": False}
+    )
     assert isinstance(workflow_key, int)
 
 
@@ -57,11 +62,18 @@ def test_non_existent_workflow(zeebe_client: ZeebeClient):
 
 def test_run_workflow_with_result(zeebe_client: ZeebeClient):
     input = str(uuid4())
-    output = zeebe_client.run_workflow_with_result("test", {"input": input, "should_throw": False})
-    assert isinstance(output["output"], str)
-    assert output["output"].startswith(input)
+    workflow_instance_key, workflow_result = zeebe_client.run_workflow_with_result(
+        "test",
+        {"input": input, "should_throw": False}
+    )
+    assert isinstance(workflow_instance_key, int)
+    assert isinstance(workflow_result["output"], str)
+    assert workflow_result["output"].startswith(input)
 
 
 def test_cancel_workflow(zeebe_client: ZeebeClient):
-    workflow_key = zeebe_client.run_workflow("test", {"input": str(uuid4()), "should_throw": False})
+    workflow_key = zeebe_client.run_workflow(
+        "test",
+        {"input": str(uuid4()), "should_throw": False}
+    )
     zeebe_client.cancel_workflow_instance(workflow_key)

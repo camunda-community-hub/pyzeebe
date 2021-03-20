@@ -14,11 +14,28 @@ def test_run_workflow(zeebe_client, grpc_servicer):
     assert isinstance(zeebe_client.run_workflow(bpmn_process_id=bpmn_process_id, variables={}, version=version), int)
 
 
-def test_run_workflow_with_result(zeebe_client, grpc_servicer):
-    bpmn_process_id = str(uuid4())
-    version = randint(0, 10)
-    grpc_servicer.mock_deploy_workflow(bpmn_process_id, version, [])
-    assert isinstance(zeebe_client.run_workflow(bpmn_process_id=bpmn_process_id, variables={}, version=version), int)
+class TestRunWorkflowWithResult:
+    @pytest.fixture
+    def deployed_workflow(self, grpc_servicer):
+        bpmn_process_id = str(uuid4())
+        version = randint(0, 10)
+        grpc_servicer.mock_deploy_workflow(bpmn_process_id, version, [])
+        return bpmn_process_id, version
+
+    def test_run_workflow_with_result_instance_key_is_int(self, zeebe_client, deployed_workflow):
+        bpmn_process_id, version = deployed_workflow
+
+        workflow_instance_key, _ = zeebe_client.run_workflow_with_result(bpmn_process_id, {}, version)
+
+        assert isinstance(workflow_instance_key, int)
+
+    def test_run_workflow_with_result_output_variables_are_as_expected(self, zeebe_client, deployed_workflow):
+        expected = {}
+        bpmn_process_id, version = deployed_workflow
+
+        _, output_variables = zeebe_client.run_workflow_with_result(bpmn_process_id, {}, version)
+
+        assert output_variables == expected
 
 
 def test_deploy_workflow(zeebe_client):

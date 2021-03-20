@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict
+from typing import Dict, Tuple
 
 import grpc
 from zeebe_grpc.gateway_pb2 import CreateWorkflowInstanceRequest, CreateWorkflowInstanceWithResultRequest, \
@@ -22,14 +22,14 @@ class ZeebeWorkflowAdapter(ZeebeAdapterBase):
             self._create_workflow_errors(rpc_error, bpmn_process_id, version, variables)
 
     def create_workflow_instance_with_result(self, bpmn_process_id: str, version: int, variables: Dict,
-                                             timeout: int, variables_to_fetch) -> Dict:
+                                             timeout: int, variables_to_fetch) -> Tuple[int, Dict]:
         try:
             response = self._gateway_stub.CreateWorkflowInstanceWithResult(
                 CreateWorkflowInstanceWithResultRequest(
                     request=CreateWorkflowInstanceRequest(bpmnProcessId=bpmn_process_id, version=version,
                                                           variables=json.dumps(variables)),
                     requestTimeout=timeout, fetchVariables=variables_to_fetch))
-            return json.loads(response.variables)
+            return response.workflowInstanceKey, json.loads(response.variables)
         except grpc.RpcError as rpc_error:
             self._create_workflow_errors(rpc_error, bpmn_process_id, version, variables)
 

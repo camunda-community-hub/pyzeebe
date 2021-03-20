@@ -5,15 +5,15 @@ verify_ssl = true
 
 [dev-packages]
 autopep8 = "~=1.5.4"
-pylint = "~=2.6.0"
-coverage = "~=5.4"
+pylint = "~=2.7.2"
+coverage = "~=5.5"
 pytest = "~=6.2.2"
 pytest-grpc = "~=0.8.0"
-mypy = "~=0.800"
+mypy = "~=0.812"
 coveralls = "~=2.2.0"
-importlib-metadata = "~=3.4.0"
+importlib-metadata = "~=3.7.3"
 pyzeebe = {editable = true, path = "."}
-sphinx = "~=3.5.1"
+sphinx = "~=3.5.2"
 sphinx-rtd-theme = "*"
 pytest-mock = "*"
 
