@@ -15,8 +15,10 @@ zeebe_client = ZeebeClient(credentials=camunda_cloud_credentials)
 workflow_instance_key = zeebe_client.run_workflow(bpmn_process_id="My zeebe workflow", variables={})
 
 # Run a workflow and receive the result
-workflow_result = zeebe_client.run_workflow_with_result(bpmn_process_id="My zeebe workflow",
-                                                        timeout=10000)  # Will wait 10000 milliseconds (10 seconds)
+workflow_instance_key, workflow_result = zeebe_client.run_workflow_with_result(
+    bpmn_process_id="My zeebe workflow",
+    timeout=10000
+)  # Will wait 10000 milliseconds (10 seconds)
 
 # Deploy a bpmn workflow definition
 zeebe_client.deploy_workflow("workflow.bpmn")

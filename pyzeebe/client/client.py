@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import grpc
 
@@ -47,7 +47,7 @@ class ZeebeClient(object):
                                                            version=version)
 
     def run_workflow_with_result(self, bpmn_process_id: str, variables: Dict = None, version: int = -1,
-                                 timeout: int = 0, variables_to_fetch: List[str] = None) -> Dict:
+                                 timeout: int = 0, variables_to_fetch: List[str] = None) -> Tuple[int, Dict]:
         """
         Run workflow and wait for the result.
 
@@ -59,7 +59,7 @@ class ZeebeClient(object):
             variables_to_fetch (List[str]): Which variables to get from the finished workflow
 
         Returns:
-            dict: A dictionary of the end state of the workflow instance
+            tuple: (The workflow instance key, A dictionary of the end state of the workflow instance)
 
         Raises:
             WorkflowNotFound: No workflow with bpmn_process_id exists

@@ -78,7 +78,7 @@ To run a workflow and receive the result directly:
 
 .. code-block:: python
 
-    result = client.run_workflow_with_result("bpmn_process_id")
+    workflow_instance_key, result = client.run_workflow_with_result("bpmn_process_id")
 
     # result will be a dict
 
