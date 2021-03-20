@@ -75,7 +75,7 @@ zeebe_client = ZeebeClient(hostname="localhost", port=26500)
 workflow_instance_key = zeebe_client.run_workflow(bpmn_process_id="My zeebe workflow", variables={})
 
 # Run a workflow and receive the result
-workflow_instance_key, workflow_with_result = zeebe_client.run_workflow_with_result(
+workflow_instance_key, workflow_result = zeebe_client.run_workflow_with_result(
     bpmn_process_id="My zeebe workflow",
     timeout=10000
 )
