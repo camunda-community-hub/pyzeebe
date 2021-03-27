@@ -6,8 +6,8 @@ from uuid import uuid4
 import grpc
 import pytest
 
-from pyzeebe.exceptions import InvalidJSON, WorkflowNotFound, WorkflowInstanceNotFound, WorkflowHasNoStartEvent, \
-    WorkflowInvalid
+from pyzeebe.errors import InvalidJSONError, WorkflowNotFoundError, WorkflowInstanceNotFoundError, WorkflowHasNoStartEventError, \
+    WorkflowInvalidError
 from tests.unit.utils.grpc_utils import GRPCStatusCode
 from tests.unit.utils.random_utils import RANDOM_RANGE
 
@@ -79,7 +79,7 @@ def test_cancel_workflow_instance_already_cancelled(zeebe_adapter):
 
     zeebe_adapter._gateway_stub.CancelWorkflowInstance = MagicMock(side_effect=error)
 
-    with pytest.raises(WorkflowInstanceNotFound):
+    with pytest.raises(WorkflowInstanceNotFoundError):
         zeebe_adapter.cancel_workflow_instance(workflow_instance_key=randint(0, RANDOM_RANGE))
 
 
@@ -104,7 +104,7 @@ def test_deploy_workflow_workflow_invalid(zeebe_adapter):
 
         zeebe_adapter._gateway_stub.DeployWorkflow = MagicMock(side_effect=error)
 
-        with pytest.raises(WorkflowInvalid):
+        with pytest.raises(WorkflowInvalidError):
             zeebe_adapter.deploy_workflow()
 
 
@@ -134,21 +134,21 @@ def test_get_workflow_request_object(zeebe_adapter):
 def test_create_workflow_errors_not_found(zeebe_adapter):
     error = grpc.RpcError()
     error._state = GRPCStatusCode(grpc.StatusCode.NOT_FOUND)
-    with pytest.raises(WorkflowNotFound):
+    with pytest.raises(WorkflowNotFoundError):
         zeebe_adapter._create_workflow_errors(error, str(uuid4()), randint(0, 10, ), {})
 
 
 def test_create_workflow_errors_invalid_json(zeebe_adapter):
     error = grpc.RpcError()
     error._state = GRPCStatusCode(grpc.StatusCode.INVALID_ARGUMENT)
-    with pytest.raises(InvalidJSON):
+    with pytest.raises(InvalidJSONError):
         zeebe_adapter._create_workflow_errors(error, str(uuid4()), randint(0, 10, ), {})
 
 
 def test_create_workflow_errors_workflow_has_no_start_event(zeebe_adapter):
     error = grpc.RpcError()
     error._state = GRPCStatusCode(grpc.StatusCode.FAILED_PRECONDITION)
-    with pytest.raises(WorkflowHasNoStartEvent):
+    with pytest.raises(WorkflowHasNoStartEventError):
         zeebe_adapter._create_workflow_errors(error, str(uuid4()), randint(0, 10, ), {})
 
 

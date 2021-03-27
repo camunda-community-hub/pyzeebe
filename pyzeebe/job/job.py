@@ -1,6 +1,6 @@
 from typing import Dict
 
-from pyzeebe.exceptions import NoZeebeAdapter
+from pyzeebe.errors import NoZeebeAdapterError
 from pyzeebe.job.job_status import JobStatus
 
 
@@ -30,16 +30,16 @@ class Job(object):
         Success status means that the job has been completed as intended.
 
         Raises:
-            NoZeebeAdapter: If the job does not have a configured ZeebeAdapter
-            ZeebeBackPressure: If Zeebe is currently in back pressure (too many requests)
-            ZeebeGatewayUnavailable: If the Zeebe gateway is unavailable
+            NoZeebeAdapterError: If the job does not have a configured ZeebeAdapter
+            ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
         if self.zeebe_adapter:
             self.zeebe_adapter.complete_job(job_key=self.key, variables=self.variables)
         else:
-            raise NoZeebeAdapter()
+            raise NoZeebeAdapterError()
 
     def set_failure_status(self, message: str) -> None:
         """
@@ -50,16 +50,16 @@ class Job(object):
             message (str): The failure message that Zeebe will receive
 
         Raises:
-            NoZeebeAdapter: If the job does not have a configured ZeebeAdapter
-            ZeebeBackPressure: If Zeebe is currently in back pressure (too many requests)
-            ZeebeGatewayUnavailable: If the Zeebe gateway is unavailable
+            NoZeebeAdapterError: If the job does not have a configured ZeebeAdapter
+            ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
         if self.zeebe_adapter:
             self.zeebe_adapter.fail_job(job_key=self.key, message=message)
         else:
-            raise NoZeebeAdapter()
+            raise NoZeebeAdapterError()
 
     def set_error_status(self, message: str) -> None:
         """
@@ -70,16 +70,16 @@ class Job(object):
             message (str): The error message that Zeebe will receive
 
         Raises:
-            NoZeebeAdapter: If the job does not have a configured ZeebeAdapter
-            ZeebeBackPressure: If Zeebe is currently in back pressure (too many requests)
-            ZeebeGatewayUnavailable: If the Zeebe gateway is unavailable
+            NoZeebeAdapterError: If the job does not have a configured ZeebeAdapter
+            ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
         if self.zeebe_adapter:
             self.zeebe_adapter.throw_error(job_key=self.key, message=message)
         else:
-            raise NoZeebeAdapter()
+            raise NoZeebeAdapterError()
 
     def __repr__(self):
         return str({"jobKey": self.key, "taskType": self.type, "workflowInstanceKey": self.workflow_instance_key,

@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import pytest
 
-from pyzeebe.exceptions import NoZeebeAdapter
+from pyzeebe.errors import NoZeebeAdapterError
 
 
 def test_success(job_with_adapter):
@@ -13,7 +13,7 @@ def test_success(job_with_adapter):
 
 
 def test_success_no_zeebe_adapter(job_without_adapter):
-    with pytest.raises(NoZeebeAdapter):
+    with pytest.raises(NoZeebeAdapterError):
         job_without_adapter.set_success_status()
 
 
@@ -25,7 +25,7 @@ def test_error(job_with_adapter):
 
 
 def test_error_no_zeebe_adapter(job_without_adapter):
-    with pytest.raises(NoZeebeAdapter):
+    with pytest.raises(NoZeebeAdapterError):
         message = str(uuid4())
         job_without_adapter.set_error_status(message)
 
@@ -38,6 +38,6 @@ def test_failure(job_with_adapter):
 
 
 def test_failure_no_zeebe_adapter(job_without_adapter):
-    with pytest.raises(NoZeebeAdapter):
+    with pytest.raises(NoZeebeAdapterError):
         message = str(uuid4())
         job_without_adapter.set_failure_status(message)

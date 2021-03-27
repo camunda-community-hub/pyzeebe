@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pytest
 
-from pyzeebe.exceptions import WorkflowNotFound
+from pyzeebe.errors import WorkflowNotFoundError
 
 
 def test_run_workflow(zeebe_client, grpc_servicer):
@@ -46,12 +46,12 @@ def test_deploy_workflow(zeebe_client):
 
 
 def test_run_non_existent_workflow(zeebe_client):
-    with pytest.raises(WorkflowNotFound):
+    with pytest.raises(WorkflowNotFoundError):
         zeebe_client.run_workflow(bpmn_process_id=str(uuid4()))
 
 
 def test_run_non_existent_workflow_with_result(zeebe_client):
-    with pytest.raises(WorkflowNotFound):
+    with pytest.raises(WorkflowNotFoundError):
         zeebe_client.run_workflow_with_result(bpmn_process_id=str(uuid4()))
 
 

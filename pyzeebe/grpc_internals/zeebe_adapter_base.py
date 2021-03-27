@@ -5,7 +5,7 @@ import grpc
 from zeebe_grpc.gateway_pb2_grpc import GatewayStub
 
 from pyzeebe.credentials.base_credentials import BaseCredentials
-from pyzeebe.exceptions import ZeebeBackPressure, ZeebeGatewayUnavailable, ZeebeInternalError
+from pyzeebe.errors import ZeebeBackPressureError, ZeebeGatewayUnavailableError, ZeebeInternalError
 
 logger = logging.getLogger(__name__)
 
@@ -81,12 +81,12 @@ class ZeebeAdapterBase(object):
 
     def _common_zeebe_grpc_errors(self, rpc_error: grpc.RpcError):
         if self.is_error_status(rpc_error, grpc.StatusCode.RESOURCE_EXHAUSTED):
-            raise ZeebeBackPressure()
+            raise ZeebeBackPressureError()
         elif self.is_error_status(rpc_error, grpc.StatusCode.UNAVAILABLE):
             self._current_connection_retries += 1
             if not self._should_retry():
                 self._close()
-            raise ZeebeGatewayUnavailable()
+            raise ZeebeGatewayUnavailableError()
         elif self.is_error_status(rpc_error, grpc.StatusCode.INTERNAL):
             self._current_connection_retries += 1
             if not self._should_retry():

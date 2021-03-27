@@ -6,7 +6,7 @@ import grpc
 from zeebe_grpc.gateway_pb2 import ActivateJobsRequest, CompleteJobRequest, CompleteJobResponse, FailJobRequest, \
     FailJobResponse, ThrowErrorRequest, ThrowErrorResponse
 
-from pyzeebe.exceptions import ActivateJobsRequestInvalid, JobAlreadyDeactivated, JobNotFound
+from pyzeebe.errors import ActivateJobsRequestInvalidError, JobAlreadyDeactivatedError, JobNotFoundError
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 from pyzeebe.job.job import Job
 
@@ -27,7 +27,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
                     yield job
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
-                raise ActivateJobsRequestInvalid(task_type, worker, timeout, max_jobs_to_activate)
+                raise ActivateJobsRequestInvalidError(task_type, worker, timeout, max_jobs_to_activate)
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 
@@ -51,9 +51,9 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
             return self._gateway_stub.CompleteJob(CompleteJobRequest(jobKey=job_key, variables=json.dumps(variables)))
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
-                raise JobNotFound(job_key=job_key)
+                raise JobNotFoundError(job_key=job_key)
             elif self.is_error_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
-                raise JobAlreadyDeactivated(job_key=job_key)
+                raise JobAlreadyDeactivatedError(job_key=job_key)
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 
@@ -62,9 +62,9 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
             return self._gateway_stub.FailJob(FailJobRequest(jobKey=job_key, errorMessage=message))
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
-                raise JobNotFound(job_key=job_key)
+                raise JobNotFoundError(job_key=job_key)
             elif self.is_error_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
-                raise JobAlreadyDeactivated(job_key=job_key)
+                raise JobAlreadyDeactivatedError(job_key=job_key)
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 
@@ -74,8 +74,8 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
                 ThrowErrorRequest(jobKey=job_key, errorMessage=message))
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
-                raise JobNotFound(job_key=job_key)
+                raise JobNotFoundError(job_key=job_key)
             elif self.is_error_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
-                raise JobAlreadyDeactivated(job_key=job_key)
+                raise JobAlreadyDeactivatedError(job_key=job_key)
             else:
                 self._common_zeebe_grpc_errors(rpc_error)

@@ -5,10 +5,11 @@ from uuid import uuid4
 
 import pytest
 
-from pyzeebe import ZeebeClient, ZeebeWorker, ZeebeTaskRouter, Job
+from pyzeebe import ZeebeClient, ZeebeWorker, Job
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
-from pyzeebe.task.task import Task
-from pyzeebe.worker.task_handler import ZeebeTaskHandler
+from pyzeebe.task import task_builder
+from pyzeebe.task.task_config import TaskConfig
+from pyzeebe.worker.task_router import ZeebeTaskRouter
 from tests.unit.utils.gateway_mock import GatewayMock
 from tests.unit.utils.random_utils import random_job
 
@@ -16,6 +17,14 @@ from tests.unit.utils.random_utils import random_job
 @pytest.fixture
 def job_with_adapter(zeebe_adapter):
     return random_job(zeebe_adapter=zeebe_adapter)
+
+
+@pytest.fixture
+def mocked_job_with_adapter(job_with_adapter):
+    job_with_adapter.set_success_status = MagicMock()
+    job_with_adapter.set_failure_status = MagicMock()
+    job_with_adapter.set_error_status = MagicMock()
+    return job_with_adapter
 
 
 @pytest.fixture
@@ -48,13 +57,44 @@ def zeebe_worker(zeebe_adapter):
 
 
 @pytest.fixture
-def task(task_type):
-    return Task(task_type, MagicMock(wraps=lambda x: dict(x=x)), MagicMock(wraps=lambda x, y, z: x))
+def task(original_task_function, task_config):
+    return task_builder.build_task(original_task_function, task_config)
+
+
+@pytest.fixture
+def first_active_job(task, job_from_task, grpc_servicer) -> str:
+    grpc_servicer.active_jobs[job_from_task.key] = job_from_task
+    return job_from_task
+
+
+@pytest.fixture
+def task_config(task_type):
+    return TaskConfig(
+        type=task_type,
+        exception_handler=MagicMock(),
+        timeout_ms=10000,
+        max_jobs_to_activate=32,
+        variables_to_fetch=[],
+        single_value=False,
+        variable_name="",
+        before=[],
+        after=[]
+    )
 
 
 @pytest.fixture
 def task_type():
     return str(uuid4())
+
+
+@pytest.fixture
+def original_task_function():
+    def original_function():
+        pass
+
+    mock = MagicMock(wraps=original_function)
+    mock.__code__ = original_function.__code__
+    return mock
 
 
 @pytest.fixture
@@ -90,11 +130,6 @@ def router():
 @pytest.fixture
 def routers():
     return [ZeebeTaskRouter() for _ in range(0, randint(2, 100))]
-
-
-@pytest.fixture
-def task_handler():
-    return ZeebeTaskHandler()
 
 
 @pytest.fixture

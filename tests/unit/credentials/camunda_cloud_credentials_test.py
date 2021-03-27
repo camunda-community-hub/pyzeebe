@@ -4,7 +4,7 @@ from uuid import uuid4
 import pytest
 
 from pyzeebe.credentials.camunda_cloud_credentials import CamundaCloudCredentials
-from pyzeebe.exceptions import InvalidOAuthCredentials, InvalidCamundaCloudCredentials
+from pyzeebe.errors import InvalidOAuthCredentialsError, InvalidCamundaCloudCredentialsError
 
 
 def test_init():
@@ -20,7 +20,7 @@ def test_init():
 
 def test_invalid_credentials():
     CamundaCloudCredentials.get_access_token = MagicMock(
-        side_effect=InvalidOAuthCredentials(str(uuid4()), str(uuid4()), str(uuid4())))
+        side_effect=InvalidOAuthCredentialsError(str(uuid4()), str(uuid4()), str(uuid4())))
 
-    with pytest.raises(InvalidCamundaCloudCredentials):
+    with pytest.raises(InvalidCamundaCloudCredentialsError):
         CamundaCloudCredentials(str(uuid4()), str(uuid4()), str(uuid4()))

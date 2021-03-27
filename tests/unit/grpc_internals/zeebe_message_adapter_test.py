@@ -6,7 +6,7 @@ import grpc
 import pytest
 from zeebe_grpc.gateway_pb2 import *
 
-from pyzeebe.exceptions import MessageAlreadyExists
+from pyzeebe.errors import MessageAlreadyExistsError
 from tests.unit.utils.grpc_utils import GRPCStatusCode
 from tests.unit.utils.random_utils import RANDOM_RANGE
 
@@ -37,7 +37,7 @@ def test_punlish_message_invalid_time_to_live(zeebe_adapter):
 
 def test_publish_message_already_exists(zeebe_adapter):
     message_id = str(uuid4())
-    with pytest.raises(MessageAlreadyExists):
+    with pytest.raises(MessageAlreadyExistsError):
         zeebe_adapter.publish_message(message_id=message_id, name=str(uuid4()), variables={},
                                       correlation_key=str(uuid4()),
                                       time_to_live_in_milliseconds=randint(0, RANDOM_RANGE))
