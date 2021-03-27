@@ -52,9 +52,6 @@ class ZeebeTaskRouter:
             DuplicateTaskTypeError: If a task from the router already exists in the worker
             NoVariableNameGivenError: When single_value is set, but no variable_name is given
         """
-        if single_value and not variable_name:
-            raise NoVariableNameGivenError(task_type)
-
         def task_wrapper(task_function: Callable):
             config = TaskConfig(
                 task_type,
