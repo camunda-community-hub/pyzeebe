@@ -37,23 +37,15 @@ class ZeebeTaskRouter:
         Decorator to create a task
         Args:
             task_type (str): The task type
-
             exception_handler (ExceptionHandler): Handler that will be called when a job fails. 
-
             variables_to_fetch (Optional[List[str]]): The variables to request from Zeebe when activating jobs.
-
             timeout_ms (int): Maximum duration of the task in milliseconds. If the timeout is surpassed Zeebe will give up 
                                 on the worker and retry it. Default: 10000 (10 seconds).
-
             max_jobs_to_activate (int):  Maximum jobs the worker will execute in parallel (of this task). Default: 32
-
             before (List[TaskDecorator]): All decorators which should be performed before the task.
-
             after (List[TaskDecorator]): All decorators which should be performed after the task.
-
             single_value (bool): If the function returns a single value (int, string, list) and not a dictionary set
                                  this to True. Default: False
-
             variable_name (str): If single_value then this will be the variable name given to zeebe:
                                         { <variable_name>: <function_return_value> }
         Raises:
