@@ -49,10 +49,10 @@ class GatewayMock(GatewayServicer):
         for active_job in self.active_jobs.values():
             if active_job.type == request.type:
                 jobs.append(ActivatedJob(key=active_job.key, type=active_job.type,
-                                         processInstanceKey=active_job.workflow_instance_key,
+                                         processInstanceKey=active_job.process_instance_key,
                                          bpmnProcessId=active_job.bpmn_process_id,
-                                         processDefinitionVersion=active_job.workflow_definition_version,
-                                         processDefinitionKey=active_job.workflow_key,
+                                         processDefinitionVersion=active_job.process_definition_version,
+                                         processDefinitionKey=active_job.process_definition_key,
                                          elementId=active_job.element_id,
                                          elementInstanceKey=active_job.element_instance_key,
                                          customHeaders=json.dumps(

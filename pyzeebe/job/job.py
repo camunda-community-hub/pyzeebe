@@ -5,16 +5,16 @@ from pyzeebe.job.job_status import JobStatus
 
 
 class Job(object):
-    def __init__(self, key: int, _type: str, workflow_instance_key: int, bpmn_process_id: str,
-                 workflow_definition_version: int, workflow_key: int, element_id: str, element_instance_key: int,
+    def __init__(self, key: int, _type: str, process_instance_key: int, bpmn_process_id: str,
+                 process_definition_version: int, process_definition_key: int, element_id: str, element_instance_key: int,
                  custom_headers: Dict, worker: str, retries: int, deadline: int, variables: Dict,
                  status: JobStatus = JobStatus.Running, zeebe_adapter=None):
         self.key = key
         self.type = _type
-        self.workflow_instance_key = workflow_instance_key
+        self.process_instance_key = process_instance_key
         self.bpmn_process_id = bpmn_process_id
-        self.workflow_definition_version = workflow_definition_version
-        self.workflow_key = workflow_key
+        self.process_definition_version = process_definition_version
+        self.process_definition_key = process_definition_key
         self.element_id = element_id
         self.element_instance_key = element_instance_key
         self.custom_headers = custom_headers
@@ -37,7 +37,8 @@ class Job(object):
 
         """
         if self.zeebe_adapter:
-            self.zeebe_adapter.complete_job(job_key=self.key, variables=self.variables)
+            self.zeebe_adapter.complete_job(
+                job_key=self.key, variables=self.variables)
         else:
             raise NoZeebeAdapterError()
 
@@ -82,9 +83,9 @@ class Job(object):
             raise NoZeebeAdapterError()
 
     def __repr__(self):
-        return str({"jobKey": self.key, "taskType": self.type, "workflowInstanceKey": self.workflow_instance_key,
+        return str({"jobKey": self.key, "taskType": self.type, "processInstanceKey": self.process_instance_key,
                     "bpmnProcessId": self.bpmn_process_id,
-                    "workflowDefinitionVersion": self.workflow_definition_version, "workflowKey": self.workflow_key,
+                    "processDefinitionVersion": self.process_definition_version, "processDefinitionKey": self.process_definition_key,
                     "elementId": self.element_id, "elementInstanceKey": self.element_instance_key,
                     "customHeaders": self.custom_headers, "worker": self.worker, "retries": self.retries,
                     "deadline": self.deadline, "variables": self.variables})
