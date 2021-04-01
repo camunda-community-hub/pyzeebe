@@ -4,68 +4,68 @@ from uuid import uuid4
 
 import pytest
 
-from pyzeebe.exceptions import WorkflowNotFound
+from pyzeebe.exceptions import ProcessNotFound
 
 
-def test_run_workflow(zeebe_client, grpc_servicer):
+def test_run_process(zeebe_client, grpc_servicer):
     bpmn_process_id = str(uuid4())
     version = randint(0, 10)
-    grpc_servicer.mock_deploy_workflow(bpmn_process_id, version, [])
-    assert isinstance(zeebe_client.run_workflow(
+    grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
+    assert isinstance(zeebe_client.run_process(
         bpmn_process_id=bpmn_process_id, variables={}, version=version), int)
 
 
-class TestRunWorkflowWithResult:
+class TestRunProcessWithResult:
     @pytest.fixture
-    def deployed_workflow(self, grpc_servicer):
+    def deployed_process(self, grpc_servicer):
         bpmn_process_id = str(uuid4())
         version = randint(0, 10)
-        grpc_servicer.mock_deploy_workflow(bpmn_process_id, version, [])
+        grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
         return bpmn_process_id, version
 
-    def test_run_workflow_with_result_instance_key_is_int(self, zeebe_client, deployed_workflow):
-        bpmn_process_id, version = deployed_workflow
+    def test_run_process_with_result_instance_key_is_int(self, zeebe_client, deployed_process):
+        bpmn_process_id, version = deployed_process
 
-        workflow_instance_key, _ = zeebe_client.run_workflow_with_result(
+        process_instance_key, _ = zeebe_client.run_process_with_result(
             bpmn_process_id, {}, version)
 
-        assert isinstance(workflow_instance_key, int)
+        assert isinstance(process_instance_key, int)
 
-    def test_run_workflow_with_result_output_variables_are_as_expected(self, zeebe_client, deployed_workflow):
+    def test_run_process_with_result_output_variables_are_as_expected(self, zeebe_client, deployed_process):
         expected = {}
-        bpmn_process_id, version = deployed_workflow
+        bpmn_process_id, version = deployed_process
 
-        _, output_variables = zeebe_client.run_workflow_with_result(
+        _, output_variables = zeebe_client.run_process_with_result(
             bpmn_process_id, {}, version)
 
         assert output_variables == expected
 
 
-def test_deploy_workflow(zeebe_client):
+def test_deploy_process(zeebe_client):
     zeebe_client.zeebe_adapter.deploy_process = MagicMock()
     file_path = str(uuid4())
-    zeebe_client.deploy_workflow(file_path)
+    zeebe_client.deploy_process(file_path)
     zeebe_client.zeebe_adapter.deploy_process.assert_called_with(file_path)
 
 
-def test_run_non_existent_workflow(zeebe_client):
-    with pytest.raises(WorkflowNotFound):
-        zeebe_client.run_workflow(bpmn_process_id=str(uuid4()))
+def test_run_non_existent_process(zeebe_client):
+    with pytest.raises(ProcessNotFound):
+        zeebe_client.run_process(bpmn_process_id=str(uuid4()))
 
 
-def test_run_non_existent_workflow_with_result(zeebe_client):
-    with pytest.raises(WorkflowNotFound):
-        zeebe_client.run_workflow_with_result(bpmn_process_id=str(uuid4()))
+def test_run_non_existent_process_with_result(zeebe_client):
+    with pytest.raises(ProcessNotFound):
+        zeebe_client.run_process_with_result(bpmn_process_id=str(uuid4()))
 
 
-def test_cancel_workflow_instance(zeebe_client, grpc_servicer):
+def test_cancel_process_instance(zeebe_client, grpc_servicer):
     bpmn_process_id = str(uuid4())
     version = randint(0, 10)
-    grpc_servicer.mock_deploy_workflow(bpmn_process_id, version, [])
-    workflow_instance_key = zeebe_client.run_workflow(
+    grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
+    process_instance_key = zeebe_client.run_process(
         bpmn_process_id=bpmn_process_id, variables={}, version=version)
-    assert isinstance(zeebe_client.cancel_workflow_instance(
-        workflow_instance_key=workflow_instance_key), int)
+    assert isinstance(zeebe_client.cancel_process_instance(
+        process_instance_key=process_instance_key), int)
 
 
 def test_publish_message(zeebe_client):

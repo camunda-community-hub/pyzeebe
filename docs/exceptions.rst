@@ -22,13 +22,13 @@ All ``pyzeebe`` exceptions inherit from :py:class:`PyZeebeException`
 
 .. autoexception:: pyzeebe.exceptions.MessageAlreadyExists
 
-.. autoexception:: pyzeebe.exceptions.WorkflowNotFound
+.. autoexception:: pyzeebe.exceptions.ProcessNotFound
 
-.. autoexception:: pyzeebe.exceptions.WorkflowInstanceNotFound
+.. autoexception:: pyzeebe.exceptions.ProcessInstanceNotFound
 
-.. autoexception:: pyzeebe.exceptions.WorkflowHasNoStartEvent
+.. autoexception:: pyzeebe.exceptions.ProcessHasNoStartEvent
 
-.. autoexception:: pyzeebe.exceptions.WorkflowInvalid
+.. autoexception:: pyzeebe.exceptions.ProcessInvalid
 
 .. autoexception:: pyzeebe.exceptions.InvalidJSON
 
