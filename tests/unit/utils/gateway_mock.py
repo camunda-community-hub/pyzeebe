@@ -23,8 +23,8 @@ class GatewayMock(GatewayServicer):
     # TODO: Mock behaviour of zeebe
 
     def __init__(self):
-        self.deployed_workflows = {}
-        self.active_workflows = {}
+        self.deployed_processes = {}
+        self.active_processes = {}
         self.active_jobs: Dict[int, Job] = {}
         self.messages = {}
 
@@ -98,13 +98,13 @@ class GatewayMock(GatewayServicer):
         return context
 
     def CreateProcessInstance(self, request, context):
-        if request.bpmnProcessId in self.deployed_workflows.keys():
-            for task in self.deployed_workflows[request.bpmnProcessId]["tasks"]:
+        if request.bpmnProcessId in self.deployed_processes.keys():
+            for task in self.deployed_processes[request.bpmnProcessId]["tasks"]:
                 job = random_job(task)
                 self.active_jobs[job.key] = job
 
             process_instance_key = randint(0, RANDOM_RANGE)
-            self.active_workflows[process_instance_key] = request.bpmnProcessId
+            self.active_processes[process_instance_key] = request.bpmnProcessId
             return CreateProcessInstanceResponse(processDefinitionKey=randint(0, RANDOM_RANGE),
                                                  bpmnProcessId=request.bpmnProcessId,
                                                  version=request.version, processInstanceKey=process_instance_key)
@@ -113,9 +113,9 @@ class GatewayMock(GatewayServicer):
             return CreateProcessInstanceResponse()
 
     def CreateProcessInstanceWithResult(self, request, context):
-        if request.request.bpmnProcessId in self.deployed_workflows.keys():
+        if request.request.bpmnProcessId in self.deployed_processes.keys():
             process_instance_key = randint(0, RANDOM_RANGE)
-            self.active_workflows[process_instance_key] = request.request.bpmnProcessId
+            self.active_processes[process_instance_key] = request.request.bpmnProcessId
 
             return CreateProcessInstanceWithResultResponse(processDefinitionKey=request.request.processDefinitionKey,
                                                            processInstanceKey=process_instance_key,
@@ -126,14 +126,14 @@ class GatewayMock(GatewayServicer):
             return CreateProcessInstanceWithResultResponse()
 
     def CancelProcessInstance(self, request, context):
-        if request.processInstanceKey in self.active_workflows.keys():
-            del self.active_workflows[request.processInstanceKey]
+        if request.processInstanceKey in self.active_processes.keys():
+            del self.active_processes[request.processInstanceKey]
             return CancelProcessInstanceResponse()
         else:
             context.set_code(grpc.StatusCode.NOT_FOUND)
             return CancelProcessInstanceResponse()
 
-    def DeployWorkflow(self, request, context):
+    def DeployProcess(self, request, context):
         processes = []
         for process in request.processes:
             process_metadata = ProcessMetadata(bpmnProcessId=str(uuid4()), version=randint(0, 10),
@@ -149,6 +149,6 @@ class GatewayMock(GatewayServicer):
             self.messages[request.messageId] = request.correlationKey
         return PublishMessageResponse()
 
-    def mock_deploy_workflow(self, bpmn_process_id: str, version: int, tasks: List[Task]):
-        self.deployed_workflows[bpmn_process_id] = {"bpmn_process_id": bpmn_process_id, "version": version,
+    def mock_deploy_process(self, bpmn_process_id: str, version: int, tasks: List[Task]):
+        self.deployed_processes[bpmn_process_id] = {"bpmn_process_id": bpmn_process_id, "version": version,
                                                     "tasks": tasks}

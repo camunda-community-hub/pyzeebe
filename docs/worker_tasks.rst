@@ -2,7 +2,7 @@
 Tasks
 =====
 
-Tasks are the building blocks of workflows
+Tasks are the building blocks of processes
 
 Creating a Task
 ---------------
@@ -56,7 +56,7 @@ Now every time ``my_task`` is called (and then fails), ``my_exception_handler`` 
 
 *What does job.set_failure_status do?*
 
-This tells Zeebe that the job failed. The job will then be retried (if configured in workflow definition).
+This tells Zeebe that the job failed. The job will then be retried (if configured in process definition).
 
 
 Task timeout

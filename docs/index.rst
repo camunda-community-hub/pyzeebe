@@ -37,10 +37,10 @@ Creating a client
 
    client = ZeebeClient()
 
-   client.run_workflow("my_workflow")
+   client.run_process("my_process")
 
-   # Run workflow with variables:
-   client.run_workflow("my_workflow", variables={"x": 0})
+   # Run process with variables:
+   client.run_process("my_process", variables={"x": 0})
 
 
 Dependencies

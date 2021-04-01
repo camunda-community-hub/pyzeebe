@@ -6,8 +6,8 @@ import grpc
 from zeebe_grpc.gateway_pb2 import CreateProcessInstanceRequest, CreateProcessInstanceWithResultRequest, \
     CancelProcessInstanceRequest, ProcessRequestObject, DeployProcessRequest, DeployProcessResponse
 
-from pyzeebe.exceptions import InvalidJSON, WorkflowNotFound, WorkflowInstanceNotFound, WorkflowHasNoStartEvent, \
-    WorkflowInvalid
+from pyzeebe.exceptions import InvalidJSON, ProcessNotFound, ProcessInstanceNotFound, ProcessHasNoStartEvent, \
+    ProcessInvalid
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 
 
@@ -38,13 +38,13 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
     def _create_process_errors(self, rpc_error: grpc.RpcError, bpmn_process_id: str, version: int,
                                variables: Dict) -> None:
         if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
-            raise WorkflowNotFound(
+            raise ProcessNotFound(
                 bpmn_process_id=bpmn_process_id, version=version)
         elif self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
             raise InvalidJSON(
                 f"Cannot start process: {bpmn_process_id} with version {version}. Variables: {variables}")
         elif self.is_error_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
-            raise WorkflowHasNoStartEvent(bpmn_process_id=bpmn_process_id)
+            raise ProcessHasNoStartEvent(bpmn_process_id=bpmn_process_id)
         else:
             self._common_zeebe_grpc_errors(rpc_error)
 
@@ -54,23 +54,23 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
                 CancelProcessInstanceRequest(processInstanceKey=process_instance_key))
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
-                raise WorkflowInstanceNotFound(
-                    workflow_instance_key=process_instance_key)
+                raise ProcessInstanceNotFound(
+                    process_instance_key=process_instance_key)
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 
-    def deploy_process(self, *workflow_file_path: str) -> DeployProcessResponse:
+    def deploy_process(self, *process_file_path: str) -> DeployProcessResponse:
         try:
             return self._gateway_stub.DeployProcess(
-                DeployProcessRequest(processes=map(self._get_process_request_object, workflow_file_path)))
+                DeployProcessRequest(processes=map(self._get_process_request_object, process_file_path)))
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
-                raise WorkflowInvalid()
+                raise ProcessInvalid()
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 
     @staticmethod
-    def _get_process_request_object(workflow_file_path: str) -> ProcessRequestObject:
-        with open(workflow_file_path, "rb") as file:
-            return ProcessRequestObject(name=os.path.split(workflow_file_path)[-1],
+    def _get_process_request_object(process_file_path: str) -> ProcessRequestObject:
+        with open(process_file_path, "rb") as file:
+            return ProcessRequestObject(name=os.path.split(process_file_path)[-1],
                                         definition=file.read())
