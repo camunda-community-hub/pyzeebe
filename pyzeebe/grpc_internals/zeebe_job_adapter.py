@@ -27,16 +27,17 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
                     yield job
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
-                raise ActivateJobsRequestInvalid(task_type, worker, timeout, max_jobs_to_activate)
+                raise ActivateJobsRequestInvalid(
+                    task_type, worker, timeout, max_jobs_to_activate)
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 
     def _create_job_from_raw_job(self, response) -> Job:
         return Job(key=response.key, _type=response.type,
-                   workflow_instance_key=response.workflowInstanceKey,
+                   workflow_instance_key=response.processInstanceKey,
                    bpmn_process_id=response.bpmnProcessId,
-                   workflow_definition_version=response.workflowDefinitionVersion,
-                   workflow_key=response.workflowKey,
+                   workflow_definition_version=response.processDefinitionVersion,
+                   workflow_key=response.processDefinitionKey,
                    element_id=response.elementId,
                    element_instance_key=response.elementInstanceKey,
                    custom_headers=json.loads(response.customHeaders),

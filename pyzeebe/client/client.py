@@ -43,8 +43,7 @@ class ZeebeClient(object):
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
-        return self.zeebe_adapter.create_workflow_instance(bpmn_process_id=bpmn_process_id, variables=variables or {},
-                                                           version=version)
+        return self.zeebe_adapter.create_process_instance(bpmn_process_id=bpmn_process_id, variables=variables or {}, version=version)
 
     def run_workflow_with_result(self, bpmn_process_id: str, variables: Dict = None, version: int = -1,
                                  timeout: int = 0, variables_to_fetch: List[str] = None) -> Tuple[int, Dict]:
@@ -70,10 +69,10 @@ class ZeebeClient(object):
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
-        return self.zeebe_adapter.create_workflow_instance_with_result(bpmn_process_id=bpmn_process_id,
-                                                                       variables=variables or {}, version=version,
-                                                                       timeout=timeout,
-                                                                       variables_to_fetch=variables_to_fetch or [])
+        return self.zeebe_adapter.create_process_instance_with_result(bpmn_process_id=bpmn_process_id,
+                                                                      variables=variables or {}, version=version,
+                                                                      timeout=timeout,
+                                                                      variables_to_fetch=variables_to_fetch or [])
 
     def cancel_workflow_instance(self, workflow_instance_key: int) -> int:
         """
@@ -92,7 +91,8 @@ class ZeebeClient(object):
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
-        self.zeebe_adapter.cancel_workflow_instance(workflow_instance_key=workflow_instance_key)
+        self.zeebe_adapter.cancel_process_instance(
+            process_instance_key=workflow_instance_key)
         return workflow_instance_key
 
     def deploy_workflow(self, *workflow_file_path: str) -> None:
@@ -109,7 +109,7 @@ class ZeebeClient(object):
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
-        self.zeebe_adapter.deploy_workflow(*workflow_file_path)
+        self.zeebe_adapter.deploy_process(*workflow_file_path)
 
     def publish_message(self, name: str, correlation_key: str, variables: Dict = None,
                         time_to_live_in_milliseconds: int = 60000, message_id: str = None) -> None:
