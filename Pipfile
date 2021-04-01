@@ -20,4 +20,7 @@ pytest-mock = "*"
 [packages]
 oauthlib = "~=3.1.0"
 requests-oauthlib = "~=1.3.0"
-zeebe-grpc = "~=0.26.0.0"
+zeebe-grpc = "~=1.0.0a3"
+
+[pipenv]
+allow_prereleases = true

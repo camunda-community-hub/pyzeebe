@@ -49,13 +49,14 @@ class GatewayMock(GatewayServicer):
         for active_job in self.active_jobs.values():
             if active_job.type == request.type:
                 jobs.append(ActivatedJob(key=active_job.key, type=active_job.type,
-                                         workflowInstanceKey=active_job.workflow_instance_key,
+                                         processInstanceKey=active_job.workflow_instance_key,
                                          bpmnProcessId=active_job.bpmn_process_id,
-                                         workflowDefinitionVersion=active_job.workflow_definition_version,
-                                         workflowKey=active_job.workflow_key,
+                                         processDefinitionVersion=active_job.workflow_definition_version,
+                                         processDefinitionKey=active_job.workflow_key,
                                          elementId=active_job.element_id,
                                          elementInstanceKey=active_job.element_instance_key,
-                                         customHeaders=json.dumps(active_job.custom_headers),
+                                         customHeaders=json.dumps(
+                                             active_job.custom_headers),
                                          worker=active_job.worker, retries=active_job.retries,
                                          deadline=active_job.deadline,
                                          variables=json.dumps(active_job.variables)))
@@ -96,50 +97,50 @@ class GatewayMock(GatewayServicer):
             job.status = status_on_deactivate
         return context
 
-    def CreateWorkflowInstance(self, request, context):
+    def CreateProcessInstance(self, request, context):
         if request.bpmnProcessId in self.deployed_workflows.keys():
             for task in self.deployed_workflows[request.bpmnProcessId]["tasks"]:
                 job = random_job(task)
                 self.active_jobs[job.key] = job
 
-            workflow_instance_key = randint(0, RANDOM_RANGE)
-            self.active_workflows[workflow_instance_key] = request.bpmnProcessId
-            return CreateWorkflowInstanceResponse(workflowKey=randint(0, RANDOM_RANGE),
-                                                  bpmnProcessId=request.bpmnProcessId,
-                                                  version=request.version, workflowInstanceKey=workflow_instance_key)
+            process_instance_key = randint(0, RANDOM_RANGE)
+            self.active_workflows[process_instance_key] = request.bpmnProcessId
+            return CreateProcessInstanceResponse(processDefinitionKey=randint(0, RANDOM_RANGE),
+                                                 bpmnProcessId=request.bpmnProcessId,
+                                                 version=request.version, processInstanceKey=process_instance_key)
         else:
             context.set_code(grpc.StatusCode.NOT_FOUND)
-            return CreateWorkflowInstanceResponse()
+            return CreateProcessInstanceResponse()
 
-    def CreateWorkflowInstanceWithResult(self, request, context):
+    def CreateProcessInstanceWithResult(self, request, context):
         if request.request.bpmnProcessId in self.deployed_workflows.keys():
-            workflow_instance_key = randint(0, RANDOM_RANGE)
-            self.active_workflows[workflow_instance_key] = request.request.bpmnProcessId
+            process_instance_key = randint(0, RANDOM_RANGE)
+            self.active_workflows[process_instance_key] = request.request.bpmnProcessId
 
-            return CreateWorkflowInstanceWithResultResponse(workflowKey=request.request.workflowKey,
-                                                            workflowInstanceKey=workflow_instance_key,
-                                                            bpmnProcessId=request.request.bpmnProcessId,
-                                                            version=randint(0, 10), variables=request.request.variables)
+            return CreateProcessInstanceWithResultResponse(processDefinitionKey=request.request.processDefinitionKey,
+                                                           processInstanceKey=process_instance_key,
+                                                           bpmnProcessId=request.request.bpmnProcessId,
+                                                           version=randint(0, 10), variables=request.request.variables)
         else:
             context.set_code(grpc.StatusCode.NOT_FOUND)
-            return CreateWorkflowInstanceWithResultResponse()
+            return CreateProcessInstanceWithResultResponse()
 
-    def CancelWorkflowInstance(self, request, context):
-        if request.workflowInstanceKey in self.active_workflows.keys():
-            del self.active_workflows[request.workflowInstanceKey]
-            return CancelWorkflowInstanceResponse()
+    def CancelProcessInstance(self, request, context):
+        if request.processInstanceKey in self.active_workflows.keys():
+            del self.active_workflows[request.processInstanceKey]
+            return CancelProcessInstanceResponse()
         else:
             context.set_code(grpc.StatusCode.NOT_FOUND)
-            return CancelWorkflowInstanceResponse()
+            return CancelProcessInstanceResponse()
 
     def DeployWorkflow(self, request, context):
-        workflows = []
-        for workflow in request.workflows:
-            workflow_metadata = WorkflowMetadata(bpmnProcessId=str(uuid4()), version=randint(0, 10),
-                                                 workflowKey=randint(0, RANDOM_RANGE), resourceName=workflow.name)
-            workflows.append(workflow_metadata)
+        processes = []
+        for process in request.processes:
+            process_metadata = ProcessMetadata(bpmnProcessId=str(uuid4()), version=randint(0, 10),
+                                               processKey=randint(0, RANDOM_RANGE), resourceName=process.name)
+            processes.append(process_metadata)
 
-        return DeployWorkflowResponse(key=randint(0, RANDOM_RANGE), workflows=workflows)
+        return DeployProcessResponse(key=randint(0, RANDOM_RANGE), processes=processes)
 
     def PublishMessage(self, request, context):
         if request.messageId in self.messages.keys():
