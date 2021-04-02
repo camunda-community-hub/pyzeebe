@@ -1,3 +1,5 @@
+[![](https://img.shields.io/badge/Community%20Extension-An%20open%20source%20community%20maintained%20project-FF4700)](https://github.com/camunda-community-hub/community)
+[![](https://img.shields.io/badge/Lifecycle-Stable-brightgreen)](https://github.com/Camunda-Community-Hub/community/blob/main/extension-lifecycle.md#stable-)
 [![Coverage Status](https://coveralls.io/repos/github/JonatanMartens/pyzeebe/badge.svg?branch=master)](https://coveralls.io/github/JonatanMartens/pyzeebe?branch=master)
 ![Test pyzeebe](https://github.com/camunda-community-hub/pyzeebe/workflows/Test%20pyzeebe/badge.svg)
 ![Integration test pyzeebe](https://github.com/camunda-community-hub/pyzeebe/workflows/Integration%20test%20pyzeebe/badge.svg)
