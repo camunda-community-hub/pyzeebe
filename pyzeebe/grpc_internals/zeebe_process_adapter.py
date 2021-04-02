@@ -1,13 +1,12 @@
+import grpc
 import json
 import os
 from typing import Dict, Tuple
-
-import grpc
 from zeebe_grpc.gateway_pb2 import CreateProcessInstanceRequest, CreateProcessInstanceWithResultRequest, \
     CancelProcessInstanceRequest, ProcessRequestObject, DeployProcessRequest, DeployProcessResponse
 
-from pyzeebe.exceptions import InvalidJSON, ProcessNotFound, ProcessInstanceNotFound, ProcessHasNoStartEvent, \
-    ProcessInvalid
+from pyzeebe.errors import InvalidJSONError, ProcessNotFoundError, ProcessInstanceNotFoundError, \
+    ProcessHasNoStartEventError, ProcessInvalidError
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 
 
@@ -38,13 +37,13 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
     def _create_process_errors(self, rpc_error: grpc.RpcError, bpmn_process_id: str, version: int,
                                variables: Dict) -> None:
         if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
-            raise ProcessNotFound(
+            raise ProcessNotFoundError(
                 bpmn_process_id=bpmn_process_id, version=version)
         elif self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
-            raise InvalidJSON(
+            raise InvalidJSONError(
                 f"Cannot start process: {bpmn_process_id} with version {version}. Variables: {variables}")
         elif self.is_error_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
-            raise ProcessHasNoStartEvent(bpmn_process_id=bpmn_process_id)
+            raise ProcessHasNoStartEventError(bpmn_process_id=bpmn_process_id)
         else:
             self._common_zeebe_grpc_errors(rpc_error)
 
@@ -54,7 +53,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
                 CancelProcessInstanceRequest(processInstanceKey=process_instance_key))
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
-                raise ProcessInstanceNotFound(
+                raise ProcessInstanceNotFoundError(
                     process_instance_key=process_instance_key)
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
@@ -65,7 +64,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
                 DeployProcessRequest(processes=map(self._get_process_request_object, process_file_path)))
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
-                raise ProcessInvalid()
+                raise ProcessInvalidError()
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 

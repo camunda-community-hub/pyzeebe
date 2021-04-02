@@ -1,7 +1,7 @@
-from pyzeebe.exceptions.pyzeebe_exceptions import PyZeebeException
+from pyzeebe.errors.pyzeebe_errors import PyZeebeError
 
 
-class ProcessNotFound(PyZeebeException):
+class ProcessNotFoundError(PyZeebeError):
     def __init__(self, bpmn_process_id: str, version: int):
         super().__init__(
             f"Process definition: {bpmn_process_id}  with {version} was not found")
@@ -9,23 +9,23 @@ class ProcessNotFound(PyZeebeException):
         self.version = version
 
 
-class ProcessInstanceNotFound(PyZeebeException):
+class ProcessInstanceNotFoundError(PyZeebeError):
     def __init__(self, process_instance_key: int):
         super().__init__(
             f"Process instance key: {process_instance_key} was not found")
         self.process_instance_key = process_instance_key
 
 
-class ProcessHasNoStartEvent(PyZeebeException):
+class ProcessHasNoStartEventError(PyZeebeError):
     def __init__(self, bpmn_process_id: str):
         super().__init__(
             f"Process {bpmn_process_id} has no start event that can be called manually")
         self.bpmn_process_id = bpmn_process_id
 
 
-class ProcessInvalid(PyZeebeException):
+class ProcessInvalidError(PyZeebeError):
     pass
 
 
-class InvalidJSON(PyZeebeException):
+class InvalidJSONError(PyZeebeError):
     pass
