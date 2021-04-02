@@ -35,6 +35,7 @@ class ZeebeTaskRouter:
              variable_name: str = None):
         """
         Decorator to create a task
+
         Args:
             task_type (str): The task type
             exception_handler (ExceptionHandler): Handler that will be called when a job fails. 
@@ -48,6 +49,7 @@ class ZeebeTaskRouter:
                                  this to True. Default: False
             variable_name (str): If single_value then this will be the variable name given to zeebe:
                                         { <variable_name>: <function_return_value> }
+
         Raises:
             DuplicateTaskTypeError: If a task from the router already exists in the worker
             NoVariableNameGivenError: When single_value is set, but no variable_name is given
