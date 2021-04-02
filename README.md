@@ -7,20 +7,21 @@
 ![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/JonatanMartens/pyzeebe)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyzeebe)
 ![PyPI](https://img.shields.io/pypi/v/pyzeebe)
-
-
+[![Documentation Status](https://readthedocs.org/projects/pyzeebe/badge/?version=latest)](https://pyzeebe.readthedocs.io/en/latest/?badge=stable)
 
 # Pyzeebe
+
 pyzeebe is a python grpc client for Zeebe.
 
 Zeebe version support:
 
-| Pyzeebe version | Tested Zeebe versions |
-|:---------------:|----------------|
-| 2.x.x           | 0.23, 0.24, 0.25, 0.26        |
-| 1.x.x           | 0.23, 0.24         |
+| Pyzeebe version | Tested Zeebe versions  |
+| :-------------: | ---------------------- |
+|      2.x.x      | 0.23, 0.24, 0.25, 0.26 |
+|      1.x.x      | 0.23, 0.24             |
 
 ## Getting Started
+
 To install:
 
 `pip install pyzeebe`
@@ -40,7 +41,7 @@ from pyzeebe import ZeebeWorker, Job
 def on_error(exception: Exception, job: Job):
     """
     on_error will be called when the task fails
-    """ 
+    """
     print(exception)
     job.set_error_status(f"Failed to handle job {job}. Error: {str(exception)}")
 
@@ -57,9 +58,10 @@ worker.work() # Now every time that a task with type example is called example_t
 ```
 
 Stop a worker:
+
 ```python
 zeebe_worker.work() # Worker will begin working
-zeebe_worker.stop() # Stops worker after all running jobs have been completed 
+zeebe_worker.stop() # Stops worker after all running jobs have been completed
 ```
 
 ### Client
@@ -89,18 +91,21 @@ zeebe_client.publish_message(name="message_name", correlation_key="some_id")
 ```
 
 ## Tests
+
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install pyzeebe
- 
+
 `pytest tests/unit`
 
 ## Contributing
+
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 
-
 ## Versioning
+
 We use [SemVer](semver.org) for versioning. For the versions available, see the tags on this repository.
 
 ## License
+
 We use the MIT license, see [LICENSE.md](LICENSE.md) for details
