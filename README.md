@@ -80,7 +80,7 @@ process_instance_key, process_result = zeebe_client.run_process_with_result(
     timeout=10000
 )
 
-# Deploy a bpmn process definition
+# Deploy a BPMN process definition
 zeebe_client.deploy_process("process.bpmn")
 
 # Cancel a running process
