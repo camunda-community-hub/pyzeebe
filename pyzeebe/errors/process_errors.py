@@ -16,7 +16,7 @@ class ProcessInstanceNotFoundError(PyZeebeError):
         self.process_instance_key = process_instance_key
 
 
-class ProcessHasNoStartEventError(PyZeebeError):
+class ProcessDefinitionHasNoStartEventError(PyZeebeError):
     def __init__(self, bpmn_process_id: str):
         super().__init__(
             f"Process {bpmn_process_id} has no start event that can be called manually")

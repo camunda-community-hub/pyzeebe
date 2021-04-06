@@ -37,7 +37,7 @@ class ZeebeClient(object):
         Raises:
             ProcessDefinitionNotFoundError: No process with bpmn_process_id exists
             InvalidJSONError: variables is not JSONable
-            ProcessHasNoStartEventError: The specified process does not have a start event
+            ProcessDefinitionHasNoStartEventError: The specified process does not have a start event
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
@@ -63,7 +63,7 @@ class ZeebeClient(object):
         Raises:
             ProcessDefinitionNotFoundError: No process with bpmn_process_id exists
             InvalidJSONError: variables is not JSONable
-            ProcessHasNoStartEventError: The specified process does not have a start event
+            ProcessDefinitionHasNoStartEventError: The specified process does not have a start event
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error

@@ -6,7 +6,7 @@ from zeebe_grpc.gateway_pb2 import CreateProcessInstanceRequest, CreateProcessIn
     CancelProcessInstanceRequest, ProcessRequestObject, DeployProcessRequest, DeployProcessResponse
 
 from pyzeebe.errors import InvalidJSONError, ProcessDefinitionNotFoundError, ProcessInstanceNotFoundError, \
-    ProcessHasNoStartEventError, ProcessInvalidError
+    ProcessDefinitionHasNoStartEventError, ProcessInvalidError
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 
 
@@ -43,7 +43,8 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
             raise InvalidJSONError(
                 f"Cannot start process: {bpmn_process_id} with version {version}. Variables: {variables}")
         elif self.is_error_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
-            raise ProcessHasNoStartEventError(bpmn_process_id=bpmn_process_id)
+            raise ProcessDefinitionHasNoStartEventError(
+                bpmn_process_id=bpmn_process_id)
         else:
             self._common_zeebe_grpc_errors(rpc_error)
 

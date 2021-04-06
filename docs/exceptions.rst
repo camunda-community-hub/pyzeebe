@@ -26,7 +26,7 @@ All ``pyzeebe`` exceptions inherit from :py:class:`PyZeebeError`
 
 .. autoexception:: pyzeebe.exceptions.ProcessInstanceNotFoundError
 
-.. autoexception:: pyzeebe.exceptions.ProcessHasNoStartEventError
+.. autoexception:: pyzeebe.exceptions.ProcessDefinitionHasNoStartEventError
 
 .. autoexception:: pyzeebe.exceptions.ProcessInvalidError
 

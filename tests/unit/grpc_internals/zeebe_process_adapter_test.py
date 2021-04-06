@@ -6,7 +6,7 @@ from uuid import uuid4
 import grpc
 import pytest
 
-from pyzeebe.errors import InvalidJSONError, ProcessDefinitionNotFoundError, ProcessInstanceNotFoundError, ProcessHasNoStartEventError, \
+from pyzeebe.errors import InvalidJSONError, ProcessDefinitionNotFoundError, ProcessInstanceNotFoundError, ProcessDefinitionHasNoStartEventError, \
     ProcessInvalidError
 from tests.unit.utils.grpc_utils import GRPCStatusCode
 from tests.unit.utils.random_utils import RANDOM_RANGE
@@ -159,7 +159,7 @@ def test_create_process_errors_invalid_json(zeebe_adapter):
 def test_create_process_errors_process_has_no_start_event(zeebe_adapter):
     error = grpc.RpcError()
     error._state = GRPCStatusCode(grpc.StatusCode.FAILED_PRECONDITION)
-    with pytest.raises(ProcessHasNoStartEventError):
+    with pytest.raises(ProcessDefinitionHasNoStartEventError):
         zeebe_adapter._create_process_errors(
             error, str(uuid4()), randint(0, 10, ), {})
 
