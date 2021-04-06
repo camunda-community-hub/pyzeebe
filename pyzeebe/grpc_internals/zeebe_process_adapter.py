@@ -5,7 +5,7 @@ from typing import Dict, Tuple
 from zeebe_grpc.gateway_pb2 import CreateProcessInstanceRequest, CreateProcessInstanceWithResultRequest, \
     CancelProcessInstanceRequest, ProcessRequestObject, DeployProcessRequest, DeployProcessResponse
 
-from pyzeebe.errors import InvalidJSONError, ProcessNotFoundError, ProcessInstanceNotFoundError, \
+from pyzeebe.errors import InvalidJSONError, ProcessDefinitionNotFoundError, ProcessInstanceNotFoundError, \
     ProcessHasNoStartEventError, ProcessInvalidError
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 
@@ -37,7 +37,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
     def _create_process_errors(self, rpc_error: grpc.RpcError, bpmn_process_id: str, version: int,
                                variables: Dict) -> None:
         if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
-            raise ProcessNotFoundError(
+            raise ProcessDefinitionNotFoundError(
                 bpmn_process_id=bpmn_process_id, version=version)
         elif self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
             raise InvalidJSONError(

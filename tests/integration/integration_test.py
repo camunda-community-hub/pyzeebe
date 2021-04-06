@@ -5,7 +5,8 @@ from uuid import uuid4
 import pytest
 
 from pyzeebe import ZeebeWorker, ZeebeClient, Job
-from pyzeebe.errors import ProcessNotFoundError
+from pyzeebe.errors import ProcessDefinitionNotFoundError
+
 
 @pytest.fixture(scope="session")
 def zeebe_client():
@@ -55,7 +56,7 @@ def test_run_process(zeebe_client: ZeebeClient):
 
 
 def test_non_existent_process(zeebe_client: ZeebeClient):
-    with pytest.raises(ProcessNotFoundError):
+    with pytest.raises(ProcessDefinitionNotFoundError):
         zeebe_client.run_process(str(uuid4()))
 
 

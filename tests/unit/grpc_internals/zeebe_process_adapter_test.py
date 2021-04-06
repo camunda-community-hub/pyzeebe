@@ -6,7 +6,7 @@ from uuid import uuid4
 import grpc
 import pytest
 
-from pyzeebe.errors import InvalidJSONError, ProcessNotFoundError, ProcessInstanceNotFoundError, ProcessHasNoStartEventError, \
+from pyzeebe.errors import InvalidJSONError, ProcessDefinitionNotFoundError, ProcessInstanceNotFoundError, ProcessHasNoStartEventError, \
     ProcessInvalidError
 from tests.unit.utils.grpc_utils import GRPCStatusCode
 from tests.unit.utils.random_utils import RANDOM_RANGE
@@ -143,7 +143,7 @@ def test_get_process_request_object(zeebe_adapter):
 def test_create_process_errors_not_found(zeebe_adapter):
     error = grpc.RpcError()
     error._state = GRPCStatusCode(grpc.StatusCode.NOT_FOUND)
-    with pytest.raises(ProcessNotFoundError):
+    with pytest.raises(ProcessDefinitionNotFoundError):
         zeebe_adapter._create_process_errors(
             error, str(uuid4()), randint(0, 10, ), {})
 

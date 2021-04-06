@@ -1,7 +1,7 @@
 from pyzeebe.errors.pyzeebe_errors import PyZeebeError
 
 
-class ProcessNotFoundError(PyZeebeError):
+class ProcessDefinitionNotFoundError(PyZeebeError):
     def __init__(self, bpmn_process_id: str, version: int):
         super().__init__(
             f"Process definition: {bpmn_process_id}  with {version} was not found")

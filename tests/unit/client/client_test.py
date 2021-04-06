@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pytest
 
-from pyzeebe.errors import ProcessNotFoundError
+from pyzeebe.errors import ProcessDefinitionNotFoundError
 
 
 def test_run_process(zeebe_client, grpc_servicer):
@@ -49,12 +49,12 @@ def test_deploy_process(zeebe_client):
 
 
 def test_run_non_existent_process(zeebe_client):
-    with pytest.raises(ProcessNotFoundError):
+    with pytest.raises(ProcessDefinitionNotFoundError):
         zeebe_client.run_process(bpmn_process_id=str(uuid4()))
 
 
 def test_run_non_existent_process_with_result(zeebe_client):
-    with pytest.raises(ProcessNotFoundError):
+    with pytest.raises(ProcessDefinitionNotFoundError):
         zeebe_client.run_process_with_result(bpmn_process_id=str(uuid4()))
 
 

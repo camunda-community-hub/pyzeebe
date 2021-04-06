@@ -22,7 +22,7 @@ All ``pyzeebe`` exceptions inherit from :py:class:`PyZeebeError`
 
 .. autoexception:: pyzeebe.errors.MessageAlreadyExistsError
 
-.. autoexception:: pyzeebe.exceptions.ProcessNotFoundError
+.. autoexception:: pyzeebe.exceptions.ProcessDefinitionNotFoundError
 
 .. autoexception:: pyzeebe.exceptions.ProcessInstanceNotFoundError
 
