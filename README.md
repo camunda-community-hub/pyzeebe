@@ -71,7 +71,7 @@ from pyzeebe import ZeebeClient
 # Create a zeebe client
 zeebe_client = ZeebeClient(hostname="localhost", port=26500)
 
-# Run a process
+# Run a Zeebe instance proccess
 process_instance_key = zeebe_client.run_process(bpmn_process_id="My zeebe process", variables={})
 
 # Run a process and receive the result

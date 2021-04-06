@@ -63,8 +63,8 @@ To create a client for a Camunda Cloud instance:
     client = ZeebeClient()
 
 
-Run a process
---------------
+Run a Zeebe process instance
+----------------------------
 
 .. code-block:: python
 
