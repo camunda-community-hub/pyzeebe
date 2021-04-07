@@ -23,15 +23,17 @@ def build_job_handler(task_function: Callable, task_config: TaskConfig) -> JobHa
     before_decorator_runner = create_decorator_runner(task_config.before)
     after_decorator_runner = create_decorator_runner(task_config.after)
 
-    def job_handler(job: Job, task_state: TaskState) -> Job:
-        task_state.add(job)
+    def job_handler(job: Job, task_state: TaskState = None) -> Job:
+        if task_state:
+            task_state.add(job)
         job = before_decorator_runner(job)
         job.variables, succeeded = run_original_task_function(
             task_function, task_config, job)
         job = after_decorator_runner(job)
         if succeeded:
             job.set_success_status()
-        task_state.remove(job)
+        if task_state:
+            task_state.remove(job)
         return job
 
     return job_handler
