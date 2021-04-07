@@ -218,7 +218,7 @@ class TestWorkerMaxTasks:
 
         zeebe_worker._get_jobs(task)
 
-        assert activate_job_mock.call_args.kwargs["max_jobs_to_activate"] == expected
+        assert activate_job_mock.call_args[1]["max_jobs_to_activate"] == expected
 
     def test_activating_jobs_increase_and_decrease_active_task_count(self, zeebe_worker: ZeebeWorker,
                                                                      job_from_task: Job, task: Task):
