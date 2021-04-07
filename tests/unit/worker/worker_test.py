@@ -92,7 +92,7 @@ class TestHandleJobs:
 
         zeebe_worker._handle_jobs(task)
 
-        task.job_handler.assert_called_with(job_from_task)
+        task.job_handler.assert_called_with(job_from_task, zeebe_worker._task_state)
 
     def test_handle_many_jobs(self, zeebe_worker: ZeebeWorker, task: Task, job_from_task: Job,
                               get_jobs_mock: MagicMock):
@@ -159,7 +159,7 @@ class TestGetJobs:
         zeebe_worker._get_jobs(task)
         zeebe_worker.zeebe_adapter.activate_jobs.assert_called_with(task_type=task.type, worker=zeebe_worker.name,
                                                                     timeout=task.config.timeout_ms,
-                                                                    max_jobs_to_activate=task.config.max_jobs_to_activate,
+                                                                    max_jobs_to_activate=zeebe_worker.max_task_count,
                                                                     variables_to_fetch=task.config.variables_to_fetch,
                                                                     request_timeout=zeebe_worker.request_timeout)
 
