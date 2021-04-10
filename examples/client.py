@@ -16,7 +16,7 @@ zeebe_client = ZeebeClient(credentials=camunda_cloud_credentials)
 process_instance_key = zeebe_client.run_process(
     bpmn_process_id="My zeebe process", variables={})
 
-# Run a Zeebe instance process and receive the result
+# Run a Zeebe process instance and receive the result
 process_instance_key, process_result = zeebe_client.run_process_with_result(
     bpmn_process_id="My zeebe process",
     timeout=10000
