@@ -1,5 +1,5 @@
 ==========
-errors
+Errors
 ==========
 
 All ``pyzeebe`` exceptions inherit from :py:class:`PyZeebeError`
@@ -22,13 +22,13 @@ All ``pyzeebe`` exceptions inherit from :py:class:`PyZeebeError`
 
 .. autoexception:: pyzeebe.errors.MessageAlreadyExistsError
 
-.. autoexception:: pyzeebe.errors.WorkflowNotFoundError
+.. autoexception:: pyzeebe.exceptions.ProcessDefinitionNotFoundError
 
-.. autoexception:: pyzeebe.errors.WorkflowInstanceNotFoundError
+.. autoexception:: pyzeebe.exceptions.ProcessInstanceNotFoundError
 
-.. autoexception:: pyzeebe.errors.WorkflowHasNoStartEventError
+.. autoexception:: pyzeebe.exceptions.ProcessDefinitionHasNoStartEventError
 
-.. autoexception:: pyzeebe.errors.WorkflowInvalidError
+.. autoexception:: pyzeebe.exceptions.ProcessInvalidError
 
 .. autoexception:: pyzeebe.errors.InvalidJSONError
 

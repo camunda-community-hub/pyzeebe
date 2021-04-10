@@ -63,32 +63,32 @@ To create a client for a Camunda Cloud instance:
     client = ZeebeClient()
 
 
-Run a workflow
---------------
+Run a Zeebe process instance
+----------------------------
 
 .. code-block:: python
 
-    workflow_instance_key = client.run_workflow("bpmn_process_id")
+    process_instance_key = client.run_process("bpmn_process_id")
 
 
-Run a workflow with result
+Run a process with result
 --------------------------
 
-To run a workflow and receive the result directly:
+To run a process and receive the result directly:
 
 .. code-block:: python
 
-    workflow_instance_key, result = client.run_workflow_with_result("bpmn_process_id")
+    process_instance_key, result = client.run_process_with_result("bpmn_process_id")
 
     # result will be a dict
 
 
-Deploy a workflow
+Deploy a process
 -----------------
 
 .. code-block:: python
 
-    client.deploy_workflow("workflow_file.bpmn")
+    client.deploy_process("process_file.bpmn")
 
 
 Publish a message

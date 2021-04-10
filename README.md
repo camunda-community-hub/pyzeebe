@@ -71,20 +71,20 @@ from pyzeebe import ZeebeClient
 # Create a zeebe client
 zeebe_client = ZeebeClient(hostname="localhost", port=26500)
 
-# Run a workflow
-workflow_instance_key = zeebe_client.run_workflow(bpmn_process_id="My zeebe workflow", variables={})
+# Run a Zeebe process instance
+process_instance_key = zeebe_client.run_process(bpmn_process_id="My zeebe process", variables={})
 
-# Run a workflow and receive the result
-workflow_instance_key, workflow_result = zeebe_client.run_workflow_with_result(
-    bpmn_process_id="My zeebe workflow",
+# Run a process and receive the result
+process_instance_key, process_result = zeebe_client.run_process_with_result(
+    bpmn_process_id="My zeebe process",
     timeout=10000
 )
 
-# Deploy a bpmn workflow definition
-zeebe_client.deploy_workflow("workflow.bpmn")
+# Deploy a BPMN process definition
+zeebe_client.deploy_process("process.bpmn")
 
-# Cancel a running workflow
-zeebe_client.cancel_workflow_instance(workflow_instance_key=12345)
+# Cancel a running process
+zeebe_client.cancel_process_instance(process_instance_key=12345)
 
 # Publish message
 zeebe_client.publish_message(name="message_name", correlation_key="some_id")
