@@ -180,9 +180,9 @@ class ZeebeWorker(ZeebeTaskRouter):
             logger.debug(f"Running job: {job}")
             thread.start()
 
-    def _calculate_max_jobs_to_activate(self, max_jobs_to_activate_config: int) -> int:
+    def _calculate_max_jobs_to_activate(self, task_max_jobs: int) -> int:
         worker_max_jobs = int(self.max_task_count) - self._task_state.count_active()
-        return min(worker_max_jobs, max_jobs_to_activate_config)
+        return min(worker_max_jobs, task_max_jobs)
 
     def _get_jobs(self, task: Task) -> Generator[Job, None, None]:
         logger.debug(f"Activating jobs for task: {task}")
