@@ -23,7 +23,7 @@ class ZeebeWorker(ZeebeTaskRouter):
                  credentials: BaseCredentials = None, secure_connection: bool = False,
                  before: List[TaskDecorator] = None, after: List[TaskDecorator] = None,
                  max_connection_retries: int = 10, watcher_max_errors_factor: int = 3,
-                 max_task_count: int = 4):
+                 max_task_count: int = 32):
         """
         Args:
             hostname (str): Zeebe instance hostname
