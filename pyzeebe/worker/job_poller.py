@@ -28,10 +28,10 @@ class JobPoller:
             jobs = self.zeebe_adapter.activate_jobs(
                 self.task.type,
                 self.worker_name,
-                self.request_timeout,
+                self.task.config.timeout_ms,
                 self.task.config.max_jobs_to_activate,
                 self.task.config.variables_to_fetch,
-                self.task.config.timeout_ms
+                self.request_timeout,
             )
             for job in jobs:
                 await self.queue.put(job)
