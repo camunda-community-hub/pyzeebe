@@ -11,6 +11,7 @@ from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_router import ZeebeTaskRouter
+from pyzeebe.worker.task_state import TaskState
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,8 @@ class ZeebeWorker(ZeebeTaskRouter):
     def __init__(self, name: str = None, request_timeout: int = 0, hostname: str = None, port: int = None,
                  credentials: BaseCredentials = None, secure_connection: bool = False,
                  before: List[TaskDecorator] = None, after: List[TaskDecorator] = None,
-                 max_connection_retries: int = 10, watcher_max_errors_factor: int = 3):
+                 max_connection_retries: int = 10, watcher_max_errors_factor: int = 3,
+                 max_task_count: int = 32):
         """
         Args:
             hostname (str): Zeebe instance hostname
@@ -32,6 +34,7 @@ class ZeebeWorker(ZeebeTaskRouter):
             after (List[TaskDecorator]): Decorators to be performed after each task
             max_connection_retries (int): Amount of connection retries before worker gives up on connecting to zeebe. To setup with infinite retries use -1
             watcher_max_errors_factor (int): Number of consequtive errors for a task watcher will accept before raising MaxConsecutiveTaskThreadError
+            max_task_count (int): The maximum amount of tasks the worker can handle simultaniously
         """
         super().__init__(before, after)
         self.zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port, credentials=credentials,
@@ -43,6 +46,8 @@ class ZeebeWorker(ZeebeTaskRouter):
         self._task_threads: Dict[str, Thread] = {}
         self.watcher_max_errors_factor = watcher_max_errors_factor
         self._watcher_thread = None
+        self.max_task_count = max_task_count
+        self._task_state = TaskState()
 
     def work(self, watch: bool = False) -> None:
         """
@@ -170,15 +175,20 @@ class ZeebeWorker(ZeebeTaskRouter):
     def _handle_jobs(self, task: Task) -> None:
         for job in self._get_jobs(task):
             thread = Thread(target=task.job_handler,
-                            args=(job,),
+                            args=(job, self._task_state),
                             name=f"{self.__class__.__name__}-Job-{job.type}")
             logger.debug(f"Running job: {job}")
             thread.start()
 
+    def _calculate_max_jobs_to_activate(self, task_max_jobs: int) -> int:
+        worker_max_jobs = self.max_task_count - self._task_state.count_active()
+        return min(worker_max_jobs, task_max_jobs)
+
     def _get_jobs(self, task: Task) -> Generator[Job, None, None]:
         logger.debug(f"Activating jobs for task: {task}")
+        max_jobs_to_activate = self._calculate_max_jobs_to_activate(task.config.max_jobs_to_activate)
         return self.zeebe_adapter.activate_jobs(task_type=task.type, worker=self.name, timeout=task.config.timeout_ms,
-                                                max_jobs_to_activate=task.config.max_jobs_to_activate,
+                                                max_jobs_to_activate=max_jobs_to_activate,
                                                 variables_to_fetch=task.config.variables_to_fetch,
                                                 request_timeout=self.request_timeout)
 

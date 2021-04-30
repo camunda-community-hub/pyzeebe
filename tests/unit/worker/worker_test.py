@@ -1,4 +1,5 @@
 import time
+from random import randint
 from threading import Event as StopEvent
 from typing import List
 from unittest.mock import patch, MagicMock
@@ -91,7 +92,7 @@ class TestHandleJobs:
 
         zeebe_worker._handle_jobs(task)
 
-        task.job_handler.assert_called_with(job_from_task)
+        task.job_handler.assert_called_with(job_from_task, zeebe_worker._task_state)
 
     def test_handle_many_jobs(self, zeebe_worker: ZeebeWorker, task: Task, job_from_task: Job,
                               get_jobs_mock: MagicMock):
@@ -158,7 +159,7 @@ class TestGetJobs:
         zeebe_worker._get_jobs(task)
         zeebe_worker.zeebe_adapter.activate_jobs.assert_called_with(task_type=task.type, worker=zeebe_worker.name,
                                                                     timeout=task.config.timeout_ms,
-                                                                    max_jobs_to_activate=task.config.max_jobs_to_activate,
+                                                                    max_jobs_to_activate=zeebe_worker.max_task_count,
                                                                     variables_to_fetch=task.config.variables_to_fetch,
                                                                     request_timeout=zeebe_worker.request_timeout)
 
@@ -203,3 +204,54 @@ class TestIncludeRouter:
 
         zeebe_worker.include_router(router)
         return zeebe_worker.get_task(task_type)
+
+
+class TestWorkerMaxTasks:
+    default_max_jobs_to_activate = 32 # on task.config.max_jobs_to_activate
+
+    @pytest.mark.parametrize("max_task_count,expected", [(64, default_max_jobs_to_activate), (16, 16)])
+    def test_set_worker_with_max_task_count_activates_max(self, max_task_count, expected,
+                                                          zeebe_worker: ZeebeWorker, task: Task):
+        activate_job_mock = MagicMock()
+        zeebe_worker.zeebe_adapter.activate_jobs = activate_job_mock
+        zeebe_worker.max_task_count = max_task_count
+
+        zeebe_worker._get_jobs(task)
+
+        assert activate_job_mock.call_args[1]["max_jobs_to_activate"] == expected
+
+    def test_activating_jobs_increase_and_decrease_active_task_count(self, zeebe_worker: ZeebeWorker,
+                                                                     job_from_task: Job, task: Task):
+        zeebe_worker.max_task_count = 10
+        num_jobs_activated = randint(4, 10)
+        jobs = [job_from_task for _ in range(num_jobs_activated)]
+        activate_job_mock = MagicMock(return_value=jobs)
+        zeebe_worker.zeebe_adapter.activate_jobs = activate_job_mock
+        with patch.object(zeebe_worker, "_task_state", wraps=zeebe_worker._task_state) as task_state_spy:
+            zeebe_worker._handle_jobs(task)
+
+            assert task_state_spy.add.call_count == num_jobs_activated
+            assert task_state_spy.remove.call_count == num_jobs_activated
+
+    calculate_max_jobs_to_activate_cases = dict(
+        max_task_count_minus_active_decides=(4, 10, 12, 6),
+        max_task_count_minus_active_decides_2=(4, 12, 10, 8),
+        max_task_count_minus_active_decides_zero_free=(4, 4, 12, 0),
+        max_jobs_to_activate_decides=(4, 10, 5, 5),
+        max_jobs_to_activate_decides_zero_active=(0, 10, 5, 5)
+    )
+
+    @pytest.mark.parametrize("active_jobs,max_task_count,max_jobs_to_activate,expected",
+                             calculate_max_jobs_to_activate_cases.values(),
+                             ids=calculate_max_jobs_to_activate_cases.keys())
+    def test_calculate_max_jobs_to_activate(self, zeebe_worker: ZeebeWorker, active_jobs,
+                                            max_task_count, max_jobs_to_activate, expected):
+        zeebe_worker.max_task_count = max_task_count
+        for i in range(active_jobs):
+            mock_job = MagicMock()
+            mock_job.key = i
+            zeebe_worker._task_state.add(mock_job)
+
+        result = zeebe_worker._calculate_max_jobs_to_activate(max_jobs_to_activate)
+
+        assert result == expected
