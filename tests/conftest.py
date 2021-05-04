@@ -1,11 +1,12 @@
 from random import randint
 from threading import Event
-from unittest.mock import patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
+import grpc
 import pytest
 
-from pyzeebe import ZeebeClient, ZeebeWorker, Job
+from pyzeebe import Job, ZeebeClient, ZeebeWorker
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.task import task_builder
 from pyzeebe.task.task_config import TaskConfig
@@ -21,9 +22,9 @@ def job_with_adapter(zeebe_adapter):
 
 @pytest.fixture
 def mocked_job_with_adapter(job_with_adapter):
-    job_with_adapter.set_success_status = MagicMock()
-    job_with_adapter.set_failure_status = MagicMock()
-    job_with_adapter.set_error_status = MagicMock()
+    job_with_adapter.set_success_status = AsyncMock()
+    job_with_adapter.set_failure_status = AsyncMock()
+    job_with_adapter.set_error_status = AsyncMock()
     return job_with_adapter
 
 
@@ -40,13 +41,15 @@ def job_from_task(task):
 
 
 @pytest.fixture
-def zeebe_adapter(grpc_create_channel):
-    return ZeebeAdapter(channel=grpc_create_channel())
+def zeebe_adapter(aio_grpc_channel):
+    return ZeebeAdapter(channel=aio_grpc_channel)
 
 
 @pytest.fixture
-def zeebe_client(grpc_create_channel):
-    return ZeebeClient(channel=grpc_create_channel())
+def zeebe_client(zeebe_adapter):
+    client = ZeebeClient()
+    client.zeebe_adapter = zeebe_adapter
+    return client
 
 
 @pytest.fixture
@@ -155,3 +158,15 @@ def grpc_servicer():
 def grpc_stub_cls(grpc_channel):
     from zeebe_grpc.gateway_pb2_grpc import GatewayStub
     return GatewayStub
+
+
+@pytest.fixture
+def aio_create_grpc_channel(request, grpc_addr, grpc_server):
+    return grpc.aio.insecure_channel(grpc_addr)
+
+
+@pytest.mark.asyncio
+@pytest.fixture
+async def aio_grpc_channel(aio_create_grpc_channel):
+    async with aio_create_grpc_channel as channel:
+        yield channel

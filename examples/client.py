@@ -1,4 +1,4 @@
-from pyzeebe import ZeebeClient, CamundaCloudCredentials
+from pyzeebe import CamundaCloudCredentials, ZeebeClient
 
 # Create a zeebe client without credentials
 zeebe_client = ZeebeClient(hostname="localhost", port=26500)

@@ -1,10 +1,12 @@
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
 
-from pyzeebe.credentials.camunda_cloud_credentials import CamundaCloudCredentials
-from pyzeebe.errors import InvalidOAuthCredentialsError, InvalidCamundaCloudCredentialsError
+from pyzeebe.credentials.camunda_cloud_credentials import \
+    CamundaCloudCredentials
+from pyzeebe.errors import (InvalidCamundaCloudCredentialsError,
+                            InvalidOAuthCredentialsError)
 
 
 def test_init():

@@ -1,5 +1,5 @@
 import logging
-from typing import Callable, List, Tuple, Optional
+from typing import Callable, List, Optional, Tuple
 
 from pyzeebe import TaskDecorator
 from pyzeebe.errors import (DuplicateTaskTypeError, NoVariableNameGivenError,

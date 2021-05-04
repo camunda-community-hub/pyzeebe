@@ -3,6 +3,7 @@ from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
+
 from pyzeebe import TaskDecorator
 from pyzeebe.errors import DuplicateTaskTypeError, TaskNotFoundError, BusinessError
 from pyzeebe.job.job import Job

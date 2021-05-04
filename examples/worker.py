@@ -1,6 +1,6 @@
 from typing import Dict
 
-from pyzeebe import Job, ZeebeWorker, CamundaCloudCredentials
+from pyzeebe import CamundaCloudCredentials, Job, ZeebeWorker
 
 
 # Use decorators to add functionality before and after tasks. These will not fail the task

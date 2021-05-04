@@ -5,7 +5,8 @@ import grpc
 from zeebe_grpc.gateway_pb2_grpc import GatewayStub
 
 from pyzeebe.credentials.base_credentials import BaseCredentials
-from pyzeebe.errors import ZeebeBackPressureError, ZeebeGatewayUnavailableError, ZeebeInternalError
+from pyzeebe.errors import (ZeebeBackPressureError,
+                            ZeebeGatewayUnavailableError, ZeebeInternalError)
 
 logger = logging.getLogger(__name__)
 
@@ -17,13 +18,14 @@ class ZeebeAdapterBase(object):
             self.connection_uri = None
             self._channel = channel
         else:
-            self.connection_uri = self._get_connection_uri(hostname, port, credentials)
-            self._channel = self._create_channel(self.connection_uri, credentials, secure_connection)
+            self.connection_uri = self._get_connection_uri(
+                hostname, port, credentials)
+            self._channel = self._create_channel(
+                self.connection_uri, credentials, secure_connection)
 
         self.secure_connection = secure_connection
         self.connected = False
         self.retrying_connection = True
-        self._channel.subscribe(self._check_connectivity, try_to_connect=True)
         self._gateway_stub = GatewayStub(self._channel)
         self._max_connection_retries = max_connection_retries
         self._current_connection_retries = 0
@@ -39,47 +41,18 @@ class ZeebeAdapterBase(object):
 
     @staticmethod
     def _create_channel(connection_uri: str, credentials: BaseCredentials = None,
-                        secure_connection: bool = False) -> grpc.Channel:
+                        secure_connection: bool = False) -> grpc.aio.Channel:
         if credentials:
-            return grpc.secure_channel(connection_uri, credentials.grpc_credentials)
+            return grpc.aio.secure_channel(connection_uri, credentials.grpc_credentials)
         elif secure_connection:
-            return grpc.secure_channel(connection_uri, grpc.ssl_channel_credentials())
+            return grpc.aio.secure_channel(connection_uri, grpc.ssl_channel_credentials())
         else:
-            return grpc.insecure_channel(connection_uri)
-
-    def _check_connectivity(self, value: grpc.ChannelConnectivity) -> None:
-        logger.debug(f"Grpc channel connectivity changed to: {value}")
-        self.connected = False
-
-        if value in [grpc.ChannelConnectivity.READY, grpc.ChannelConnectivity.IDLE]:
-            logger.debug(f"Connected to {self.connection_uri or 'zeebe'}")
-            self.connected = True
-            self.retrying_connection = False
-            self._current_connection_retries = 0
-
-        elif value == grpc.ChannelConnectivity.CONNECTING:
-            logger.debug(f"Connecting to {self.connection_uri or 'zeebe'}.")
-            self.retrying_connection = True
-
-        elif value == grpc.ChannelConnectivity.TRANSIENT_FAILURE:
-            if self._should_retry():
-                logger.warning(f"Lost connection to {self.connection_uri or 'zeebe'}. Retrying...")
-                self.retrying_connection = True
-                self._current_connection_retries = self._current_connection_retries + 1
-            else:
-                logger.error(f"Failed to establish connection to {self.connection_uri or 'zeebe'}. Not recoverable")
-                self._close()
-                self.retrying_connection = False
-                raise ConnectionAbortedError(f"Lost connection to {self.connection_uri or 'zeebe'}")
-
-        elif value == grpc.ChannelConnectivity.SHUTDOWN:
-            logger.warning(f"Shutting down grpc channel to {self.connection_uri or 'zeebe'}")
-            self.retrying_connection = False
+            return grpc.aio.insecure_channel(connection_uri)
 
     def _should_retry(self):
         return self._max_connection_retries == -1 or self._current_connection_retries < self._max_connection_retries
 
-    def _common_zeebe_grpc_errors(self, rpc_error: grpc.RpcError):
+    def _common_zeebe_grpc_errors(self, rpc_error: grpc.aio.AioRpcError):
         if self.is_error_status(rpc_error, grpc.StatusCode.RESOURCE_EXHAUSTED):
             raise ZeebeBackPressureError()
         elif self.is_error_status(rpc_error, grpc.StatusCode.UNAVAILABLE):
@@ -96,11 +69,12 @@ class ZeebeAdapterBase(object):
             raise rpc_error
 
     @staticmethod
-    def is_error_status(rpc_error: grpc.RpcError, status_code: grpc.StatusCode):
-        return rpc_error._state.code == status_code
+    def is_error_status(rpc_error: grpc.aio.AioRpcError, status_code: grpc.StatusCode):
+        return rpc_error.code() == status_code
 
     def _close(self):
         try:
             self._channel.close()
         except Exception as e:
-            logger.exception(f"Failed to close channel, {type(e).__name__} exception was raised")
+            logger.exception(
+                f"Failed to close channel, {type(e).__name__} exception was raised")

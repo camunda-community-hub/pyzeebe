@@ -33,7 +33,7 @@ class JobPoller:
                 self.task.config.variables_to_fetch,
                 self.request_timeout,
             )
-            for job in jobs:
+            async for job in jobs:
                 await self.queue.put(job)
         except ActivateJobsRequestInvalidError:
             logger.warn(
@@ -42,12 +42,13 @@ class JobPoller:
             raise
         except (ZeebeBackPressureError, ZeebeGatewayUnavailableError, ZeebeInternalError) as error:
             logger.warn(
-                f"Failed to activate jobs from the gateway. Exception: {error}. Retrying in 5 seconds..."
+                f"Failed to activate jobs from the gateway. Exception: {str(error)}. Retrying in 5 seconds..."
             )
             await asyncio.sleep(5)
 
     def should_poll(self) -> bool:
         return not self.stop_event.is_set() and (self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection)
 
-    def stop(self):
+    async def stop(self):
         self.stop_event.set()
+        await self.queue.join()

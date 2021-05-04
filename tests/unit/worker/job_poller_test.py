@@ -10,11 +10,6 @@ from tests.unit.utils.gateway_mock import GatewayMock
 
 
 @pytest.fixture
-def queue():
-    return asyncio.Queue()
-
-
-@pytest.fixture
 def job_poller(zeebe_adapter: ZeebeAdapter, task: Task, queue: asyncio.Queue) -> JobPoller:
     return JobPoller(zeebe_adapter, task, queue, "test_worker", 100)
 
@@ -26,7 +21,7 @@ class TestPollOnce:
 
         await job_poller.poll_once()
 
-        job: Job = await queue.get()
+        job: Job = queue.get_nowait()
         assert job.key == job_from_task.key
 
     async def test_no_job_is_polled(self, job_poller: JobPoller, queue: asyncio.Queue, job_from_task: Job):
@@ -48,7 +43,8 @@ class TestShouldPoll:
 
         assert job_poller.should_poll()
 
-    def test_stops_polling_after_poller_is_stopped(self, job_poller: JobPoller):
-        job_poller.stop()
+    @pytest.mark.asyncio
+    async def test_stops_polling_after_poller_is_stopped(self, job_poller: JobPoller):
+        await job_poller.stop()
 
         assert not job_poller.should_poll()

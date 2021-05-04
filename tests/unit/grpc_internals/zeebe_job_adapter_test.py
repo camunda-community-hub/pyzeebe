@@ -1,162 +1,126 @@
 from random import randint
-from unittest.mock import MagicMock
 from uuid import uuid4
 
-import grpc
 import pytest
-from zeebe_grpc.gateway_pb2 import *
+from zeebe_grpc.gateway_pb2 import (CompleteJobResponse, FailJobResponse,
+                                    ThrowErrorResponse)
 
-from pyzeebe.errors import ActivateJobsRequestInvalidError, JobAlreadyDeactivatedError, JobNotFoundError
+from pyzeebe.errors import (ActivateJobsRequestInvalidError,
+                            JobAlreadyDeactivatedError, JobNotFoundError)
+from pyzeebe.grpc_internals.zeebe_job_adapter import ZeebeJobAdapter
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
-from tests.unit.utils.grpc_utils import GRPCStatusCode
+from tests.unit.utils.gateway_mock import GatewayMock
 from tests.unit.utils.random_utils import RANDOM_RANGE, random_job
 
 
-def activate_task(grpc_servicer, task: Task):
-    job = random_job(task)
-    grpc_servicer.active_jobs[job.key] = job
+def random_job_key() -> int:
+    return randint(0, RANDOM_RANGE)
 
 
-def get_first_active_job(task_type, zeebe_adapter) -> Job:
-    return next(zeebe_adapter.activate_jobs(task_type=task_type, max_jobs_to_activate=1, request_timeout=10,
-                                            timeout=100, variables_to_fetch=[], worker=str(uuid4())))
+def random_message() -> str:
+    return str(uuid4())
 
 
-def test_activate_jobs(zeebe_adapter, grpc_servicer, task):
-    activate_task(grpc_servicer, task)
-    active_jobs_count = randint(4, 100)
-    counter = 0
-    for i in range(0, active_jobs_count):
-        activate_task(grpc_servicer, task)
+@pytest.mark.asyncio
+class TestActivateJobs:
+    zeebe_job_adapter: ZeebeJobAdapter
 
-    for job in zeebe_adapter.activate_jobs(task_type=task.type, worker=str(uuid4()), timeout=randint(10, 100),
-                                           request_timeout=100, max_jobs_to_activate=1, variables_to_fetch=[]):
-        counter += 1
-        assert isinstance(job, Job)
-    assert counter == active_jobs_count + 1
+    @pytest.fixture(autouse=True)
+    def set_up(self, zeebe_adapter: ZeebeJobAdapter):
+        self.zeebe_job_adapter = zeebe_adapter
 
+    def activate_jobs(
+        self,
+        task_type=str(uuid4()),
+        worker=str(uuid4()),
+        timeout=randint(10, 100),
+        request_timeout=100,
+        max_jobs_to_activate=1,
+        variables_to_fetch=[]
+    ):
+        return self.zeebe_job_adapter.activate_jobs(task_type, worker, timeout, max_jobs_to_activate, variables_to_fetch, request_timeout)
 
-def test_activate_jobs_invalid_worker(zeebe_adapter):
-    with pytest.raises(ActivateJobsRequestInvalidError):
-        next(zeebe_adapter.activate_jobs(task_type=str(uuid4()), worker=None, timeout=randint(10, 100),
-                                         request_timeout=100,
-                                         max_jobs_to_activate=1, variables_to_fetch=[]))
+    async def test_returns_correct_amount_of_jobs(self, grpc_servicer: GatewayMock, task: Task):
+        active_jobs_count = randint(4, 100)
+        for _ in range(0, active_jobs_count):
+            job = random_job(task)
+            grpc_servicer.active_jobs[job.key] = job
 
+        jobs = self.activate_jobs(task_type=task.type)
 
-def test_activate_jobs_invalid_job_timeout(zeebe_adapter):
-    with pytest.raises(ActivateJobsRequestInvalidError):
-        next(zeebe_adapter.activate_jobs(task_type=str(uuid4()), worker=str(uuid4()), timeout=0,
-                                         request_timeout=100, max_jobs_to_activate=1, variables_to_fetch=[]))
+        assert len([job async for job in jobs]) == active_jobs_count
 
+    async def test_raises_on_invalid_worker(self):
+        with pytest.raises(ActivateJobsRequestInvalidError):
+            jobs = self.activate_jobs(worker=None)
+            await jobs.__anext__()
 
-def test_activate_jobs_invalid_task_type(zeebe_adapter):
-    with pytest.raises(ActivateJobsRequestInvalidError):
-        next(zeebe_adapter.activate_jobs(task_type=None, worker=str(uuid4()), timeout=randint(10, 100),
-                                         request_timeout=100, max_jobs_to_activate=1, variables_to_fetch=[]))
+    async def test_raises_on_invalid_job_timeout(self):
+        with pytest.raises(ActivateJobsRequestInvalidError):
+            jobs = self.activate_jobs(timeout=0)
+            await jobs.__anext__()
 
+    async def test_raises_on_invalid_task_type(self):
+        with pytest.raises(ActivateJobsRequestInvalidError):
+            jobs = self.activate_jobs(task_type=None)
+            await jobs.__anext__()
 
-def test_activate_jobs_invalid_max_jobs(zeebe_adapter):
-    with pytest.raises(ActivateJobsRequestInvalidError):
-        next(zeebe_adapter.activate_jobs(task_type=str(uuid4()), worker=str(uuid4()), timeout=randint(10, 100),
-                                         request_timeout=100, max_jobs_to_activate=0, variables_to_fetch=[]))
-
-
-def test_activate_jobs_common_errors_called(zeebe_adapter):
-    zeebe_adapter._common_zeebe_grpc_errors = MagicMock()
-    error = grpc.RpcError()
-    error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
-
-    zeebe_adapter._gateway_stub.ActivateJobs = MagicMock(side_effect=error)
-    jobs = zeebe_adapter.activate_jobs(task_type=str(uuid4()), worker=str(uuid4()), timeout=randint(10, 100),
-                                       request_timeout=100, max_jobs_to_activate=0, variables_to_fetch=[])
-    for job in jobs:
-        raise Exception(f"This should not return jobs! Job: {job}")
-
-    zeebe_adapter._common_zeebe_grpc_errors.assert_called()
+    async def test_raises_on_invalid_max_jobs(self):
+        with pytest.raises(ActivateJobsRequestInvalidError):
+            jobs = self.activate_jobs(max_jobs_to_activate=0)
+            await jobs.__anext__()
 
 
-def test_complete_job(zeebe_adapter, first_active_job: Job):
-    response = zeebe_adapter.complete_job(job_key=first_active_job.key, variables={})
-    assert isinstance(response, CompleteJobResponse)
+@pytest.mark.asyncio
+class TestCompleteJob:
+    async def test_response_is_of_correct_type(self, zeebe_adapter: ZeebeJobAdapter, first_active_job: Job):
+        response = await zeebe_adapter.complete_job(first_active_job.key, {})
+
+        assert isinstance(response, CompleteJobResponse)
+
+    async def test_raises_on_fake_job(self, zeebe_adapter: ZeebeJobAdapter):
+        with pytest.raises(JobNotFoundError):
+            await zeebe_adapter.complete_job(random_job_key(), {})
+
+    async def test_raises_on_already_completed_job(self, zeebe_adapter: ZeebeJobAdapter, first_active_job: Job):
+        await zeebe_adapter.complete_job(first_active_job.key, {})
+
+        with pytest.raises(JobAlreadyDeactivatedError):
+            await zeebe_adapter.complete_job(first_active_job.key, {})
 
 
-def test_complete_job_not_found(zeebe_adapter):
-    with pytest.raises(JobNotFoundError):
-        zeebe_adapter.complete_job(job_key=randint(0, RANDOM_RANGE), variables={})
+@pytest.mark.asyncio
+class TestFailJob:
+    async def test_response_is_of_correct_type(self, zeebe_adapter: ZeebeJobAdapter, first_active_job: Job):
+        response = await zeebe_adapter.fail_job(first_active_job.key, first_active_job.retries, random_message())
+
+        assert isinstance(response, FailJobResponse)
+
+    async def test_raises_on_fake_job(self, zeebe_adapter: ZeebeJobAdapter):
+        with pytest.raises(JobNotFoundError):
+            await zeebe_adapter.fail_job(random_job_key(), 1, random_message())
+
+    async def test_raises_on_deactivated_job(self, zeebe_adapter: ZeebeJobAdapter, first_active_job: Job):
+        await zeebe_adapter.fail_job(first_active_job.key, random_message())
+
+        with pytest.raises(JobAlreadyDeactivatedError):
+            await zeebe_adapter.fail_job(first_active_job.key, first_active_job.retries, random_message())
 
 
-def test_complete_job_already_completed(zeebe_adapter, first_active_job: Job):
-    zeebe_adapter.complete_job(job_key=first_active_job.key, variables={})
-    with pytest.raises(JobAlreadyDeactivatedError):
-        zeebe_adapter.complete_job(job_key=first_active_job.key, variables={})
+@ pytest.mark.asyncio
+class TestThrowError:
+    async def test_response_is_of_correct_type(self, zeebe_adapter: ZeebeJobAdapter, first_active_job: Job):
+        response = await zeebe_adapter.throw_error(first_active_job.key, random_message())
 
+        assert isinstance(response, ThrowErrorResponse)
 
-def test_complete_job_common_errors_called(zeebe_adapter, first_active_job: Job):
-    zeebe_adapter._common_zeebe_grpc_errors = MagicMock()
-    error = grpc.RpcError()
-    error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
+    async def test_raises_on_fake_job(self, zeebe_adapter: ZeebeJobAdapter):
+        with pytest.raises(JobNotFoundError):
+            await zeebe_adapter.throw_error(random_job_key(), random_message())
 
-    zeebe_adapter._gateway_stub.CompleteJob = MagicMock(side_effect=error)
+    async def test_raises_on_deactivated_job(self, zeebe_adapter: ZeebeJobAdapter, first_active_job: Job):
+        await zeebe_adapter.throw_error(first_active_job.key, random_message())
 
-    zeebe_adapter.complete_job(job_key=first_active_job.key, variables={})
-
-    zeebe_adapter._common_zeebe_grpc_errors.assert_called()
-
-
-def test_fail_job(zeebe_adapter, first_active_job: Job):
-    response = zeebe_adapter.fail_job(job_key=first_active_job.key, retries=first_active_job.retries, message=str(uuid4()))
-    assert isinstance(response, FailJobResponse)
-
-
-def test_fail_job_not_found(zeebe_adapter):
-    with pytest.raises(JobNotFoundError):
-        zeebe_adapter.fail_job(job_key=randint(0, RANDOM_RANGE), retries=1, message=str(uuid4()))
-
-
-def test_fail_job_already_failed(zeebe_adapter, first_active_job: Job):
-    zeebe_adapter.fail_job(job_key=first_active_job.key, retries=first_active_job.retries, message=str(uuid4()))
-    with pytest.raises(JobAlreadyDeactivatedError):
-        zeebe_adapter.fail_job(job_key=first_active_job.key, retries=first_active_job.retries, message=str(uuid4()))
-
-
-def test_fail_job_common_errors_called(zeebe_adapter, first_active_job: Job):
-    zeebe_adapter._common_zeebe_grpc_errors = MagicMock()
-    error = grpc.RpcError()
-    error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
-
-    zeebe_adapter._gateway_stub.FailJob = MagicMock(side_effect=error)
-
-    zeebe_adapter.fail_job(job_key=first_active_job.key, retries=first_active_job.retries, message=str(uuid4()))
-
-    zeebe_adapter._common_zeebe_grpc_errors.assert_called()
-
-
-def test_throw_error(zeebe_adapter, first_active_job: Job):
-    response = zeebe_adapter.throw_error(job_key=first_active_job.key, message=str(uuid4()))
-    assert isinstance(response, ThrowErrorResponse)
-
-
-def test_throw_error_job_not_found(zeebe_adapter):
-    with pytest.raises(JobNotFoundError):
-        zeebe_adapter.throw_error(job_key=randint(0, RANDOM_RANGE), message=str(uuid4()))
-
-
-def test_throw_error_already_thrown(zeebe_adapter, first_active_job: Job):
-    zeebe_adapter.throw_error(job_key=first_active_job.key, message=str(uuid4()))
-    with pytest.raises(JobAlreadyDeactivatedError):
-        zeebe_adapter.throw_error(job_key=first_active_job.key, message=str(uuid4()))
-
-
-def test_throw_error_common_errors_called(zeebe_adapter, grpc_servicer, task):
-    zeebe_adapter._common_zeebe_grpc_errors = MagicMock()
-    error = grpc.RpcError()
-    error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
-
-    zeebe_adapter._gateway_stub.ThrowError = MagicMock(side_effect=error)
-
-    activate_task(grpc_servicer, task)
-    job = get_first_active_job(task.type, zeebe_adapter)
-    zeebe_adapter.throw_error(job_key=job.key, message=str(uuid4()))
-
-    zeebe_adapter._common_zeebe_grpc_errors.assert_called()
+        with pytest.raises(JobAlreadyDeactivatedError):
+            await zeebe_adapter.throw_error(first_active_job.key, random_message())

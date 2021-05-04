@@ -1,6 +1,6 @@
 import json
 from random import randint
-from typing import List, Dict
+from typing import Dict, List
 from unittest.mock import patch
 from uuid import uuid4
 
@@ -137,7 +137,7 @@ class GatewayMock(GatewayServicer):
         processes = []
         for process in request.processes:
             process_metadata = ProcessMetadata(bpmnProcessId=str(uuid4()), version=randint(0, 10),
-                                               processKey=randint(0, RANDOM_RANGE), resourceName=process.name)
+                                               processDefinitionKey=randint(0, RANDOM_RANGE), resourceName=process.name)
             processes.append(process_metadata)
 
         return DeployProcessResponse(key=randint(0, RANDOM_RANGE), processes=processes)
