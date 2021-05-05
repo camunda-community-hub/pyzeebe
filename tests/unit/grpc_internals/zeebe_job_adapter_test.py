@@ -105,19 +105,19 @@ def test_complete_job_common_errors_called(zeebe_adapter, first_active_job: Job)
 
 
 def test_fail_job(zeebe_adapter, first_active_job: Job):
-    response = zeebe_adapter.fail_job(job_key=first_active_job.key, message=str(uuid4()))
+    response = zeebe_adapter.fail_job(job_key=first_active_job.key, retries=first_active_job.retries, message=str(uuid4()))
     assert isinstance(response, FailJobResponse)
 
 
 def test_fail_job_not_found(zeebe_adapter):
     with pytest.raises(JobNotFoundError):
-        zeebe_adapter.fail_job(job_key=randint(0, RANDOM_RANGE), message=str(uuid4()))
+        zeebe_adapter.fail_job(job_key=randint(0, RANDOM_RANGE), retries=1, message=str(uuid4()))
 
 
 def test_fail_job_already_failed(zeebe_adapter, first_active_job: Job):
-    zeebe_adapter.fail_job(job_key=first_active_job.key, message=str(uuid4()))
+    zeebe_adapter.fail_job(job_key=first_active_job.key, retries=first_active_job.retries, message=str(uuid4()))
     with pytest.raises(JobAlreadyDeactivatedError):
-        zeebe_adapter.fail_job(job_key=first_active_job.key, message=str(uuid4()))
+        zeebe_adapter.fail_job(job_key=first_active_job.key, retries=first_active_job.retries, message=str(uuid4()))
 
 
 def test_fail_job_common_errors_called(zeebe_adapter, first_active_job: Job):
@@ -127,7 +127,7 @@ def test_fail_job_common_errors_called(zeebe_adapter, first_active_job: Job):
 
     zeebe_adapter._gateway_stub.FailJob = MagicMock(side_effect=error)
 
-    zeebe_adapter.fail_job(job_key=first_active_job.key, message=str(uuid4()))
+    zeebe_adapter.fail_job(job_key=first_active_job.key, retries=first_active_job.retries, message=str(uuid4()))
 
     zeebe_adapter._common_zeebe_grpc_errors.assert_called()
 

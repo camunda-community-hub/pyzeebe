@@ -3,7 +3,7 @@ from typing import Callable, List, Tuple, Optional
 
 from pyzeebe import TaskDecorator
 from pyzeebe.errors import (DuplicateTaskTypeError, NoVariableNameGivenError,
-                            TaskNotFoundError)
+                            TaskNotFoundError, BusinessError)
 from pyzeebe.job.job import Job
 from pyzeebe.task import task_builder
 from pyzeebe.task.exception_handler import ExceptionHandler
@@ -15,7 +15,10 @@ logger = logging.getLogger(__name__)
 
 def default_exception_handler(e: Exception, job: Job) -> None:
     logger.warning(f"Task type: {job.type} - failed job {job}. Error: {e}.")
-    job.set_failure_status(f"Failed job. Error: {e}")
+    if isinstance(e, BusinessError):
+        job.set_error_status(f"Failed job. Recoverable error: {e}", error_code=e.error_code)
+    else:
+        job.set_failure_status(f"Failed job. Error: {e}")
 
 
 class ZeebeTaskRouter:

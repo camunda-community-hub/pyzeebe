@@ -4,7 +4,7 @@ from pyzeebe import Job, ZeebeWorker, CamundaCloudCredentials
 
 
 # Use decorators to add functionality before and after tasks. These will not fail the task
-from pyzeebe.exceptions import BusinessException
+from pyzeebe.errors import BusinessError
 
 
 def example_logging_task_decorator(job: Job) -> Job:
@@ -41,11 +41,11 @@ def add_one(x) -> int:
 
 
 # The default exception handler will call job.set_error_status
-# on raised BusinessException, and propagate its error_code
-# so the specific business error can be caught in the Zeebe workflow
+# on raised BusinessError, and propagate its error_code
+# so the specific business error can be caught in the Zeebe process
 @worker.task(task_type="business_exception_task")
 def exception_task():
-    raise BusinessException("invalid-credit-card")
+    raise BusinessError("invalid-credit-card")
 
 
 # Define a custom exception_handler for a task like so:

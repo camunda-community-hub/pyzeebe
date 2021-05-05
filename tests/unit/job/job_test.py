@@ -42,7 +42,7 @@ def test_failure(job_with_adapter):
     with patch("pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter.fail_job") as fail_job_mock:
         message = str(uuid4())
         job_with_adapter.set_failure_status(message)
-        fail_job_mock.assert_called_with(job_key=job_with_adapter.key, message=message)
+        fail_job_mock.assert_called_with(job_key=job_with_adapter.key, retries=job_with_adapter.retries, message=message)
 
 
 def test_failure_no_zeebe_adapter(job_without_adapter):

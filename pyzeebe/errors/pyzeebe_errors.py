@@ -26,10 +26,10 @@ class MaxConsecutiveTaskThreadError(PyZeebeError):
     pass
 
 
-class BusinessException(PyZeebeException):
+class BusinessError(PyZeebeError):
     """
     Exception that can be raised with a user defined code,
-    to be caught later by an error event in the workflow
+    to be caught later by an error event in the Zeebe process
     """
     def __init__(self, error_code: str) -> None:
         super().__init__(f"Business error with code {error_code}")
