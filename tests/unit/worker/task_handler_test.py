@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import pytest
 
-from pyzeebe.exceptions import NoVariableNameGiven, TaskNotFound, DuplicateTaskType
+from pyzeebe.exceptions import NoVariableNameGiven, TaskNotFound, DuplicateTaskType, BusinessException
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_handler import default_exception_handler
 from tests.unit.utils.random_utils import randint
@@ -103,6 +103,18 @@ def test_default_exception_handler(job_without_adapter):
             default_exception_handler(Exception(), job_without_adapter)
 
             failure_mock.assert_called()
+        logging_mock.assert_called()
+
+
+def test_default_business_exception_handler(job_without_adapter):
+    with patch("pyzeebe.worker.task_handler.logger.warning") as logging_mock:
+        with patch("pyzeebe.job.job.Job.set_error_status") as failure_mock:
+            failure_mock.return_value = None
+            error_code = "custom-error-code"
+            exception = BusinessException(error_code)
+            message = f"Failed job. Recoverable error: {exception}"
+            default_exception_handler(exception, job_without_adapter)
+            failure_mock.assert_called_with(message, error_code=error_code)
         logging_mock.assert_called()
 
 

@@ -23,3 +23,16 @@ class DuplicateTaskType(PyZeebeException):
 
 class MaxConsecutiveTaskThreadError(PyZeebeException):
     pass
+
+
+class BusinessException(PyZeebeException):
+    """
+    Exception that can be raised with a user defined code,
+    to be caught later by an error event in the workflow
+    """
+    def __init__(self, error_code: str) -> None:
+        super().__init__(f"Business error with code {error_code}")
+        self.error_code = error_code
+
+    def __repr__(self) -> str:
+        return str({"error_code": self.error_code})

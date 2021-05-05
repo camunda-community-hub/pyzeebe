@@ -3,7 +3,7 @@ from abc import abstractmethod
 from typing import Tuple, List, Callable, Dict
 
 from pyzeebe.decorators.zeebe_decorator_base import ZeebeDecoratorBase
-from pyzeebe.exceptions import NoVariableNameGiven, TaskNotFound, DuplicateTaskType
+from pyzeebe.exceptions import NoVariableNameGiven, TaskNotFound, DuplicateTaskType, BusinessException
 from pyzeebe.job.job import Job
 from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.task.task import Task
@@ -14,7 +14,10 @@ logger = logging.getLogger(__name__)
 
 def default_exception_handler(e: Exception, job: Job) -> None:
     logger.warning(f"Task type: {job.type} - failed job {job}. Error: {e}.")
-    job.set_failure_status(f"Failed job. Error: {e}")
+    if isinstance(e, BusinessException):
+        job.set_error_status(f"Failed job. Recoverable error: {e}", error_code=e.error_code)
+    else:
+        job.set_failure_status(f"Failed job. Error: {e}")
 
 
 class ZeebeTaskHandler(ZeebeDecoratorBase):
