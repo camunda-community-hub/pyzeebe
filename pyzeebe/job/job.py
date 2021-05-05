@@ -62,13 +62,15 @@ class Job(object):
         else:
             raise NoZeebeAdapterError()
 
-    def set_error_status(self, message: str) -> None:
+    def set_error_status(self, message: str, error_code: str = None) -> None:
         """
         Error status means that the job could not be completed because of a business error and won't ever be able to be completed.
         For example: a required parameter was not given
+        An error code can be added to handle the error in the workflow
 
         Args:
-            message (str): The error message that Zeebe will receive
+            message (str): The error message
+            error_code (str): The error code that Zeebe will receive
 
         Raises:
             NoZeebeAdapterError: If the job does not have a configured ZeebeAdapter
@@ -78,7 +80,7 @@ class Job(object):
 
         """
         if self.zeebe_adapter:
-            self.zeebe_adapter.throw_error(job_key=self.key, message=message)
+            self.zeebe_adapter.throw_error(job_key=self.key, message=message, error_code=error_code)
         else:
             raise NoZeebeAdapterError()
 
