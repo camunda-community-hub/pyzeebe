@@ -119,21 +119,21 @@ def test_complete_job_common_errors_called(zeebe_adapter, grpc_servicer):
 def test_fail_job(zeebe_adapter, grpc_servicer):
     task_type = create_random_task_and_activate(grpc_servicer)
     job = get_first_active_job(task_type, zeebe_adapter)
-    response = zeebe_adapter.fail_job(job_key=job.key, message=str(uuid4()))
+    response = zeebe_adapter.fail_job(job_key=job.key, retries=job.retries, message=str(uuid4()))
     assert isinstance(response, FailJobResponse)
 
 
 def test_fail_job_not_found(zeebe_adapter):
     with pytest.raises(JobNotFound):
-        zeebe_adapter.fail_job(job_key=randint(0, RANDOM_RANGE), message=str(uuid4()))
+        zeebe_adapter.fail_job(job_key=randint(0, RANDOM_RANGE), retries=1, message=str(uuid4()))
 
 
 def test_fail_job_already_failed(zeebe_adapter, grpc_servicer):
     task_type = create_random_task_and_activate(grpc_servicer)
     job = get_first_active_job(task_type, zeebe_adapter)
-    zeebe_adapter.fail_job(job_key=job.key, message=str(uuid4()))
+    zeebe_adapter.fail_job(job_key=job.key, retries=job.retries, message=str(uuid4()))
     with pytest.raises(JobAlreadyDeactivated):
-        zeebe_adapter.fail_job(job_key=job.key, message=str(uuid4()))
+        zeebe_adapter.fail_job(job_key=job.key, retries=job.retries, message=str(uuid4()))
 
 
 def test_fail_job_common_errors_called(zeebe_adapter, grpc_servicer):
@@ -145,7 +145,7 @@ def test_fail_job_common_errors_called(zeebe_adapter, grpc_servicer):
 
     task_type = create_random_task_and_activate(grpc_servicer)
     job = get_first_active_job(task_type, zeebe_adapter)
-    zeebe_adapter.fail_job(job_key=job.key, message=str(uuid4()))
+    zeebe_adapter.fail_job(job_key=job.key, retries=job.retries, message=str(uuid4()))
 
     zeebe_adapter._common_zeebe_grpc_errors.assert_called()
 

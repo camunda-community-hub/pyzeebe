@@ -57,7 +57,7 @@ class Job(object):
 
         """
         if self.zeebe_adapter:
-            self.zeebe_adapter.fail_job(job_key=self.key, message=message)
+            self.zeebe_adapter.fail_job(job_key=self.key, retries=self.retries, message=message)
         else:
             raise NoZeebeAdapter()
 
