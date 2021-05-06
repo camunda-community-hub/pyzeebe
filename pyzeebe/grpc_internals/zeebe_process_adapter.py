@@ -16,10 +16,10 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
             response = self._gateway_stub.CreateProcessInstance(
                 CreateProcessInstanceRequest(bpmnProcessId=bpmn_process_id, version=version,
                                              variables=json.dumps(variables)))
-            return response.processInstanceKey
         except grpc.RpcError as rpc_error:
             self._create_process_errors(
                 rpc_error, bpmn_process_id, version, variables)
+        return response.processInstanceKey
 
     def create_process_instance_with_result(self, bpmn_process_id: str, version: int, variables: Dict,
                                             timeout: int, variables_to_fetch) -> Tuple[int, Dict]:
@@ -29,10 +29,10 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
                     request=CreateProcessInstanceRequest(bpmnProcessId=bpmn_process_id, version=version,
                                                          variables=json.dumps(variables)),
                     requestTimeout=timeout, fetchVariables=variables_to_fetch))
-            return response.processInstanceKey, json.loads(response.variables)
         except grpc.RpcError as rpc_error:
             self._create_process_errors(
                 rpc_error, bpmn_process_id, version, variables)
+        return response.processInstanceKey, json.loads(response.variables)
 
     def _create_process_errors(self, rpc_error: grpc.RpcError, bpmn_process_id: str, version: int,
                                variables: Dict) -> None:

@@ -6,8 +6,9 @@ from uuid import uuid4
 import grpc
 import pytest
 
-from pyzeebe.errors import InvalidJSONError, ProcessDefinitionNotFoundError, ProcessInstanceNotFoundError, ProcessDefinitionHasNoStartEventError, \
-    ProcessInvalidError
+from pyzeebe.errors import InvalidJSONError, ProcessDefinitionNotFoundError, ProcessInstanceNotFoundError, \
+    ProcessDefinitionHasNoStartEventError, \
+    ProcessInvalidError, ZeebeInternalError
 from tests.unit.utils.grpc_utils import GRPCStatusCode
 from tests.unit.utils.random_utils import RANDOM_RANGE
 
@@ -21,18 +22,16 @@ def test_create_process_instance(grpc_servicer, zeebe_adapter):
     assert isinstance(response, int)
 
 
-def test_create_process_instance_common_errors_called(zeebe_adapter):
-    zeebe_adapter._common_zeebe_grpc_errors = MagicMock()
+def test_create_process_instance_raises_grpc_error_correctly(zeebe_adapter):
     error = grpc.RpcError()
     error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
 
     zeebe_adapter._gateway_stub.CreateProcessInstance = MagicMock(
         side_effect=error)
 
-    zeebe_adapter.create_process_instance(bpmn_process_id=str(uuid4()), variables={},
-                                          version=randint(0, 10))
-
-    zeebe_adapter._common_zeebe_grpc_errors.assert_called()
+    with pytest.raises(ZeebeInternalError):
+        zeebe_adapter.create_process_instance(bpmn_process_id=str(uuid4()), variables={},
+                                              version=randint(0, 10))
 
 
 def test_create_process_instance_with_result_return_types(grpc_servicer, zeebe_adapter):
@@ -50,19 +49,17 @@ def test_create_process_instance_with_result_return_types(grpc_servicer, zeebe_a
     assert isinstance(response, dict)
 
 
-def test_create_process_instance_with_result_common_errors_called(zeebe_adapter):
-    zeebe_adapter._common_zeebe_grpc_errors = MagicMock()
+def test_create_process_instance_with_result_raises_grpc_error_correctly(zeebe_adapter):
     error = grpc.RpcError()
     error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
 
     zeebe_adapter._gateway_stub.CreateProcessInstanceWithResult = MagicMock(
         side_effect=error)
 
-    zeebe_adapter.create_process_instance_with_result(bpmn_process_id=str(uuid4()), variables={},
-                                                      version=randint(0, 10), timeout=0,
-                                                      variables_to_fetch=[])
-
-    zeebe_adapter._common_zeebe_grpc_errors.assert_called()
+    with pytest.raises(ZeebeInternalError):
+        zeebe_adapter.create_process_instance_with_result(bpmn_process_id=str(uuid4()), variables={},
+                                                          version=randint(0, 10), timeout=0,
+                                                          variables_to_fetch=[])
 
 
 def test_cancel_process(grpc_servicer, zeebe_adapter):
