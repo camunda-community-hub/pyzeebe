@@ -124,7 +124,7 @@ class ZeebeWorker(ZeebeTaskRouter):
         return not self.stop_event.is_set() and bool(self._task_threads)
 
     def _watch_task_threads_runner(self, frequency: int = 10) -> None:
-        consecutive_errors = {}
+        consecutive_errors: Dict[str, int] = {}
         while self._should_watch_threads():
             logger.debug("Checking task thread status")
             # converting to list to avoid "RuntimeError: dictionary changed size during iteration"

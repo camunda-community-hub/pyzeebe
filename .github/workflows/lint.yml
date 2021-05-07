@@ -1,0 +1,22 @@
+name: Test pyzeebe
+
+on:
+  push:
+  pull_request:
+    branches: [ master, development ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    container: python:3.8
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          pip install pipenv
+          pipenv install --dev
+      - name: Lint with mypy
+        run: |
+          pipenv run mypy pyzeebe

@@ -37,4 +37,4 @@ class OAuthCredentials(BaseCredentials):
             raise InvalidOAuthCredentialsError(url=url, client_id=client_id, audience=audience)
 
     def get_connection_uri(self) -> str:
-        return None
+        return ""
