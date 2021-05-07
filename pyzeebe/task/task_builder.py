@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def build_task(task_function: Callable, task_config: TaskConfig) -> Task:
+    task_config = asyncify_decorators(task_config)
     return Task(task_function, build_job_handler(task_function, task_config), task_config)
 
 
@@ -42,7 +43,7 @@ def build_job_handler(task_function: Callable, task_config: TaskConfig) -> JobHa
 
 
 def prepare_task_function(task_function: Callable, task_config: TaskConfig) -> Callable[..., Awaitable[Dict]]:
-    if not inspect.iscoroutinefunction(task_function):
+    if not is_async_function(task_function):
         task_function = asyncify(task_function)
 
     if task_config.single_value:
@@ -64,21 +65,21 @@ async def run_original_task_function(task_function: Callable, task_config: TaskC
 def create_decorator_runner(decorators: List[TaskDecorator]) -> DecoratorRunner:
     async def decorator_runner(job: Job):
         for decorator in decorators:
-            job = run_decorator(decorator, job)
+            job = await run_decorator(decorator, job)
         return job
 
     return decorator_runner
 
 
-def run_decorator(decorator: TaskDecorator, job: Job) -> Job:
+async def run_decorator(decorator: TaskDecorator, job: Job) -> Job:
     try:
-        return decorator(job)
+        return await decorator(job)
     except Exception as e:
         logger.warning(f"Failed to run decorator {decorator}. Exception: {e}")
         return job
 
 
-def convert_to_dict_function(single_value_function: Callable, variable_name: str) -> Callable[..., Dict]:
+def convert_to_dict_function(single_value_function: Callable[..., Awaitable], variable_name: str) -> Callable[..., Awaitable[Dict]]:
     async def inner_fn(*args, **kwargs):
         return {variable_name: await single_value_function(*args, **kwargs)}
 
@@ -93,9 +94,31 @@ def get_parameters_from_function(task_function: Callable) -> List[str]:
     return list(function_signature.parameters)
 
 
+def asyncify_decorators(task_config: TaskConfig) -> None:
+    task_config.after = asyncify_all_functions(task_config.after)
+    task_config.before = asyncify_all_functions(task_config.before)
+    return task_config
+
+
+def asyncify_all_functions(functions: List[Callable]) -> List[Callable[..., Awaitable]]:
+    async_functions = []
+    for function in functions:
+        if not is_async_function(function):
+            async_functions.append(asyncify(function))
+        else:
+            async_functions.append(function)
+    return async_functions
+
+
 def asyncify(task_function: Callable) -> Callable[..., Awaitable]:
-    @ functools.wraps(task_function)
-    async def async_function(**kwargs):
+    @functools.wraps(task_function)
+    async def async_function(*args, **kwargs):
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, functools.partial(task_function, **kwargs))
+        return await loop.run_in_executor(None, functools.partial(task_function, *args, **kwargs))
     return async_function
+
+
+def is_async_function(function: Callable) -> bool:
+    # Not using inspect.iscoroutinefunction here because it doens't handle AsyncMock well
+    # See: https://bugs.python.org/issue40573
+    return asyncio.iscoroutinefunction(function)

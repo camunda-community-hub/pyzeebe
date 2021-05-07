@@ -109,7 +109,8 @@ class TestBuildJobHandler:
                                            mocked_job_with_adapter: Job):
         task_config.before.append(decorator)
         job_handler = task_builder.build_job_handler(
-            original_task_function, task_config)
+            original_task_function, task_config
+        )
 
         await job_handler(mocked_job_with_adapter)
 
@@ -121,7 +122,8 @@ class TestBuildJobHandler:
                                           mocked_job_with_adapter: Job):
         task_config.after.append(decorator)
         job_handler = task_builder.build_job_handler(
-            original_task_function, task_config)
+            original_task_function, task_config
+        )
 
         await job_handler(mocked_job_with_adapter)
 
@@ -133,7 +135,8 @@ class TestBuildJobHandler:
         decorator.side_effect = Exception()
         task_config.before.append(decorator)
         job_handler = task_builder.build_job_handler(
-            original_task_function, task_config)
+            original_task_function, task_config
+        )
 
         await job_handler(mocked_job_with_adapter)
 
@@ -207,3 +210,68 @@ class TestAsyncify:
         async_function = task_builder.asyncify(lambda x, y, z: x + y + z)
 
         assert await async_function(x=1, y=1, z=1) == 3
+
+
+class TestAsyncifyDecorators:
+    def sync_decorator(self, job: Job) -> Job:
+        return job
+
+    def test_before_decorators_are_async(self, task_config: TaskConfig):
+        task_config.before.append(self.sync_decorator)
+
+        task_config = task_builder.asyncify_decorators(task_config)
+
+        assert functions_are_all_async(task_config.before)
+
+    def test_after_decorators_are_async(self, task_config: TaskConfig):
+        task_config.after.append(self.sync_decorator)
+
+        task_config = task_builder.asyncify_decorators(task_config)
+
+        assert functions_are_all_async(task_config.after)
+
+
+class TestAsyncifyAllFunctions:
+    def sync_function(self):
+        return
+
+    async def async_function(self):
+        return
+
+    def test_changes_sync_function(self):
+        functions = [self.sync_function]
+
+        async_functions = task_builder.asyncify_all_functions(functions)
+
+        assert functions_are_all_async(async_functions)
+
+    def test_async_function_remains_unchanged(self):
+        functions = [self.async_function]
+
+        async_functions = task_builder.asyncify_all_functions(functions)
+
+        assert async_functions[0] == functions[0]
+
+
+def functions_are_all_async(functions: List[Callable]) -> bool:
+    return all(
+        [
+            task_builder.is_async_function(function)
+            for function
+            in functions
+        ]
+    )
+
+
+class TestIsAsyncFunction:
+    def test_with_normal_function(self):
+        def normal_function():
+            return 1
+
+        assert not task_builder.is_async_function(normal_function)
+
+    def test_with_async_function(self):
+        async def async_function():
+            return 1
+
+        assert task_builder.is_async_function(async_function)

@@ -137,10 +137,10 @@ def routers():
 
 @pytest.fixture
 def decorator():
-    def simple_decorator(job: Job) -> Job:
+    async def simple_decorator(job: Job) -> Job:
         return job
 
-    return MagicMock(wraps=simple_decorator)
+    return AsyncMock(wraps=simple_decorator)
 
 
 @pytest.fixture(scope="module")
