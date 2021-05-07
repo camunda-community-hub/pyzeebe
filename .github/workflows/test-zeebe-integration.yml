@@ -1,9 +1,6 @@
 name: Integration test pyzeebe
 
-on:
-  push:
-  pull_request:
-    branches: [ master, development ]
+on: [push, pull_request]
 
 jobs:
   test:
