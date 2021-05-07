@@ -1,4 +1,4 @@
-name: Test pyzeebe
+name: Lint pyzeebe
 
 on: [push, pull_request]
 
