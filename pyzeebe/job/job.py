@@ -58,11 +58,11 @@ class Job(object):
 
         """
         if self.zeebe_adapter:
-            self.zeebe_adapter.fail_job(job_key=self.key, retries=self.retries, message=message)
+            self.zeebe_adapter.fail_job(job_key=self.key, retries=self.retries-1, message=message)
         else:
             raise NoZeebeAdapterError()
 
-    def set_error_status(self, message: str, error_code: str = None) -> None:
+    def set_error_status(self, message: str, error_code: str = "") -> None:
         """
         Error status means that the job could not be completed because of a business error and won't ever be able to be completed.
         For example: a required parameter was not given

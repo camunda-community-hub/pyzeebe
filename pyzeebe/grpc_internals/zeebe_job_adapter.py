@@ -68,7 +68,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 
-    def throw_error(self, job_key: int, message: str, error_code: str = None) -> ThrowErrorResponse:
+    def throw_error(self, job_key: int, message: str, error_code: str = "") -> ThrowErrorResponse:
         try:
             return self._gateway_stub.ThrowError(
                 ThrowErrorRequest(jobKey=job_key, errorMessage=message, errorCode=error_code))
