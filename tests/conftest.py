@@ -74,7 +74,7 @@ def first_active_job(task, job_from_task, grpc_servicer) -> str:
 def task_config(task_type):
     return TaskConfig(
         type=task_type,
-        exception_handler=MagicMock(),
+        exception_handler=AsyncMock(),
         timeout_ms=10000,
         max_jobs_to_activate=32,
         variables_to_fetch=[],

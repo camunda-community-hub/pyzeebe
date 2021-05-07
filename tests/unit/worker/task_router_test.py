@@ -103,9 +103,10 @@ def test_add_after_decorator_through_constructor(decorator: TaskDecorator):
     assert len(router._after) == 1
 
 
-def test_default_exception_handler_logs_a_warning(mocked_job_with_adapter: Job):
+@pytest.mark.asyncio
+async def test_default_exception_handler_logs_a_warning(mocked_job_with_adapter: Job):
     with patch("pyzeebe.worker.task_router.logger.warning") as logging_mock:
-        default_exception_handler(Exception(), mocked_job_with_adapter)
+        await default_exception_handler(Exception(), mocked_job_with_adapter)
 
         mocked_job_with_adapter.set_failure_status.assert_called()
         logging_mock.assert_called()

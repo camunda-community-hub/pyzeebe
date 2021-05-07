@@ -13,12 +13,12 @@ from pyzeebe.task.task_config import TaskConfig
 logger = logging.getLogger(__name__)
 
 
-def default_exception_handler(e: Exception, job: Job) -> None:
+async def default_exception_handler(e: Exception, job: Job) -> None:
     logger.warning(f"Task type: {job.type} - failed job {job}. Error: {e}.")
     if isinstance(e, BusinessError):
-        job.set_error_status(f"Failed job. Recoverable error: {e}", error_code=e.error_code)
+        await job.set_error_status(f"Failed job. Recoverable error: {e}", error_code=e.error_code)
     else:
-        job.set_failure_status(f"Failed job. Error: {e}")
+        await job.set_failure_status(f"Failed job. Error: {e}")
 
 
 class ZeebeTaskRouter:

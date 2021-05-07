@@ -57,7 +57,7 @@ async def run_original_task_function(task_function: Callable, task_config: TaskC
         return await task_function(**job.variables), True
     except Exception as e:
         logger.debug(f"Failed job: {job}. Error: {e}.")
-        task_config.exception_handler(e, job)
+        await task_config.exception_handler(e, job)
         return job.variables, False
 
 
@@ -94,7 +94,7 @@ def get_parameters_from_function(task_function: Callable) -> List[str]:
 
 
 def asyncify(task_function: Callable) -> Callable[..., Awaitable]:
-    @functools.wraps(task_function)
+    @ functools.wraps(task_function)
     async def async_function(**kwargs):
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, functools.partial(task_function, **kwargs))
