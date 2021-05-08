@@ -1,9 +1,6 @@
-name: Test pyzeebe
+name: Lint pyzeebe
 
-on:
-  push:
-  pull_request:
-    branches: [ master, development ]
+on: [push, pull_request]
 
 jobs:
   build:
