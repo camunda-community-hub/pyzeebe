@@ -22,7 +22,7 @@ Creating a task with a router is the exact same process as wiht a :py:class:`Zee
 .. code-block:: python
 
     @router.task(task_type="my_task")
-    def my_task(x: int):
+    async def my_task(x: int):
         return {"y": x + 1}
 
 

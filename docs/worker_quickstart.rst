@@ -7,6 +7,8 @@ Create and start a worker
 
 .. code-block:: python
 
+    import asyncio
+
     from pyzeebe import ZeebeWorker
 
 
@@ -14,10 +16,10 @@ Create and start a worker
 
 
     @worker.task(task_type="my_task")
-    def my_task(x: int):
+    async def my_task(x: int):
         return {"y": x + 1}
 
-    worker.work()
+    asyncio.run(worker.work())
 
 
 Worker connection options
@@ -86,6 +88,11 @@ To add a task to the worker:
 .. code-block:: python
 
     @worker.task(task_type="my_task")
-    def my_task(x: int):
+    async def my_task(x: int):
         return {"y": x + 1}
 
+    # Or using a non-async function:
+
+    @worker.task(task_type="my_task")
+    def second_task(x: int):
+        return {"y": x + 1}
