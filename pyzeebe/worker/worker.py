@@ -58,6 +58,7 @@ class ZeebeWorker(ZeebeTaskRouter):
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
+        self.zeebe_adapter.connect()
         self._job_executors, self._job_pollers = [], []
 
         for task in self.tasks:

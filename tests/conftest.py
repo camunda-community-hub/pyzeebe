@@ -41,8 +41,10 @@ def job_from_task(task):
 
 
 @pytest.fixture
-def zeebe_adapter(aio_grpc_channel):
-    return ZeebeAdapter(channel=aio_grpc_channel)
+def zeebe_adapter(aio_grpc_channel: grpc.aio.Channel):
+    adapter = ZeebeAdapter()
+    adapter.connect(channel=aio_grpc_channel)
+    return adapter
 
 
 @pytest.fixture

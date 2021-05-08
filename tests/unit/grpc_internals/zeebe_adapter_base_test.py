@@ -10,8 +10,7 @@ from pyzeebe.credentials.camunda_cloud_credentials import \
 from pyzeebe.credentials.oauth_credentials import OAuthCredentials
 from pyzeebe.errors import (ZeebeBackPressureError,
                             ZeebeGatewayUnavailableError, ZeebeInternalError)
-from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
-from tests.unit.utils.grpc_utils import GRPCStatusCode
+from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase, create_channel, create_connection_uri
 from tests.unit.utils.random_utils import RANDOM_RANGE
 
 
@@ -24,68 +23,6 @@ def test_should_retry_current_retries_over_max(zeebe_adapter):
     zeebe_adapter._max_connection_retries = 1
     zeebe_adapter._current_connection_retries = 1
     assert not zeebe_adapter._should_retry()
-
-
-def test_only_port(zeebe_adapter):
-    port = randint(0, 10000)
-    zeebe_adapter = ZeebeAdapterBase(port=port)
-    assert zeebe_adapter.connection_uri == f"localhost:{port}"
-
-
-def test_only_host(zeebe_adapter):
-    hostname = str(uuid4())
-    zeebe_adapter = ZeebeAdapterBase(hostname=hostname)
-    assert zeebe_adapter.connection_uri == f"{hostname}:26500"
-
-
-def test_host_and_port(zeebe_adapter):
-    hostname = str(uuid4())
-    port = randint(0, 10000)
-    zeebe_adapter = ZeebeAdapterBase(hostname=hostname, port=port)
-    assert zeebe_adapter.connection_uri == f"{hostname}:{port}"
-
-
-def test_with_secure_connection(zeebe_adapter):
-    with patch("grpc.aio.secure_channel") as grpc_secure_channel_mock:
-        ZeebeAdapterBase(secure_connection=True)
-        grpc_secure_channel_mock.assert_called()
-
-
-def test_with_camunda_cloud_credentials(zeebe_adapter):
-    CamundaCloudCredentials.get_access_token = MagicMock(
-        return_value=str(uuid4()))
-    credentials = CamundaCloudCredentials(
-        str(uuid4()), str(uuid4()), str(uuid4()))
-
-    with patch("grpc.aio.secure_channel") as grpc_secure_channel_mock:
-        ZeebeAdapterBase(credentials=credentials)
-        grpc_secure_channel_mock.assert_called()
-
-
-def test_credentials_connection_uri_gotten(zeebe_adapter):
-    client_id = str(uuid4())
-    client_secret = str(uuid4())
-    cluster_id = str(uuid4())
-    CamundaCloudCredentials.get_access_token = MagicMock(
-        return_value=str(uuid4()))
-    credentials = CamundaCloudCredentials(client_id, client_secret, cluster_id)
-    zeebe_adapter = ZeebeAdapterBase(credentials=credentials)
-    assert zeebe_adapter.connection_uri == f"{cluster_id}.zeebe.camunda.io:443"
-
-
-def test_credentials_no_connection_uri(zeebe_adapter):
-    hostname = str(uuid4())
-    port = randint(0, RANDOM_RANGE)
-    url = f"https://{str(uuid4())}/oauth/token"
-    client_id = str(uuid4())
-    client_secret = str(uuid4())
-    audience = str(uuid4())
-
-    with patch("requests_oauthlib.OAuth2Session.post"):
-        credentials = OAuthCredentials(url, client_id, client_secret, audience)
-    zeebe_adapter = ZeebeAdapterBase(
-        hostname=hostname, port=port, credentials=credentials)
-    assert zeebe_adapter.connection_uri == f"{hostname}:{port}"
 
 
 def test_common_zeebe_grpc_error_internal(zeebe_adapter):
@@ -143,3 +80,63 @@ def test_close_after_retried_internal(zeebe_adapter):
         zeebe_adapter._common_zeebe_grpc_errors(error)
 
     zeebe_adapter._close.assert_called_once()
+
+
+class TestCreateChannel:
+    def test_creates_insecure_channel_on_default(self):
+        with patch("grpc.aio.insecure_channel") as channel_mock:
+            create_channel(str(uuid4()))
+
+            channel_mock.assert_called_once()
+
+    def test_creates_secure_channel_when_given_credentials(self):
+        with patch("grpc.aio.secure_channel") as channel_mock:
+            create_channel(str(uuid4()), credentials=MagicMock())
+
+            channel_mock.assert_called_once()
+
+    def test_creates_secure_channel_when_secure_connection_is_enabled(self):
+        with patch("grpc.aio.secure_channel") as channel_mock:
+            create_channel(str(uuid4()), secure_connection=True)
+
+            channel_mock.assert_called_once()
+
+
+class TestCreateConnectionUri:
+    def test_uses_credentials_first(self):
+        credentials = MagicMock(return_value=str(uuid4()))
+
+        connection_uri = create_connection_uri(
+            credentials=credentials, hostname="localhost", port=123
+        )
+
+        assert connection_uri == credentials.get_connection_uri()
+
+    def test_uses_hostname_and_port_when_given(self):
+        hostname = str(uuid4())
+        port = randint(0, 10000)
+
+        connection_uri = create_connection_uri(hostname, port)
+
+        assert connection_uri == f"{hostname}:{port}"
+
+    def test_default_port_value_is_26500(self):
+        hostname = str(uuid4())
+
+        connection_uri = create_connection_uri(hostname)
+
+        assert connection_uri == f"{hostname}:26500"
+
+    def test_default_hostname_is_localhost(self):
+        port = randint(0, 10000)
+
+        connection_uri = create_connection_uri(port=port)
+
+        assert connection_uri == f"localhost:{port}"
+
+    def test_default_values_are_taken_from_env_variables(self):
+        address = f"{str(uuid4())}:{randint(0, 10000)}"
+        with patch("os.getenv", return_value=address):
+            connection_uri = create_connection_uri()
+
+            assert connection_uri == address

@@ -10,7 +10,7 @@ class ZeebeClient(object):
     """A zeebe client that can connect to a zeebe instance and perform actions."""
 
     def __init__(self, hostname: str = None, port: int = None, credentials: BaseCredentials = None,
-                 channel: grpc.Channel = None, secure_connection: bool = False, max_connection_retries: int = 10):
+                 secure_connection: bool = False, max_connection_retries: int = 10):
         """
         Args:
             hostname (str): Zeebe instance hostname
@@ -18,9 +18,10 @@ class ZeebeClient(object):
             max_connection_retries (int): Amount of connection retries before client gives up on connecting to zeebe. To setup with infinite retries use -1
         """
 
-        self.zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port, credentials=credentials, channel=channel,
+        self.zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port, credentials=credentials,
                                           secure_connection=secure_connection,
                                           max_connection_retries=max_connection_retries)
+        self.zeebe_adapter.connect()
 
     async def run_process(self, bpmn_process_id: str, variables: Dict = None, version: int = -1) -> int:
         """
