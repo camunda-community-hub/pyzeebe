@@ -95,6 +95,8 @@ class ZeebeWorker(ZeebeTaskRouter):
         self.stop_event.set()
         if wait:
             self._join_task_threads()
+            if self._watcher_thread:
+                self._watcher_thread.join()
 
     def _join_task_threads(self) -> None:
         logger.debug("Waiting for threads to join")
