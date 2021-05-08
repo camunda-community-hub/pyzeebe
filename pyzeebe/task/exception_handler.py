@@ -1,4 +1,4 @@
-from typing import Callable, Awaitable
+from typing import Awaitable, Callable
 
 from pyzeebe.job.job import Job
 
