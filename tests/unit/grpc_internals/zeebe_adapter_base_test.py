@@ -10,7 +10,9 @@ from pyzeebe.credentials.camunda_cloud_credentials import \
 from pyzeebe.credentials.oauth_credentials import OAuthCredentials
 from pyzeebe.errors import (ZeebeBackPressureError,
                             ZeebeGatewayUnavailableError, ZeebeInternalError)
-from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase, create_channel, create_connection_uri
+from pyzeebe.grpc_internals.zeebe_adapter_base import (ZeebeAdapterBase,
+                                                       create_channel,
+                                                       create_connection_uri)
 from tests.unit.utils.random_utils import RANDOM_RANGE
 
 
