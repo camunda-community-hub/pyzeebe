@@ -1,5 +1,4 @@
-from unittest import mock
-from unittest.mock import patch
+from mock import patch
 from uuid import uuid4
 
 import pytest

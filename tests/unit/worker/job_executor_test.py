@@ -1,5 +1,5 @@
 import asyncio
-from unittest.mock import AsyncMock
+from mock import AsyncMock
 
 import pytest
 

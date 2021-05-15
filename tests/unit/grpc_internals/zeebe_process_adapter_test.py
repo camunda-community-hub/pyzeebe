@@ -1,6 +1,6 @@
 from io import BytesIO
 from random import randint
-from unittest.mock import AsyncMock, MagicMock, patch
+from mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import grpc

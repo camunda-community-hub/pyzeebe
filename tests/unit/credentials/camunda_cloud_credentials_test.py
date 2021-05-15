@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest

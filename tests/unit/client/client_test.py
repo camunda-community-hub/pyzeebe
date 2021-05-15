@@ -1,5 +1,5 @@
 from random import randint
-from unittest.mock import AsyncMock, MagicMock
+from mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest

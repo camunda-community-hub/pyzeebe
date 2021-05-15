@@ -1,6 +1,6 @@
 from random import randint
 from threading import Event
-from unittest.mock import AsyncMock, MagicMock, patch
+from mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import grpc
