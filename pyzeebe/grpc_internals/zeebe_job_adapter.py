@@ -57,9 +57,9 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 
-    def fail_job(self, job_key: int, message: str) -> FailJobResponse:
+    def fail_job(self, job_key: int, retries: int, message: str) -> FailJobResponse:
         try:
-            return self._gateway_stub.FailJob(FailJobRequest(jobKey=job_key, errorMessage=message))
+            return self._gateway_stub.FailJob(FailJobRequest(jobKey=job_key, retries=retries, errorMessage=message))
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
                 raise JobNotFoundError(job_key=job_key)
@@ -68,10 +68,10 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
             else:
                 self._common_zeebe_grpc_errors(rpc_error)
 
-    def throw_error(self, job_key: int, message: str) -> ThrowErrorResponse:
+    def throw_error(self, job_key: int, message: str, error_code: str = "") -> ThrowErrorResponse:
         try:
             return self._gateway_stub.ThrowError(
-                ThrowErrorRequest(jobKey=job_key, errorMessage=message))
+                ThrowErrorRequest(jobKey=job_key, errorMessage=message, errorCode=error_code))
         except grpc.RpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
                 raise JobNotFoundError(job_key=job_key)
