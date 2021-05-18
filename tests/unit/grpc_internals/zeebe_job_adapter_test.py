@@ -102,13 +102,13 @@ class TestFailJob:
             await zeebe_adapter.fail_job(random_job_key(), 1, random_message())
 
     async def test_raises_on_deactivated_job(self, zeebe_adapter: ZeebeJobAdapter, first_active_job: Job):
-        await zeebe_adapter.fail_job(first_active_job.key, random_message())
+        await zeebe_adapter.fail_job(first_active_job.key, first_active_job.retries, random_message())
 
         with pytest.raises(JobAlreadyDeactivatedError):
             await zeebe_adapter.fail_job(first_active_job.key, first_active_job.retries, random_message())
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 class TestThrowError:
     async def test_response_is_of_correct_type(self, zeebe_adapter: ZeebeJobAdapter, first_active_job: Job):
         response = await zeebe_adapter.throw_error(first_active_job.key, random_message())
