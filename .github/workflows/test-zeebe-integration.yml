@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        zeebe-version: [ "1.0.0-rc3" ]
+        zeebe-version: [ "1.0.0" ]
 
     container: python:3.6
 
