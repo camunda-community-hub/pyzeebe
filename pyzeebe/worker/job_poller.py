@@ -4,19 +4,23 @@ import logging
 from pyzeebe.errors import (ActivateJobsRequestInvalidError,
                             ZeebeBackPressureError,
                             ZeebeGatewayUnavailableError, ZeebeInternalError)
-from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
+from pyzeebe.grpc_internals.zeebe_job_adapter import ZeebeJobAdapter
 from pyzeebe.task.task import Task
+from pyzeebe.worker.task_state import TaskState
 
 logger = logging.getLogger(__name__)
 
 
 class JobPoller:
-    def __init__(self, zeebe_adapter: ZeebeAdapter, task: Task, queue: asyncio.Queue, worker_name: str, request_timeout: int):
+    def __init__(self, zeebe_adapter: ZeebeJobAdapter, task: Task, queue: asyncio.Queue, worker_name: str,
+                 request_timeout: int, task_state: TaskState, max_task_count: int):
         self.zeebe_adapter = zeebe_adapter
         self.task = task
         self.queue = queue
         self.worker_name = worker_name
         self.request_timeout = request_timeout
+        self.task_state = task_state
+        self.max_task_count = max_task_count
         self.stop_event = asyncio.Event()
 
     async def poll(self):
@@ -26,12 +30,12 @@ class JobPoller:
     async def poll_once(self):
         try:
             jobs = self.zeebe_adapter.activate_jobs(
-                self.task.type,
-                self.worker_name,
-                self.task.config.timeout_ms,
-                self.task.config.max_jobs_to_activate,
-                self.task.config.variables_to_fetch,
-                self.request_timeout,
+                task_type=self.task.type,
+                worker=self.worker_name,
+                timeout=self.task.config.timeout_ms,
+                max_jobs_to_activate=self.calculate_max_jobs_to_activate(),
+                variables_to_fetch=self.task.config.variables_to_fetch,
+                request_timeout=self.request_timeout,
             )
             async for job in jobs:
                 await self.queue.put(job)
@@ -47,7 +51,13 @@ class JobPoller:
             await asyncio.sleep(5)
 
     def should_poll(self) -> bool:
-        return not self.stop_event.is_set() and (self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection)
+        return not self.stop_event.is_set() \
+               and (self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection) \
+               and self.calculate_max_jobs_to_activate() > 0
+
+    def calculate_max_jobs_to_activate(self) -> int:
+        worker_max_jobs = self.max_task_count - self.task_state.count_active()
+        return min(worker_max_jobs, self.task.config.max_jobs_to_activate)
 
     async def stop(self):
         self.stop_event.set()

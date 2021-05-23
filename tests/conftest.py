@@ -11,6 +11,7 @@ from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.task import task_builder
 from pyzeebe.task.task_config import TaskConfig
 from pyzeebe.worker.task_router import ZeebeTaskRouter
+from pyzeebe.worker.task_state import TaskState
 from tests.unit.utils.gateway_mock import GatewayMock
 from tests.unit.utils.random_utils import random_job
 
@@ -172,3 +173,8 @@ def aio_create_grpc_channel(request, grpc_addr, grpc_server):
 async def aio_grpc_channel(aio_create_grpc_channel):
     async with aio_create_grpc_channel as channel:
         yield channel
+
+
+@pytest.fixture
+def task_state() -> TaskState:
+    return TaskState()

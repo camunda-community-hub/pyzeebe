@@ -1,17 +1,17 @@
 import asyncio
-from mock import AsyncMock
 
 import pytest
+from mock import AsyncMock, Mock
 
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
-from pyzeebe.worker.job_executor import JobExecutor
-from tests.unit.utils.random_utils import randint
+from pyzeebe.worker.job_executor import JobExecutor, create_job_callback
+from pyzeebe.worker.task_state import TaskState
 
 
 @pytest.fixture
-def job_executor(task: Task, queue: asyncio.Queue):
-    return JobExecutor(task, queue)
+def job_executor(task: Task, queue: asyncio.Queue, task_state: TaskState):
+    return JobExecutor(task, queue, task_state)
 
 
 @pytest.fixture(autouse=True)
@@ -56,3 +56,22 @@ class TestStop:
         await job_executor.stop()
 
         await job_executor.execute()  # Implicitly test that execute returns immediately
+
+
+class TestCreateJobCallback:
+    def test_returns_callable(self, job_executor: JobExecutor, job_from_task: Job):
+        callback = create_job_callback(job_executor, job_from_task)
+
+        assert callable(callback)
+
+    def test_signals_that_job_is_done(self, job_executor: JobExecutor, job_from_task: Job):
+        task_done_mock = Mock()
+        remove_from_task_state_mock = Mock()
+        job_executor.jobs.task_done = task_done_mock
+        job_executor.task_state.remove = remove_from_task_state_mock
+
+        callback = create_job_callback(job_executor, job_from_task)
+        callback(asyncio.Future())
+
+        task_done_mock.assert_called_once()
+        remove_from_task_state_mock.assert_called_once_with(job_from_task)
