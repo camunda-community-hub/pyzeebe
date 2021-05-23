@@ -94,7 +94,7 @@ def get_parameters_from_function(task_function: Callable) -> List[str]:
     return list(function_signature.parameters)
 
 
-def asyncify_decorators(task_config: TaskConfig) -> None:
+def asyncify_decorators(task_config: TaskConfig) -> TaskConfig:
     task_config.after = asyncify_all_functions(task_config.after)
     task_config.before = asyncify_all_functions(task_config.before)
     return task_config
