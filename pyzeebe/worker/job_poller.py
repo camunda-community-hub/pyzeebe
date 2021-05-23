@@ -38,6 +38,7 @@ class JobPoller:
                 request_timeout=self.request_timeout,
             )
             async for job in jobs:
+                self.task_state.add(job)
                 await self.queue.put(job)
         except ActivateJobsRequestInvalidError:
             logger.warn(
@@ -52,8 +53,8 @@ class JobPoller:
 
     def should_poll(self) -> bool:
         return not self.stop_event.is_set() \
-               and (self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection) \
-               and self.calculate_max_jobs_to_activate() > 0
+            and (self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection) \
+            and self.calculate_max_jobs_to_activate() > 0
 
     def calculate_max_jobs_to_activate(self) -> int:
         worker_max_jobs = self.max_task_count - self.task_state.count_active()

@@ -32,6 +32,13 @@ class TestPollOnce:
 
         assert queue.empty()
 
+    async def test_job_is_added_to_task_state(self, job_poller: JobPoller, job_from_task: Job, grpc_servicer: GatewayMock):
+        grpc_servicer.active_jobs[job_from_task.key] = job_from_task
+
+        await job_poller.poll_once()
+
+        assert job_poller.task_state.count_active() == 1
+
 
 class TestShouldPoll:
     def test_should_poll_returns_expected_result_when_disconnected(self, job_poller: JobPoller):
