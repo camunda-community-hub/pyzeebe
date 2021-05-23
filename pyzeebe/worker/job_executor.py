@@ -30,9 +30,9 @@ class JobExecutor:
     async def get_next_job(self) -> Job:
         return await self.jobs.get()
 
-    async def execute_one_job(self, job: Job) -> Job:
+    async def execute_one_job(self, job: Job) -> None:
         try:
-            return await self.task.job_handler(job)
+            await self.task.job_handler(job)
         except JobAlreadyDeactivatedError as error:
             logger.warn(
                 f"Job was already deactivated. Job key: {error.job_key}"
