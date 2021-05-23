@@ -1,6 +1,5 @@
 import asyncio
 import os
-import time
 from typing import Dict
 from uuid import uuid4
 
@@ -10,17 +9,24 @@ from pyzeebe import Job, ZeebeClient, ZeebeWorker
 from pyzeebe.errors import ProcessDefinitionNotFoundError
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
+def event_loop():
+    loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
+
+
+@pytest.fixture(scope="session")
 def zeebe_client():
     return ZeebeClient()
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def zeebe_worker():
     return ZeebeWorker()
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True, scope="session")
 def task(zeebe_worker: ZeebeWorker):
     def exception_handler(exc: Exception, job: Job) -> None:
         job.set_error_status(f"Failed to run task {job.type}. Reason: {exc}")
@@ -34,7 +40,7 @@ def task(zeebe_worker: ZeebeWorker):
 
 
 @pytest.mark.asyncio
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True, scope="session")
 async def deploy_process(zeebe_client: ZeebeClient):
     try:
         integration_tests_path = os.path.join("tests", "integration")
@@ -45,11 +51,9 @@ async def deploy_process(zeebe_client: ZeebeClient):
         await zeebe_client.deploy_process("test.bpmn")
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True, scope="session")
 def start_worker(event_loop: asyncio.AbstractEventLoop, zeebe_worker: ZeebeWorker):
     event_loop.create_task(zeebe_worker.work())
-    yield
-    event_loop.create_task(zeebe_worker.stop())
 
 
 @pytest.mark.asyncio
