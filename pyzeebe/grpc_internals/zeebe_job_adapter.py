@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Dict, Generator, List
+from typing import Dict, AsyncGenerator, List
 
 import grpc
 from zeebe_grpc.gateway_pb2 import (ActivateJobsRequest, CompleteJobRequest,
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class ZeebeJobAdapter(ZeebeAdapterBase):
     async def activate_jobs(self, task_type: str, worker: str, timeout: int, max_jobs_to_activate: int,
-                            variables_to_fetch: List[str], request_timeout: int) -> Generator[Job, None, None]:
+                            variables_to_fetch: List[str], request_timeout: int) -> AsyncGenerator[Job, None]:
         try:
             async for response in self._gateway_stub.ActivateJobs(
                     ActivateJobsRequest(type=task_type, worker=worker, timeout=timeout,
