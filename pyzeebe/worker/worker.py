@@ -84,6 +84,8 @@ class ZeebeWorker(ZeebeTaskRouter):
         for executor in self._job_executors:
             await executor.stop()
 
+        await self.zeebe_adapter.disconnect()
+
     def include_router(self, *routers: ZeebeTaskRouter) -> None:
         """
         Adds all router's tasks to the worker.

@@ -1,5 +1,5 @@
 from random import randint
-from mock import MagicMock, patch
+from mock import MagicMock, patch, AsyncMock
 from uuid import uuid4
 
 import grpc
@@ -27,59 +27,65 @@ def test_should_retry_current_retries_over_max(zeebe_adapter):
     assert not zeebe_adapter._should_retry()
 
 
-def test_common_zeebe_grpc_error_internal(zeebe_adapter):
+@pytest.mark.asyncio
+async def test_common_zeebe_grpc_error_internal(zeebe_adapter):
     error = grpc.aio.AioRpcError(
         grpc.StatusCode.INTERNAL, None, None
     )
     with pytest.raises(ZeebeInternalError):
-        zeebe_adapter._common_zeebe_grpc_errors(error)
+        await zeebe_adapter._common_zeebe_grpc_errors(error)
 
 
-def test_common_zeebe_grpc_error_back_pressure(zeebe_adapter):
+@pytest.mark.asyncio
+async def test_common_zeebe_grpc_error_back_pressure(zeebe_adapter):
     error = grpc.aio.AioRpcError(
         grpc.StatusCode.RESOURCE_EXHAUSTED, None, None
     )
     with pytest.raises(ZeebeBackPressureError):
-        zeebe_adapter._common_zeebe_grpc_errors(error)
+        await zeebe_adapter._common_zeebe_grpc_errors(error)
 
 
-def test_common_zeebe_grpc_error_gateway_unavailable(zeebe_adapter):
+@pytest.mark.asyncio
+async def test_common_zeebe_grpc_error_gateway_unavailable(zeebe_adapter):
     error = grpc.aio.AioRpcError(
         grpc.StatusCode.UNAVAILABLE, None, None
     )
     with pytest.raises(ZeebeGatewayUnavailableError):
-        zeebe_adapter._common_zeebe_grpc_errors(error)
+        await zeebe_adapter._common_zeebe_grpc_errors(error)
 
 
-def test_common_zeebe_grpc_error_unkown_error(zeebe_adapter):
+@pytest.mark.asyncio
+async def test_common_zeebe_grpc_error_unkown_error(zeebe_adapter):
     error = grpc.aio.AioRpcError(
         "FakeGrpcStatus", None, None
     )
     with pytest.raises(grpc.aio.AioRpcError):
-        zeebe_adapter._common_zeebe_grpc_errors(error)
+        await zeebe_adapter._common_zeebe_grpc_errors(error)
 
 
-def test_close_after_retried_unavailable(zeebe_adapter):
+@pytest.mark.asyncio
+async def test_close_after_retried_unavailable(zeebe_adapter):
     error = grpc.aio.AioRpcError(
         grpc.StatusCode.UNAVAILABLE, None, None
     )
 
-    zeebe_adapter._close = MagicMock()
+    zeebe_adapter._close = AsyncMock()
     zeebe_adapter._max_connection_retries = 1
     with pytest.raises(ZeebeGatewayUnavailableError):
-        zeebe_adapter._common_zeebe_grpc_errors(error)
+        await zeebe_adapter._common_zeebe_grpc_errors(error)
 
     zeebe_adapter._close.assert_called_once()
 
 
-def test_close_after_retried_internal(zeebe_adapter):
+@pytest.mark.asyncio
+async def test_close_after_retried_internal(zeebe_adapter):
     error = grpc.aio.AioRpcError(
         grpc.StatusCode.INTERNAL, None, None
     )
-    zeebe_adapter._close = MagicMock()
+    zeebe_adapter._close = AsyncMock()
     zeebe_adapter._max_connection_retries = 1
     with pytest.raises(ZeebeInternalError):
-        zeebe_adapter._common_zeebe_grpc_errors(error)
+        await zeebe_adapter._common_zeebe_grpc_errors(error)
 
     zeebe_adapter._close.assert_called_once()
 

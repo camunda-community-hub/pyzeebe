@@ -20,4 +20,4 @@ class ZeebeMessageAdapter(ZeebeAdapterBase):
             if self.is_error_status(rpc_error, grpc.StatusCode.ALREADY_EXISTS):
                 raise MessageAlreadyExistsError()
             else:
-                self._common_zeebe_grpc_errors(rpc_error)
+                await self._common_zeebe_grpc_errors(rpc_error)

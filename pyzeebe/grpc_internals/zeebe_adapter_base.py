@@ -41,32 +41,35 @@ class ZeebeAdapterBase(object):
 
         self._gateway_stub = GatewayStub(self._channel)
 
+    async def disconnect(self):
+        await self._close()
+
     def _should_retry(self):
         return self._max_connection_retries == -1 or self._current_connection_retries < self._max_connection_retries
 
-    def _common_zeebe_grpc_errors(self, rpc_error: grpc.aio.AioRpcError):
+    async def _common_zeebe_grpc_errors(self, rpc_error: grpc.aio.AioRpcError):
         if self.is_error_status(rpc_error, grpc.StatusCode.RESOURCE_EXHAUSTED):
             raise ZeebeBackPressureError()
         elif self.is_error_status(rpc_error, grpc.StatusCode.UNAVAILABLE):
             self._current_connection_retries += 1
             if not self._should_retry():
-                self._close()
+                await self._close()
             raise ZeebeGatewayUnavailableError()
         elif self.is_error_status(rpc_error, grpc.StatusCode.INTERNAL):
             self._current_connection_retries += 1
             if not self._should_retry():
-                self._close()
+                await self._close()
             raise ZeebeInternalError()
         else:
             raise rpc_error
 
-    @ staticmethod
+    @staticmethod
     def is_error_status(rpc_error: grpc.aio.AioRpcError, status_code: grpc.StatusCode):
         return rpc_error.code() == status_code
 
-    def _close(self):
+    async def _close(self):
         try:
-            self._channel.close()
+            await self._channel.close()
         except Exception as exception:
             logger.exception(
                 f"Failed to close channel, {type(exception).__name__} exception was raised"
