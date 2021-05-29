@@ -3,6 +3,7 @@ from pyzeebe import Job
 
 logger = logging.getLogger(__name__)
 
+
 class TaskState:
     def __init__(self):
         self._active_jobs = set()
@@ -11,7 +12,8 @@ class TaskState:
         try:
             self._active_jobs.remove(job.key)
         except KeyError:
-            logger.warning(f"Could not find Job key {job.key} when trying to remove from TaskState")
+            logger.warning(
+                f"Could not find Job key {job.key} when trying to remove from TaskState")
 
     def add(self, job: Job) -> None:
         if job.key in self._active_jobs:

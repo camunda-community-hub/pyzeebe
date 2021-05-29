@@ -1,5 +1,4 @@
-import inspect
-from typing import Callable, List
+from typing import Callable
 
 import pytest
 
@@ -7,7 +6,6 @@ from pyzeebe import Job, TaskDecorator
 from pyzeebe.task import task_builder
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_config import TaskConfig
-from tests.unit.utils import dummy_functions
 
 
 class TestBuildTask:
@@ -155,123 +153,3 @@ class TestBuildJobHandler:
         job = await job_handler(mocked_job_with_adapter)
 
         assert "x" in job.variables
-
-
-@pytest.mark.asyncio
-class TestConvertToDictFunction:
-    async def test_converting_to_dict(self):
-        async def original_function(x):
-            return x
-
-        dict_function = task_builder.convert_to_dict_function(
-            original_function, "x"
-        )
-
-        assert {"x": 1} == await dict_function(1)
-
-
-class TestGetFunctionParameters:
-    @pytest.mark.parametrize("fn,expected", [
-        (dummy_functions.no_param, []),
-        (dummy_functions.one_param, ["x"]),
-        (dummy_functions.multiple_params, ["x", "y", "z"]),
-        (dummy_functions.one_keyword_param, ["x"]),
-        (dummy_functions.multiple_keyword_param, ["x", "y", "z"]),
-        (dummy_functions.positional_and_keyword_params, ["x", "y"]),
-        (dummy_functions.args_param, []),
-        (dummy_functions.kwargs_param, []),
-        (dummy_functions.standard_named_params, ["args", "kwargs"]),
-        (dummy_functions.lambda_no_params, []),
-        (dummy_functions.lambda_one_param, ["x"]),
-        (dummy_functions.lambda_multiple_params, ["x", "y", "z"]),
-        (dummy_functions.lambda_one_keyword_param, ["x"]),
-        (dummy_functions.lambda_multiple_keyword_params, ["x", "y", "z"]),
-        (dummy_functions.lambda_positional_and_keyword_params, ["x", "y"])
-    ])
-    def test_get_params(self, fn: Callable, expected: List[str]):
-        assert task_builder.get_parameters_from_function(fn) == expected
-
-
-class TestAsyncify:
-    def test_returns_async_function(self):
-        async_function = task_builder.asyncify(lambda x: x)
-
-        assert inspect.iscoroutinefunction(async_function)
-
-    @pytest.mark.asyncio
-    async def test_returned_function_returns_expected_value(self):
-        expected_result = 5
-        async_function = task_builder.asyncify(lambda: expected_result)
-
-        assert await async_function() == expected_result
-
-    @pytest.mark.asyncio
-    async def test_returned_function_accepts_keyword_arguments(self):
-        async_function = task_builder.asyncify(lambda x, y, z: x + y + z)
-
-        assert await async_function(x=1, y=1, z=1) == 3
-
-
-class TestAsyncifyDecorators:
-    def sync_decorator(self, job: Job) -> Job:
-        return job
-
-    def test_before_decorators_are_async(self, task_config: TaskConfig):
-        task_config.before.append(self.sync_decorator)
-
-        task_config = task_builder.asyncify_decorators(task_config)
-
-        assert functions_are_all_async(task_config.before)
-
-    def test_after_decorators_are_async(self, task_config: TaskConfig):
-        task_config.after.append(self.sync_decorator)
-
-        task_config = task_builder.asyncify_decorators(task_config)
-
-        assert functions_are_all_async(task_config.after)
-
-
-class TestAsyncifyAllFunctions:
-    def sync_function(self):
-        return
-
-    async def async_function(self):
-        return
-
-    def test_changes_sync_function(self):
-        functions = [self.sync_function]
-
-        async_functions = task_builder.asyncify_all_functions(functions)
-
-        assert functions_are_all_async(async_functions)
-
-    def test_async_function_remains_unchanged(self):
-        functions = [self.async_function]
-
-        async_functions = task_builder.asyncify_all_functions(functions)
-
-        assert async_functions[0] == functions[0]
-
-
-def functions_are_all_async(functions: List[Callable]) -> bool:
-    return all(
-        [
-            task_builder.is_async_function(function)
-            for function
-            in functions
-        ]
-    )
-
-
-class TestIsAsyncFunction:
-    def test_with_normal_function(self):
-        def normal_function():
-            return 1
-
-        assert not task_builder.is_async_function(normal_function)
-
-    def test_with_async_function(self):
-        async def async_function():
-            return 1
-
-        assert task_builder.is_async_function(async_function)

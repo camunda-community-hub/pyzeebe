@@ -1,20 +1,19 @@
-import asyncio
 import functools
-import inspect
 import logging
-from typing import Awaitable, Callable, Dict, List, Tuple
+from typing import Awaitable, Callable, Dict, Sequence, Tuple
 
-from pyzeebe import Job, TaskDecorator
+from pyzeebe import Job
+from pyzeebe.function_tools.async_tools import asyncify, is_async_function
+from pyzeebe.function_tools.dict_tools import convert_to_dict_function
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_config import TaskConfig
-from pyzeebe.task.types import DecoratorRunner, JobHandler
+from pyzeebe.task.types import AsyncTaskDecorator, DecoratorRunner, JobHandler
 from pyzeebe.worker.task_state import TaskState
 
 logger = logging.getLogger(__name__)
 
 
 def build_task(task_function: Callable, task_config: TaskConfig) -> Task:
-    task_config = asyncify_decorators(task_config)
     return Task(task_function, build_job_handler(task_function, task_config), task_config)
 
 
@@ -62,7 +61,7 @@ async def run_original_task_function(task_function: Callable, task_config: TaskC
         return job.variables, False
 
 
-def create_decorator_runner(decorators: List[TaskDecorator]) -> DecoratorRunner:
+def create_decorator_runner(decorators: Sequence[AsyncTaskDecorator]) -> DecoratorRunner:
     async def decorator_runner(job: Job):
         for decorator in decorators:
             job = await run_decorator(decorator, job)
@@ -71,54 +70,9 @@ def create_decorator_runner(decorators: List[TaskDecorator]) -> DecoratorRunner:
     return decorator_runner
 
 
-async def run_decorator(decorator: TaskDecorator, job: Job) -> Job:
+async def run_decorator(decorator: AsyncTaskDecorator, job: Job) -> Job:
     try:
         return await decorator(job)
     except Exception as e:
         logger.warning(f"Failed to run decorator {decorator}. Exception: {e}")
         return job
-
-
-def convert_to_dict_function(single_value_function: Callable[..., Awaitable], variable_name: str) -> Callable[..., Awaitable[Dict]]:
-    async def inner_fn(*args, **kwargs):
-        return {variable_name: await single_value_function(*args, **kwargs)}
-
-    return inner_fn
-
-
-def get_parameters_from_function(task_function: Callable) -> List[str]:
-    function_signature = inspect.signature(task_function)
-    for _, parameter in function_signature.parameters.items():
-        if parameter.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
-            return []
-    return list(function_signature.parameters)
-
-
-def asyncify_decorators(task_config: TaskConfig) -> TaskConfig:
-    task_config.after = asyncify_all_functions(task_config.after)
-    task_config.before = asyncify_all_functions(task_config.before)
-    return task_config
-
-
-def asyncify_all_functions(functions: List[Callable]) -> List[Callable[..., Awaitable]]:
-    async_functions = []
-    for function in functions:
-        if not is_async_function(function):
-            async_functions.append(asyncify(function))
-        else:
-            async_functions.append(function)
-    return async_functions
-
-
-def asyncify(task_function: Callable) -> Callable[..., Awaitable]:
-    @functools.wraps(task_function)
-    async def async_function(*args, **kwargs):
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, functools.partial(task_function, *args, **kwargs))
-    return async_function
-
-
-def is_async_function(function: Callable) -> bool:
-    # Not using inspect.iscoroutinefunction here because it doens't handle AsyncMock well
-    # See: https://bugs.python.org/issue40573
-    return asyncio.iscoroutinefunction(function)
