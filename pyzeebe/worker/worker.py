@@ -62,7 +62,7 @@ class ZeebeWorker(ZeebeTaskRouter):
         self._job_executors, self._job_pollers = [], []
 
         for task in self.tasks:
-            jobs_queue = asyncio.Queue()
+            jobs_queue: asyncio.Queue = asyncio.Queue()
             poller = JobPoller(self.zeebe_adapter, task, jobs_queue,
                                self.name, self.request_timeout, self._task_state, self.max_task_count)
             executor = JobExecutor(task, jobs_queue, self._task_state)
