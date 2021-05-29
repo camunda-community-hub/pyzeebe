@@ -1,9 +1,9 @@
 from random import randint
-from mock import MagicMock, patch, AsyncMock
 from uuid import uuid4
 
 import grpc
 import pytest
+from mock import AsyncMock, MagicMock, patch
 
 from pyzeebe.credentials.camunda_cloud_credentials import \
     CamundaCloudCredentials

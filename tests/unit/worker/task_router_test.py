@@ -1,10 +1,11 @@
-import mock
 from uuid import uuid4
 
+import mock
 import pytest
 
 from pyzeebe import TaskDecorator
-from pyzeebe.errors import DuplicateTaskTypeError, TaskNotFoundError, BusinessError
+from pyzeebe.errors import (BusinessError, DuplicateTaskTypeError,
+                            TaskNotFoundError)
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_router import (ZeebeTaskRouter,

@@ -1,7 +1,7 @@
-from mock import patch
 from uuid import uuid4
 
 import pytest
+from mock import patch
 from requests import HTTPError
 
 from pyzeebe.credentials.oauth_credentials import OAuthCredentials

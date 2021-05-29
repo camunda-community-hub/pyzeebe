@@ -4,7 +4,7 @@ from uuid import uuid4
 import pytest
 
 from pyzeebe import TaskDecorator, ZeebeTaskRouter
-from pyzeebe.errors import (DuplicateTaskTypeError)
+from pyzeebe.errors import DuplicateTaskTypeError
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
 from pyzeebe.worker.worker import ZeebeWorker

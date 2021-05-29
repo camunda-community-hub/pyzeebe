@@ -1,7 +1,7 @@
-from mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
+from mock import MagicMock, patch
 
 from pyzeebe.credentials.camunda_cloud_credentials import \
     CamundaCloudCredentials

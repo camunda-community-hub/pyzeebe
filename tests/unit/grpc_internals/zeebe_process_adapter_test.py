@@ -1,10 +1,10 @@
 from io import BytesIO
 from random import randint
-from mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import grpc
 import pytest
+from mock import AsyncMock, MagicMock, patch
 
 from pyzeebe.errors import (InvalidJSONError,
                             ProcessDefinitionHasNoStartEventError,

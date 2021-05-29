@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Dict, AsyncGenerator, List
+from typing import AsyncGenerator, Dict, List
 
 import grpc
 from zeebe_grpc.gateway_pb2 import (ActivateJobsRequest, CompleteJobRequest,
