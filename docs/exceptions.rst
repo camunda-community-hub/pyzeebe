@@ -2,7 +2,7 @@
 Errors
 ==========
 
-All ``pyzeebe`` exceptions inherit from :py:class:`PyZeebeError`
+All ``pyzeebe`` errors inherit from :py:class:`PyZeebeError`
 
 .. autoexception:: pyzeebe.errors.PyZeebeError
 
@@ -22,13 +22,13 @@ All ``pyzeebe`` exceptions inherit from :py:class:`PyZeebeError`
 
 .. autoexception:: pyzeebe.errors.MessageAlreadyExistsError
 
-.. autoexception:: pyzeebe.exceptions.ProcessDefinitionNotFoundError
+.. autoexception:: pyzeebe.errors.ProcessDefinitionNotFoundError
 
-.. autoexception:: pyzeebe.exceptions.ProcessInstanceNotFoundError
+.. autoexception:: pyzeebe.errors.ProcessInstanceNotFoundError
 
-.. autoexception:: pyzeebe.exceptions.ProcessDefinitionHasNoStartEventError
+.. autoexception:: pyzeebe.errors.ProcessDefinitionHasNoStartEventError
 
-.. autoexception:: pyzeebe.exceptions.ProcessInvalidError
+.. autoexception:: pyzeebe.errors.ProcessInvalidError
 
 .. autoexception:: pyzeebe.errors.InvalidJSONError
 
