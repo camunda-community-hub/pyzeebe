@@ -132,3 +132,25 @@ This can be helpful when we don't want to read return values from a dictionary e
 
     The parameter ``variable_name`` must be supplied if ``single_value`` is true. If not given a :class:`NoVariableNameGiven` will be raised.
 
+Accessing the job object directly
+---------------------------------
+
+It is possible to receive the job object as a parameter inside a task function. Simply annotate the parameter with the :py:class:`pyzeebe.Job` type.
+
+Example:
+
+.. code-block:: python
+
+    from pyzeebe import Job
+
+
+    @worker.task(task_type="my_task")
+    async def my_task(job: Job):
+        print(job.process_instance_key)
+        return {**job.custom_headers}
+
+.. note::
+
+    Do not set the status for the job (set_success_status, set_failure_status or set_error_status) inside the task. 
+    This will cause pyzeebe to raise an :py:class:`pyzeebe.errors.ActivateJobsRequestInvalidError`.
+
