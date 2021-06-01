@@ -1,3 +1,6 @@
+from pyzeebe.job.job import Job
+
+
 def no_param():
     pass
 
@@ -34,9 +37,17 @@ def standard_named_params(args, kwargs):
     pass
 
 
-lambda_no_params = lambda: None
-lambda_one_param = lambda x: None
-lambda_multiple_params = lambda x, y, z: None
-lambda_one_keyword_param = lambda x=0: None
-lambda_multiple_keyword_params = lambda x=0, y=0, z=0: None
-lambda_positional_and_keyword_params = lambda x, y=0: None
+def with_job_parameter(job: Job):
+    pass
+
+
+def with_multiple_job_parameters(job: Job, job2: Job):
+    pass
+
+
+def lambda_no_params(): return None
+def lambda_one_param(x): return None
+def lambda_multiple_params(x, y, z): return None
+def lambda_one_keyword_param(x=0): return None
+def lambda_multiple_keyword_params(x=0, y=0, z=0): return None
+def lambda_positional_and_keyword_params(x, y=0): return None

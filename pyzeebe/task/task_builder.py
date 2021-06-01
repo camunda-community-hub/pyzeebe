@@ -3,8 +3,10 @@ import logging
 from typing import Awaitable, Callable, Dict, Sequence, Tuple
 
 from pyzeebe import Job
+from pyzeebe.function_tools import AsyncFunction, DictFunction, Function
 from pyzeebe.function_tools.async_tools import asyncify, is_async_function
 from pyzeebe.function_tools.dict_tools import convert_to_dict_function
+from pyzeebe.function_tools.parameter_tools import get_job_parameter_name
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_config import TaskConfig
 from pyzeebe.task.types import AsyncTaskDecorator, DecoratorRunner, JobHandler
@@ -12,11 +14,12 @@ from pyzeebe.task.types import AsyncTaskDecorator, DecoratorRunner, JobHandler
 logger = logging.getLogger(__name__)
 
 
-def build_task(task_function: Callable, task_config: TaskConfig) -> Task:
+def build_task(task_function: Function, task_config: TaskConfig) -> Task:
+    task_config.job_parameter_name = get_job_parameter_name(task_function)
     return Task(task_function, build_job_handler(task_function, task_config), task_config)
 
 
-def build_job_handler(task_function: Callable, task_config: TaskConfig) -> JobHandler:
+def build_job_handler(task_function: Function, task_config: TaskConfig) -> JobHandler:
     prepared_task_function = prepare_task_function(task_function, task_config)
 
     before_decorator_runner = create_decorator_runner(task_config.before)
@@ -24,6 +27,9 @@ def build_job_handler(task_function: Callable, task_config: TaskConfig) -> JobHa
 
     @functools.wraps(task_function)
     async def job_handler(job: Job) -> Job:
+        if task_config.job_parameter_name:
+            job.variables[task_config.job_parameter_name] = job
+
         job = await before_decorator_runner(job)
         job.variables, succeeded = await run_original_task_function(
             prepared_task_function, task_config, job
@@ -36,7 +42,7 @@ def build_job_handler(task_function: Callable, task_config: TaskConfig) -> JobHa
     return job_handler
 
 
-def prepare_task_function(task_function: Callable, task_config: TaskConfig) -> Callable[..., Awaitable[Dict]]:
+def prepare_task_function(task_function: Function, task_config: TaskConfig) -> DictFunction:
     if not is_async_function(task_function):
         task_function = asyncify(task_function)
 
@@ -47,7 +53,7 @@ def prepare_task_function(task_function: Callable, task_config: TaskConfig) -> C
     return task_function
 
 
-async def run_original_task_function(task_function: Callable, task_config: TaskConfig, job: Job) -> Tuple[Dict, bool]:
+async def run_original_task_function(task_function: DictFunction, task_config: TaskConfig, job: Job) -> Tuple[Dict, bool]:
     try:
         return await task_function(**job.variables), True
     except Exception as e:
