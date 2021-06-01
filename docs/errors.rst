@@ -2,7 +2,7 @@
 Errors
 ==========
 
-All ``pyzeebe`` exceptions inherit from :py:class:`PyZeebeError`
+All ``pyzeebe`` errors inherit from :py:class:`PyZeebeError`
 
 .. autoexception:: pyzeebe.errors.PyZeebeError
 
