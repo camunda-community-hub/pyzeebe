@@ -8,7 +8,6 @@ from pyzeebe.function_tools.dict_tools import convert_to_dict_function
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_config import TaskConfig
 from pyzeebe.task.types import AsyncTaskDecorator, DecoratorRunner, JobHandler
-from pyzeebe.worker.task_state import TaskState
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +23,7 @@ def build_job_handler(task_function: Callable, task_config: TaskConfig) -> JobHa
     after_decorator_runner = create_decorator_runner(task_config.after)
 
     @functools.wraps(task_function)
-    async def job_handler(job: Job, task_state: TaskState = None) -> Job:
-        if task_state:
-            task_state.add(job)
+    async def job_handler(job: Job) -> Job:
         job = await before_decorator_runner(job)
         job.variables, succeeded = await run_original_task_function(
             prepared_task_function, task_config, job
@@ -34,8 +31,6 @@ def build_job_handler(task_function: Callable, task_config: TaskConfig) -> JobHa
         job = await after_decorator_runner(job)
         if succeeded:
             await job.set_success_status()
-        if task_state:
-            task_state.remove(job)
         return job
 
     return job_handler
