@@ -34,7 +34,7 @@ class JobExecutor:
         try:
             await self.task.job_handler(job)
         except JobAlreadyDeactivatedError as error:
-            logger.warn(
+            logger.warning(
                 f"Job was already deactivated. Job key: {error.job_key}"
             )
 

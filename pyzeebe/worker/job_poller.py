@@ -41,12 +41,12 @@ class JobPoller:
                 self.task_state.add(job)
                 await self.queue.put(job)
         except ActivateJobsRequestInvalidError:
-            logger.warn(
+            logger.warning(
                 f"Activate job requests was invalid for task {self.task.type}"
             )
             raise
         except (ZeebeBackPressureError, ZeebeGatewayUnavailableError, ZeebeInternalError) as error:
-            logger.warn(
+            logger.warning(
                 f"Failed to activate jobs from the gateway. Exception: {str(error)}. Retrying in 5 seconds..."
             )
             await asyncio.sleep(5)
