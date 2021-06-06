@@ -3,6 +3,7 @@ import os
 from typing import Dict, Tuple
 
 import grpc
+import aiofiles
 from zeebe_grpc.gateway_pb2 import (CancelProcessInstanceRequest,
                                     CreateProcessInstanceRequest,
                                     CreateProcessInstanceWithResultRequest,
@@ -67,7 +68,8 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
     async def deploy_process(self, *process_file_path: str) -> DeployProcessResponse:
         try:
             return await self._gateway_stub.DeployProcess(
-                DeployProcessRequest(processes=map(self._get_process_request_object, process_file_path)))
+                DeployProcessRequest(processes=[await result for result in map(self._get_process_request_object,
+                                                                               process_file_path)]))
         except grpc.aio.AioRpcError as rpc_error:
             if self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
                 raise ProcessInvalidError()
@@ -75,7 +77,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
                 await self._common_zeebe_grpc_errors(rpc_error)
 
     @staticmethod
-    def _get_process_request_object(process_file_path: str) -> ProcessRequestObject:
-        with open(process_file_path, "rb") as file:
-            return ProcessRequestObject(name=os.path.split(process_file_path)[-1],
-                                        definition=file.read())
+    async def _get_process_request_object(process_file_path: str) -> ProcessRequestObject:
+        async with aiofiles.open(process_file_path, "rb") as file:
+            return ProcessRequestObject(name=os.path.basename(process_file_path),
+                                        definition=await file.read())

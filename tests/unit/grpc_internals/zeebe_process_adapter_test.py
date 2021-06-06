@@ -130,24 +130,34 @@ class TestCancelProcess:
 
 @pytest.mark.asyncio
 class TestDeployProcess:
+    open_mock: MagicMock
+
+    @pytest.fixture(autouse=True)
+    def mocked_aiofiles_open(self):
+        read_mock = AsyncMock(return_value=bytes())
+
+        file_mock = AsyncMock()
+        file_mock.__aenter__.return_value.read = read_mock
+
+        with patch("pyzeebe.grpc_internals.zeebe_process_adapter.aiofiles.open", return_value=file_mock) as open_mock:
+            self.open_mock = open_mock
+            yield
+
     async def test_raises_on_invalid_process(self, zeebe_adapter: ZeebeProcessAdapter):
-        with patch("builtins.open") as mock_open:
-            mock_open.return_value = BytesIO()
+        error = grpc.aio.AioRpcError(
+            grpc.StatusCode.INVALID_ARGUMENT, None, None
+        )
 
-            error = grpc.aio.AioRpcError(
-                grpc.StatusCode.INVALID_ARGUMENT, None, None
-            )
+        zeebe_adapter._gateway_stub.DeployProcess = AsyncMock(
+            side_effect=error
+        )
 
-            zeebe_adapter._gateway_stub.DeployProcess = AsyncMock(
-                side_effect=error
-            )
-
-            with pytest.raises(ProcessInvalidError):
-                await zeebe_adapter.deploy_process()
+        with pytest.raises(ProcessInvalidError):
+            await zeebe_adapter.deploy_process()
 
     async def test_calls_open_in_rb_mode(self, zeebe_adapter: ZeebeProcessAdapter):
-        with patch("builtins.open") as mock_open:
-            mock_open.return_value = BytesIO()
-            file_path = str(uuid4())
-            await zeebe_adapter.deploy_process(file_path)
-            mock_open.assert_called_with(file_path, "rb")
+        file_path = str(uuid4())
+
+        await zeebe_adapter.deploy_process(file_path)
+
+        self.open_mock.assert_called_with(file_path, "rb")
