@@ -2,8 +2,7 @@ from random import randint
 from uuid import uuid4
 
 import pytest
-from mock import AsyncMock, MagicMock
-
+from mock import AsyncMock
 from pyzeebe.errors import ProcessDefinitionNotFoundError
 
 
@@ -18,13 +17,6 @@ async def test_run_process(zeebe_client, grpc_servicer):
 
 @pytest.mark.asyncio
 class TestRunProcessWithResult:
-    @pytest.fixture
-    def deployed_process(self, grpc_servicer):
-        bpmn_process_id = str(uuid4())
-        version = randint(0, 10)
-        grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
-        return bpmn_process_id, version
-
     async def test_run_process_with_result_instance_key_is_int(self, zeebe_client, deployed_process):
         bpmn_process_id, version = deployed_process
 
