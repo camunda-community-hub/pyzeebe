@@ -1,4 +1,4 @@
-__version__ = "3.0.0"
+__version__ = "3.0.0rc1"
 
 from pyzeebe import errors
 from pyzeebe.client.client import ZeebeClient
