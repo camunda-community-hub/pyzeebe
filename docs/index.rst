@@ -62,4 +62,4 @@ Table Of Contents
     Client <client>
     Worker <worker>
     Decorators <decorators>
-    Exceptions <exceptions>
+    Exceptions <errors>
