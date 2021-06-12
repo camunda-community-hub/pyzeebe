@@ -54,6 +54,8 @@ async def deploy_process(zeebe_client: ZeebeClient):
 @pytest.fixture(autouse=True, scope="session")
 def start_worker(event_loop: asyncio.AbstractEventLoop, zeebe_worker: ZeebeWorker):
     event_loop.create_task(zeebe_worker.work())
+    yield
+    event_loop.create_task(zeebe_worker.stop())
 
 
 @pytest.mark.asyncio
