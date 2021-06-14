@@ -3,7 +3,8 @@ __version__ = "3.0.0rc1"
 from pyzeebe import errors
 from pyzeebe.client.client import ZeebeClient
 from pyzeebe.client.sync_client import SyncZeebeClient  # type: ignore
-from pyzeebe.credentials.camunda_cloud_credentials import CamundaCloudCredentials
+from pyzeebe.credentials.camunda_cloud_credentials import \
+    CamundaCloudCredentials
 from pyzeebe.credentials.oauth_credentials import OAuthCredentials
 from pyzeebe.job.job import Job
 from pyzeebe.job.job_status import JobStatus

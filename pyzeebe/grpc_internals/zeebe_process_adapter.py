@@ -2,8 +2,8 @@ import json
 import os
 from typing import Dict, Tuple
 
-import grpc
 import aiofiles
+import grpc
 from zeebe_grpc.gateway_pb2 import (CancelProcessInstanceRequest,
                                     CreateProcessInstanceRequest,
                                     CreateProcessInstanceWithResultRequest,

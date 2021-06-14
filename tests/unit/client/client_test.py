@@ -3,6 +3,7 @@ from uuid import uuid4
 
 import pytest
 from mock import AsyncMock
+
 from pyzeebe.errors import ProcessDefinitionNotFoundError
 
 
