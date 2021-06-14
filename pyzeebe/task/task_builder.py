@@ -55,7 +55,7 @@ def prepare_task_function(task_function: Function, task_config: TaskConfig) -> D
 
 async def run_original_task_function(task_function: DictFunction, task_config: TaskConfig, job: Job) -> Tuple[Dict, bool]:
     try:
-        return await task_function(**job.variables), True
+        return await task_function(**job.variables), True  # type: ignore
     except Exception as e:
         logger.debug(f"Failed job: {job}. Error: {e}.")
         await task_config.exception_handler(e, job)
