@@ -1,13 +1,12 @@
+import asyncio
 from typing import Dict
 
-from pyzeebe import Job, ZeebeWorker, CamundaCloudCredentials
-
-
-# Use decorators to add functionality before and after tasks. These will not fail the task
+from pyzeebe import CamundaCloudCredentials, Job, ZeebeWorker
 from pyzeebe.errors import BusinessError
 
 
-def example_logging_task_decorator(job: Job) -> Job:
+# Use decorators to add functionality before and after tasks. These will not fail the task
+async def example_logging_task_decorator(job: Job) -> Job:
     print(job)
     return job
 
@@ -33,10 +32,15 @@ worker.after(example_logging_task_decorator)
 def example_task() -> Dict:
     return {"output": f"Hello world, test!"}
 
+# Or like this:
+@worker.task(task_type="test2")
+async def second_example_task() -> Dict:
+    return {"output": f"Hello world, test2!"}
 
 # Create a task that will return a single value (not a dict) like this:
-@worker.task(task_type="add_one", single_value=True, variable_name="y")  # This task will return to zeebe: { y: x + 1 }
-def add_one(x) -> int:
+# This task will return to zeebe: { y: x + 1 }
+@worker.task(task_type="add_one", single_value=True, variable_name="y")
+async def add_one(x: int) -> int:
     return x + 1
 
 
@@ -49,14 +53,16 @@ def exception_task():
 
 
 # Define a custom exception_handler for a task like so:
-def example_exception_handler(exception: Exception, job: Job) -> None:
+async def example_exception_handler(exception: Exception, job: Job) -> None:
     print(exception)
     print(job)
-    job.set_failure_status(f"Failed to run task {job.type}. Reason: {exception}")
+    await job.set_failure_status(
+        f"Failed to run task {job.type}. Reason: {exception}"
+    )
 
 
 @worker.task(task_type="exception_task", exception_handler=example_exception_handler)
-def exception_task():
+async def exception_task():
     raise Exception("Oh no!")
 
 
@@ -66,9 +72,9 @@ def exception_task():
 # Here is how:
 @worker.task(task_type="decorator_task", before=[example_logging_task_decorator],
              after=[example_logging_task_decorator])
-def decorator_task() -> Dict:
+async def decorator_task() -> Dict:
     return {"output": "Hello world, test!"}
 
 
 if __name__ == "__main__":
-    worker.work()
+    asyncio.run(worker.work())

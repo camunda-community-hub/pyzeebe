@@ -24,10 +24,10 @@ Creating a worker
    worker = ZeebeWorker()
 
    @worker.task(task_type="my_task")
-   def my_task(x: int):
+   async def my_task(x: int):
       return {"y": x + 1}
 
-   worker.work()
+   await worker.work()
 
 Creating a client
 
@@ -37,10 +37,10 @@ Creating a client
 
    client = ZeebeClient()
 
-   client.run_process("my_process")
+   await client.run_process("my_process")
 
    # Run process with variables:
-   client.run_process("my_process", variables={"x": 0})
+   await client.run_process("my_process", variables={"x": 0})
 
 
 Dependencies
@@ -62,4 +62,4 @@ Table Of Contents
     Client <client>
     Worker <worker>
     Decorators <decorators>
-    Exceptions <exceptions>
+    Exceptions <errors>

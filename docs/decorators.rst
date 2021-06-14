@@ -2,11 +2,14 @@
 Decorators
 ==========
 
-A ``pyzeebe`` decorator is a function that receives a :py:class:`Job` instance and returns a :py:class:`Job`.
+A ``pyzeebe`` decorator is an async/sync function that receives a :py:class:`Job` instance and returns a :py:class:`Job`.
 
 .. code-block:: python
 
-    Callable[[Job], Job]
+    Union[
+        Callable[[Job], Job],
+        Callable[[Job], Awaitable[Job]]
+    ]
 
 An example decorator:
 
@@ -14,6 +17,12 @@ An example decorator:
 
     def logging_decorator(job: Job) -> Job:
         logging.info(job)
+        return job
+
+    # Or:
+
+    async def logging_decorator(job: Job) -> Job:
+        await async_logger.info(job)
         return job
 
 If a decorator raises an :class:`Exception` ``pyzeebe`` will just ignore it and continue the task/other decorators.

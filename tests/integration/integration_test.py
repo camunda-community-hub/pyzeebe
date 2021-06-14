@@ -1,11 +1,19 @@
+import asyncio
 import os
 from typing import Dict
 from uuid import uuid4
 
 import pytest
 
-from pyzeebe import ZeebeWorker, ZeebeClient, Job
+from pyzeebe import Job, ZeebeClient, ZeebeWorker
 from pyzeebe.errors import ProcessDefinitionNotFoundError
+
+
+@pytest.fixture(scope="session")
+def event_loop():
+    loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
 
 
 @pytest.fixture(scope="session")
@@ -15,54 +23,60 @@ def zeebe_client():
 
 @pytest.fixture(scope="session")
 def zeebe_worker():
-    worker = ZeebeWorker()
+    return ZeebeWorker()
 
+
+@pytest.fixture(autouse=True, scope="session")
+def task(zeebe_worker: ZeebeWorker):
     def exception_handler(exc: Exception, job: Job) -> None:
         job.set_error_status(f"Failed to run task {job.type}. Reason: {exc}")
 
-    @worker.task("test", exception_handler)
-    def task_handler(should_throw: bool, input: str) -> Dict:
+    @zeebe_worker.task("test", exception_handler)
+    async def task_handler(should_throw: bool, input: str) -> Dict:
         if should_throw:
             raise Exception("Error thrown")
         else:
             return {"output": input + str(uuid4())}
 
-    return worker
 
-
-@pytest.fixture(scope="module", autouse=True)
-def setup(zeebe_worker, zeebe_client):
-    zeebe_worker.work(watch=True)
-
+@pytest.mark.asyncio
+@pytest.fixture(autouse=True, scope="session")
+async def deploy_process(zeebe_client: ZeebeClient):
     try:
         integration_tests_path = os.path.join("tests", "integration")
-        zeebe_client.deploy_process(
+        await zeebe_client.deploy_process(
             os.path.join(integration_tests_path, "test.bpmn")
         )
     except FileNotFoundError:
-        zeebe_client.deploy_process("test.bpmn")
+        await zeebe_client.deploy_process("test.bpmn")
 
+
+@pytest.fixture(autouse=True, scope="session")
+def start_worker(event_loop: asyncio.AbstractEventLoop, zeebe_worker: ZeebeWorker):
+    event_loop.create_task(zeebe_worker.work())
     yield
-    zeebe_worker.stop(wait=True)
-    assert not zeebe_worker._watcher_thread.is_alive()
+    event_loop.create_task(zeebe_worker.stop())
 
 
-def test_run_process(zeebe_client: ZeebeClient):
-    process_key = zeebe_client.run_process(
+@pytest.mark.asyncio
+async def test_run_process(zeebe_client: ZeebeClient):
+    process_key = await zeebe_client.run_process(
         "test",
         {"input": str(uuid4()), "should_throw": False}
     )
     assert isinstance(process_key, int)
 
 
-def test_non_existent_process(zeebe_client: ZeebeClient):
+@pytest.mark.asyncio
+async def test_non_existent_process(zeebe_client: ZeebeClient):
     with pytest.raises(ProcessDefinitionNotFoundError):
-        zeebe_client.run_process(str(uuid4()))
+        await zeebe_client.run_process(str(uuid4()))
 
 
-def test_run_process_with_result(zeebe_client: ZeebeClient):
+@pytest.mark.asyncio
+async def test_run_process_with_result(zeebe_client: ZeebeClient):
     input = str(uuid4())
-    process_instance_key, process_result = zeebe_client.run_process_with_result(
+    process_instance_key, process_result = await zeebe_client.run_process_with_result(
         "test",
         {"input": input, "should_throw": False}
     )
@@ -71,9 +85,10 @@ def test_run_process_with_result(zeebe_client: ZeebeClient):
     assert process_result["output"].startswith(input)
 
 
-def test_cancel_process(zeebe_client: ZeebeClient):
-    process_key = zeebe_client.run_process(
+@pytest.mark.asyncio
+async def test_cancel_process(zeebe_client: ZeebeClient):
+    process_key = await zeebe_client.run_process(
         "test",
         {"input": str(uuid4()), "should_throw": False}
     )
-    zeebe_client.cancel_process_instance(process_key)
+    await zeebe_client.cancel_process_instance(process_key)

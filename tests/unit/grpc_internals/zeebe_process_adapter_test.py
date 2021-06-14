@@ -1,171 +1,163 @@
 from io import BytesIO
 from random import randint
-from unittest.mock import patch, MagicMock
 from uuid import uuid4
 
 import grpc
 import pytest
+from mock import AsyncMock, MagicMock, patch
 
-from pyzeebe.errors import InvalidJSONError, ProcessDefinitionNotFoundError, ProcessInstanceNotFoundError, \
-    ProcessDefinitionHasNoStartEventError, \
-    ProcessInvalidError, ZeebeInternalError
+from pyzeebe.errors import (InvalidJSONError,
+                            ProcessDefinitionHasNoStartEventError,
+                            ProcessDefinitionNotFoundError,
+                            ProcessInstanceNotFoundError, ProcessInvalidError)
+from pyzeebe.grpc_internals.zeebe_process_adapter import ZeebeProcessAdapter
+from tests.unit.utils.gateway_mock import GatewayMock
 from tests.unit.utils.grpc_utils import GRPCStatusCode
 from tests.unit.utils.random_utils import RANDOM_RANGE
 
 
-def test_create_process_instance(grpc_servicer, zeebe_adapter):
-    bpmn_process_id = str(uuid4())
-    version = randint(0, 10)
-    grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
-    response = zeebe_adapter.create_process_instance(
-        bpmn_process_id=bpmn_process_id, variables={}, version=version)
-    assert isinstance(response, int)
+@pytest.mark.asyncio
+class TestCreateProcessInstance:
+    async def test_response_is_of_correct_type(self, zeebe_adapter: ZeebeProcessAdapter, grpc_servicer: GatewayMock):
+        bpmn_process_id = str(uuid4())
+        version = randint(0, 10)
+        grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
+
+        response = await zeebe_adapter.create_process_instance(
+            bpmn_process_id, version, {}
+        )
+
+        assert isinstance(response, int)
+
+    async def test_raises_on_unkown_process(self, zeebe_adapter: ZeebeProcessAdapter):
+        bpmn_process_id = str(uuid4())
+        version = randint(0, 10)
+
+        with pytest.raises(ProcessDefinitionNotFoundError):
+            await zeebe_adapter.create_process_instance(bpmn_process_id, version, {})
+
+    async def test_raises_on_invalid_json(self, zeebe_adapter: ZeebeProcessAdapter):
+        bpmn_process_id = str(uuid4())
+        version = randint(0, 10)
+
+        error = grpc.aio.AioRpcError(
+            grpc.StatusCode.INVALID_ARGUMENT, None, None
+        )
+        zeebe_adapter._gateway_stub.CreateProcessInstance = AsyncMock(
+            side_effect=error
+        )
+
+        with pytest.raises(InvalidJSONError):
+            await zeebe_adapter.create_process_instance(bpmn_process_id, version, None)
+
+    async def test_raises_on_no_start_event(self, zeebe_adapter: ZeebeProcessAdapter):
+        bpmn_process_id = str(uuid4())
+        version = randint(0, 10)
+        error = grpc.aio.AioRpcError(
+            grpc.StatusCode.FAILED_PRECONDITION, None, None
+        )
+        zeebe_adapter._gateway_stub.CreateProcessInstance = AsyncMock(
+            side_effect=error
+        )
+
+        with pytest.raises(ProcessDefinitionHasNoStartEventError):
+            await zeebe_adapter.create_process_instance(bpmn_process_id, version, {})
 
 
-def test_create_process_instance_raises_grpc_error_correctly(zeebe_adapter):
-    error = grpc.RpcError()
-    error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
+@pytest.mark.asyncio
+class TestCreateProcessWithResult:
+    async def test_process_instance_key_type_is_int(self, zeebe_adapter: ZeebeProcessAdapter, grpc_servicer: GatewayMock):
+        bpmn_process_id = str(uuid4())
+        version = randint(0, 10)
+        grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
 
-    zeebe_adapter._gateway_stub.CreateProcessInstance = MagicMock(
-        side_effect=error)
+        process_instance_key, _ = await zeebe_adapter.create_process_instance_with_result(
+            bpmn_process_id=bpmn_process_id,
+            variables={},
+            version=version,
+            timeout=0,
+            variables_to_fetch=[]
+        )
 
-    with pytest.raises(ZeebeInternalError):
-        zeebe_adapter.create_process_instance(bpmn_process_id=str(uuid4()), variables={},
-                                              version=randint(0, 10))
+        assert isinstance(process_instance_key, int)
 
+    async def test_variables_type_is_dict(self, zeebe_adapter: ZeebeProcessAdapter, grpc_servicer: GatewayMock):
+        bpmn_process_id = str(uuid4())
+        version = randint(0, 10)
+        grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
 
-def test_create_process_instance_with_result_return_types(grpc_servicer, zeebe_adapter):
-    bpmn_process_id = str(uuid4())
-    version = randint(0, 10)
-    grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
-    process_instance_key, response = zeebe_adapter.create_process_instance_with_result(
-        bpmn_process_id=bpmn_process_id,
-        variables={},
-        version=version,
-        timeout=0,
-        variables_to_fetch=[]
-    )
-    assert isinstance(process_instance_key, int)
-    assert isinstance(response, dict)
+        _, response = await zeebe_adapter.create_process_instance_with_result(
+            bpmn_process_id=bpmn_process_id,
+            variables={},
+            version=version,
+            timeout=0,
+            variables_to_fetch=[]
+        )
 
-
-def test_create_process_instance_with_result_raises_grpc_error_correctly(zeebe_adapter):
-    error = grpc.RpcError()
-    error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
-
-    zeebe_adapter._gateway_stub.CreateProcessInstanceWithResult = MagicMock(
-        side_effect=error)
-
-    with pytest.raises(ZeebeInternalError):
-        zeebe_adapter.create_process_instance_with_result(bpmn_process_id=str(uuid4()), variables={},
-                                                          version=randint(0, 10), timeout=0,
-                                                          variables_to_fetch=[])
+        assert isinstance(response, dict)
 
 
-def test_cancel_process(grpc_servicer, zeebe_adapter):
-    bpmn_process_id = str(uuid4())
-    version = randint(0, 10)
-    grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
-    process_instance_key = zeebe_adapter.create_process_instance(bpmn_process_id=bpmn_process_id,
-                                                                 variables={}, version=version)
-    zeebe_adapter.cancel_process_instance(
-        process_instance_key=process_instance_key)
-    assert process_instance_key not in grpc_servicer.active_processes.keys()
+@pytest.mark.asyncio
+class TestCancelProcess:
+    async def test_cancels_the_process(self, zeebe_adapter: ZeebeProcessAdapter, grpc_servicer: GatewayMock):
+        bpmn_process_id = str(uuid4())
+        version = randint(0, 10)
+        grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
+        process_instance_key = await zeebe_adapter.create_process_instance(
+            bpmn_process_id=bpmn_process_id,
+            variables={},
+            version=version
+        )
+
+        await zeebe_adapter.cancel_process_instance(process_instance_key)
+
+        assert process_instance_key not in grpc_servicer.active_processes.keys()
+
+    async def test_raises_on_already_cancelled_process(self, zeebe_adapter: ZeebeProcessAdapter, grpc_servicer: GatewayMock):
+        error = grpc.aio.AioRpcError(
+            grpc.StatusCode.NOT_FOUND, None, None
+        )
+
+        zeebe_adapter._gateway_stub.CancelProcessInstance = AsyncMock(
+            side_effect=error
+        )
+
+        with pytest.raises(ProcessInstanceNotFoundError):
+            await zeebe_adapter.cancel_process_instance(
+                process_instance_key=randint(0, RANDOM_RANGE)
+            )
 
 
-def test_cancel_process_instance_already_cancelled(zeebe_adapter):
-    error = grpc.RpcError()
-    error._state = GRPCStatusCode(grpc.StatusCode.NOT_FOUND)
+@pytest.mark.asyncio
+class TestDeployProcess:
+    open_mock: MagicMock
 
-    zeebe_adapter._gateway_stub.CancelProcessInstance = MagicMock(
-        side_effect=error)
+    @pytest.fixture(autouse=True)
+    def mocked_aiofiles_open(self):
+        read_mock = AsyncMock(return_value=bytes())
 
-    with pytest.raises(ProcessInstanceNotFoundError):
-        zeebe_adapter.cancel_process_instance(
-            process_instance_key=randint(0, RANDOM_RANGE))
+        file_mock = AsyncMock()
+        file_mock.__aenter__.return_value.read = read_mock
 
+        with patch("pyzeebe.grpc_internals.zeebe_process_adapter.aiofiles.open", return_value=file_mock) as open_mock:
+            self.open_mock = open_mock
+            yield
 
-def test_cancel_process_instance_common_errors_called(zeebe_adapter):
-    zeebe_adapter._common_zeebe_grpc_errors = MagicMock()
-    error = grpc.RpcError()
-    error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
+    async def test_raises_on_invalid_process(self, zeebe_adapter: ZeebeProcessAdapter):
+        error = grpc.aio.AioRpcError(
+            grpc.StatusCode.INVALID_ARGUMENT, None, None
+        )
 
-    zeebe_adapter._gateway_stub.CancelProcessInstance = MagicMock(
-        side_effect=error)
-
-    zeebe_adapter.cancel_process_instance(
-        process_instance_key=randint(0, RANDOM_RANGE))
-
-    zeebe_adapter._common_zeebe_grpc_errors.assert_called()
-
-
-def test_deploy_process_process_invalid(zeebe_adapter):
-    with patch("builtins.open") as mock_open:
-        mock_open.return_value = BytesIO()
-
-        error = grpc.RpcError()
-        error._state = GRPCStatusCode(grpc.StatusCode.INVALID_ARGUMENT)
-
-        zeebe_adapter._gateway_stub.DeployProcess = MagicMock(
-            side_effect=error)
+        zeebe_adapter._gateway_stub.DeployProcess = AsyncMock(
+            side_effect=error
+        )
 
         with pytest.raises(ProcessInvalidError):
-            zeebe_adapter.deploy_process()
+            await zeebe_adapter.deploy_process()
 
-
-def test_deploy_process_common_errors_called(zeebe_adapter):
-    with patch("builtins.open") as mock_open:
-        mock_open.return_value = BytesIO()
-
-        zeebe_adapter._common_zeebe_grpc_errors = MagicMock()
-        error = grpc.RpcError()
-        error._state = GRPCStatusCode(grpc.StatusCode.INTERNAL)
-
-        zeebe_adapter._gateway_stub.DeployProcess = MagicMock(
-            side_effect=error)
-
-        zeebe_adapter.deploy_process()
-
-        zeebe_adapter._common_zeebe_grpc_errors.assert_called()
-
-
-def test_get_process_request_object(zeebe_adapter):
-    with patch("builtins.open") as mock_open:
-        mock_open.return_value = BytesIO()
+    async def test_calls_open_in_rb_mode(self, zeebe_adapter: ZeebeProcessAdapter):
         file_path = str(uuid4())
-        zeebe_adapter._get_process_request_object(file_path)
-        mock_open.assert_called_with(file_path, "rb")
 
+        await zeebe_adapter.deploy_process(file_path)
 
-def test_create_process_errors_not_found(zeebe_adapter):
-    error = grpc.RpcError()
-    error._state = GRPCStatusCode(grpc.StatusCode.NOT_FOUND)
-    with pytest.raises(ProcessDefinitionNotFoundError):
-        zeebe_adapter._create_process_errors(
-            error, str(uuid4()), randint(0, 10, ), {})
-
-
-def test_create_process_errors_invalid_json(zeebe_adapter):
-    error = grpc.RpcError()
-    error._state = GRPCStatusCode(grpc.StatusCode.INVALID_ARGUMENT)
-    with pytest.raises(InvalidJSONError):
-        zeebe_adapter._create_process_errors(
-            error, str(uuid4()), randint(0, 10, ), {})
-
-
-def test_create_process_errors_process_has_no_start_event(zeebe_adapter):
-    error = grpc.RpcError()
-    error._state = GRPCStatusCode(grpc.StatusCode.FAILED_PRECONDITION)
-    with pytest.raises(ProcessDefinitionHasNoStartEventError):
-        zeebe_adapter._create_process_errors(
-            error, str(uuid4()), randint(0, 10, ), {})
-
-
-def test_create_process_errors_common_errors_called(zeebe_adapter):
-    zeebe_adapter._common_zeebe_grpc_errors = MagicMock()
-    error = grpc.RpcError()
-    error._state = GRPCStatusCode("test")
-    zeebe_adapter._create_process_errors(
-        error, str(uuid4()), randint(0, 10, ), {})
-
-    zeebe_adapter._common_zeebe_grpc_errors.assert_called()
+        self.open_mock.assert_called_with(file_path, "rb")

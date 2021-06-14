@@ -25,7 +25,7 @@ class Job(object):
         self.status = status
         self.zeebe_adapter = zeebe_adapter
 
-    def set_success_status(self) -> None:
+    async def set_success_status(self) -> None:
         """
         Success status means that the job has been completed as intended.
 
@@ -37,12 +37,11 @@ class Job(object):
 
         """
         if self.zeebe_adapter:
-            self.zeebe_adapter.complete_job(
-                job_key=self.key, variables=self.variables)
+            await self.zeebe_adapter.complete_job(job_key=self.key, variables=self.variables)
         else:
             raise NoZeebeAdapterError()
 
-    def set_failure_status(self, message: str) -> None:
+    async def set_failure_status(self, message: str) -> None:
         """
         Failure status means a technical error has occurred. If retried the job may succeed.
         For example: connection to DB lost
@@ -58,11 +57,11 @@ class Job(object):
 
         """
         if self.zeebe_adapter:
-            self.zeebe_adapter.fail_job(job_key=self.key, retries=self.retries-1, message=message)
+            await self.zeebe_adapter.fail_job(job_key=self.key, retries=self.retries-1, message=message)
         else:
             raise NoZeebeAdapterError()
 
-    def set_error_status(self, message: str, error_code: str = "") -> None:
+    async def set_error_status(self, message: str, error_code: str = "") -> None:
         """
         Error status means that the job could not be completed because of a business error and won't ever be able to be completed.
         For example: a required parameter was not given
@@ -80,7 +79,7 @@ class Job(object):
 
         """
         if self.zeebe_adapter:
-            self.zeebe_adapter.throw_error(job_key=self.key, message=message, error_code=error_code)
+            await self.zeebe_adapter.throw_error(job_key=self.key, message=message, error_code=error_code)
         else:
             raise NoZeebeAdapterError()
 

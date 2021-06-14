@@ -1,24 +1,25 @@
 import logging
-from typing import Callable, List, Tuple, Optional
+from typing import Callable, List, Optional, Tuple
 
-from pyzeebe import TaskDecorator
-from pyzeebe.errors import (DuplicateTaskTypeError, NoVariableNameGivenError,
-                            TaskNotFoundError, BusinessError)
+from pyzeebe.errors import (BusinessError, DuplicateTaskTypeError,
+                            NoVariableNameGivenError, TaskNotFoundError)
+from pyzeebe.function_tools import parameter_tools
 from pyzeebe.job.job import Job
 from pyzeebe.task import task_builder
 from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_config import TaskConfig
+from pyzeebe.task.types import TaskDecorator
 
 logger = logging.getLogger(__name__)
 
 
-def default_exception_handler(e: Exception, job: Job) -> None:
+async def default_exception_handler(e: Exception, job: Job) -> None:
     logger.warning(f"Task type: {job.type} - failed job {job}. Error: {e}.")
     if isinstance(e, BusinessError):
-        job.set_error_status(f"Failed job. Recoverable error: {e}", error_code=e.error_code)
+        await job.set_error_status(f"Failed job. Recoverable error: {e}", error_code=e.error_code)
     else:
-        job.set_failure_status(f"Failed job. Error: {e}")
+        await job.set_failure_status(f"Failed job. Error: {e}")
 
 
 class ZeebeTaskRouter:
@@ -63,7 +64,7 @@ class ZeebeTaskRouter:
                 exception_handler,
                 timeout_ms,
                 max_jobs_to_activate,
-                variables_to_fetch or task_builder.get_parameters_from_function(
+                variables_to_fetch or parameter_tools.get_parameters_from_function(
                     task_function),
                 single_value,
                 variable_name or "",
@@ -85,11 +86,18 @@ class ZeebeTaskRouter:
         self.tasks.append(task)
 
     def _add_decorators_to_config(self, config: TaskConfig) -> TaskConfig:
-        before_decorators = self._before.copy()
-        before_decorators.extend(config.before)
-        config.before = before_decorators
-        config.after.extend(self._after)
-        return config
+        new_task_config = TaskConfig(
+            type=config.type,
+            exception_handler=config.exception_handler,
+            timeout_ms=config.timeout_ms,
+            max_jobs_to_activate=config.max_jobs_to_activate,
+            variables_to_fetch=config.variables_to_fetch,
+            single_value=config.single_value,
+            variable_name=config.variable_name,
+            before=self._before + config.before,  # type: ignore
+            after=config.after + self._after  # type: ignore
+        )
+        return new_task_config
 
     def _is_task_duplicate(self, task_type: str) -> None:
         try:

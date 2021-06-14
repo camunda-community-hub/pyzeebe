@@ -3,7 +3,7 @@ name: Lint pyzeebe
 on: [push, pull_request]
 
 jobs:
-  build:
+  type-checking:
 
     runs-on: ubuntu-latest
 
@@ -17,3 +17,17 @@ jobs:
       - name: Lint with mypy
         run: |
           pipenv run mypy pyzeebe
+
+  import-checking:
+    runs-on: ubuntu-latest
+
+    container: python:3.8
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          pip install pipenv
+          pipenv install --dev
+      - name: Check imports
+        run: |
+          pipenv run isort . --check --diff

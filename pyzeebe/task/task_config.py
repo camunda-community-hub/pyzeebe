@@ -1,11 +1,15 @@
 from typing import List
 
 from pyzeebe.errors import NoVariableNameGivenError
+from pyzeebe.function_tools import async_tools
 from pyzeebe.task.exception_handler import ExceptionHandler
-from pyzeebe.task.types import TaskDecorator
+from pyzeebe.task.types import AsyncTaskDecorator, TaskDecorator
 
 
 class TaskConfig:
+    before: List[AsyncTaskDecorator]
+    after: List[AsyncTaskDecorator]
+
     def __init__(self, type: str, exception_handler: ExceptionHandler,
                  timeout_ms: int, max_jobs_to_activate: int,
                  variables_to_fetch: List[str],
@@ -21,8 +25,8 @@ class TaskConfig:
         self.variables_to_fetch = variables_to_fetch
         self.single_value = single_value
         self.variable_name = variable_name
-        self.before = before
-        self.after = after
+        self.before = async_tools.asyncify_all_functions(before)
+        self.after = async_tools.asyncify_all_functions(after)
 
     def __repr__(self):
         return f"TaskConfig(type={self.type}, exception_handler={self.exception_handler}, " \

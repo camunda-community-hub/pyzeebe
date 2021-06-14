@@ -1,5 +1,6 @@
 from pyzeebe.credentials.oauth_credentials import OAuthCredentials
-from pyzeebe.errors import InvalidOAuthCredentialsError, InvalidCamundaCloudCredentialsError
+from pyzeebe.errors import (InvalidCamundaCloudCredentialsError,
+                            InvalidOAuthCredentialsError)
 
 
 class CamundaCloudCredentials(OAuthCredentials):
