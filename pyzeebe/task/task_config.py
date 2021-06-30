@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pyzeebe.errors import NoVariableNameGivenError
 from pyzeebe.function_tools import async_tools
@@ -27,6 +27,7 @@ class TaskConfig:
         self.variable_name = variable_name
         self.before = async_tools.asyncify_all_functions(before)
         self.after = async_tools.asyncify_all_functions(after)
+        self.job_parameter_name: Optional[str] = None
 
     def __repr__(self):
         return f"TaskConfig(type={self.type}, exception_handler={self.exception_handler}, " \
