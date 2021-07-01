@@ -8,9 +8,11 @@ from pyzeebe.grpc import get_channel_options
 
 @pytest.fixture
 def revert_monkeypatch_after_test():
-    """ This sort of exists in pytest already (docs.pytest.org/en/stable/monkeypatch.html),
+    """
+    This sort of exists in pytest already (docs.pytest.org/en/stable/monkeypatch.html),
     however that means a bit of "magic" happens, this is a bit clearer and tests the users
-    approach to this."""
+    approach to this.
+    """
     options_before = deepcopy(pyzeebe.grpc.GRPC_CHANNEL_OPTIONS)
     yield
     pyzeebe.grpc.GRPC_CHANNEL_OPTIONS = options_before

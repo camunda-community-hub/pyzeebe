@@ -6,8 +6,10 @@ GRPC_CHANNEL_OPTIONS = {
 
 
 def get_channel_options():
-    """ Channel arguments are expected as a tuple of tuples:
-    https://grpc.github.io/grpc/python/glossary.html#term-channel_arguments """
+    """
+    Channel arguments are expected as a tuple of tuples:
+    https://grpc.github.io/grpc/python/glossary.html#term-channel_arguments
+    """
     return tuple(
         (k, v) for k, v in GRPC_CHANNEL_OPTIONS.items()
     )
