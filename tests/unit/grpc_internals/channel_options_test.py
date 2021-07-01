@@ -37,7 +37,10 @@ def test_create_channel_called_with_options(grpc_method, call_kwargs, zeebe_adap
     with patch(grpc_method) as channel_mock:
         ZeebeAdapterBase(**call_kwargs)
         expected_options = (('grpc.keepalive_time_ms', 45000),)
-        assert channel_mock.mock_calls[0].kwargs["options"] == expected_options
+        # `call_args.kwargs` as it's not available in python <=3.7
+        # https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock.call_args
+        # 0 is args, 1 is kwargs
+        assert channel_mock.call_args[1]["options"] == expected_options
 
 
 @pytest.mark.usefixtures("revert_monkeypatch_after_test")
