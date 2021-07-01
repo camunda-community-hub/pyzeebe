@@ -6,7 +6,7 @@ from zeebe_grpc.gateway_pb2_grpc import GatewayStub
 
 from pyzeebe.credentials.base_credentials import BaseCredentials
 from pyzeebe.exceptions import ZeebeBackPressure, ZeebeGatewayUnavailable, ZeebeInternalError
-from pyzeebe.grpc import get_channel_options
+from pyzeebe.grpc_internals.channel_options import get_channel_options
 
 logger = logging.getLogger(__name__)
 

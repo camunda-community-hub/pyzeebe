@@ -2,8 +2,10 @@ from copy import deepcopy
 
 import pytest
 
-import pyzeebe.grpc
-from pyzeebe.grpc import get_channel_options
+from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
+
+import pyzeebe.grpc_internals.channel_options
+from pyzeebe.grpc_internals.channel_options import get_channel_options
 
 
 @pytest.fixture
@@ -13,9 +15,9 @@ def revert_monkeypatch_after_test():
     however that means a bit of "magic" happens, this is a bit clearer and tests the users
     approach to this.
     """
-    options_before = deepcopy(pyzeebe.grpc.GRPC_CHANNEL_OPTIONS)
+    options_before = deepcopy(pyzeebe.grpc_internals.channel_options.GRPC_CHANNEL_OPTIONS)
     yield
-    pyzeebe.grpc.GRPC_CHANNEL_OPTIONS = options_before
+    pyzeebe.grpc_internals.channel_options.GRPC_CHANNEL_OPTIONS = options_before
 
 
 def test_get_channel_options_returns_tuple_of_tuple_with_options():
@@ -26,7 +28,7 @@ def test_get_channel_options_returns_tuple_of_tuple_with_options():
 
 @pytest.mark.usefixtures("revert_monkeypatch_after_test")
 def test_monkeypatching_with_options_override():
-    pyzeebe.grpc.GRPC_CHANNEL_OPTIONS["grpc.keepalive_time_ms"] = 4000
+    pyzeebe.grpc_internals.channel_options.GRPC_CHANNEL_OPTIONS["grpc.keepalive_time_ms"] = 4000
     assert get_channel_options() == (
         ("grpc.keepalive_time_ms", 4000),
     )
@@ -34,7 +36,7 @@ def test_monkeypatching_with_options_override():
 
 @pytest.mark.usefixtures("revert_monkeypatch_after_test")
 def test_monkeypatching_with_options_added():
-    pyzeebe.grpc.GRPC_CHANNEL_OPTIONS.update({
+    pyzeebe.grpc_internals.channel_options.GRPC_CHANNEL_OPTIONS.update({
         "grpc.keepalive_timeout_ms": 120000,
         "grpc.http2.min_time_between_pings_ms": 60000,
     })
@@ -47,5 +49,5 @@ def test_monkeypatching_with_options_added():
 
 @pytest.mark.usefixtures("revert_monkeypatch_after_test")
 def test_monkeypatching_with_options_removed():
-    pyzeebe.grpc.GRPC_CHANNEL_OPTIONS = {}
+    pyzeebe.grpc_internals.channel_options.GRPC_CHANNEL_OPTIONS = {}
     assert get_channel_options() == ()
