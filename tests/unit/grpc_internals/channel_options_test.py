@@ -1,6 +1,7 @@
 from copy import deepcopy
 
 import pytest
+from unittest.mock import patch, Mock
 
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 
@@ -24,6 +25,19 @@ def test_get_channel_options_returns_tuple_of_tuple_with_options():
     assert get_channel_options() == (
         ("grpc.keepalive_time_ms", 45000),
     )
+
+
+@pytest.mark.parametrize("grpc_method,call_kwargs",
+                         [
+                             ("grpc.secure_channel", {"secure_connection": True}),
+                             ("grpc.insecure_channel", {"secure_connection": False}),
+                             ("grpc.secure_channel", {"credentials": Mock()}),
+                         ])
+def test_create_channel_called_with_options(grpc_method, call_kwargs, zeebe_adapter):
+    with patch(grpc_method) as channel_mock:
+        ZeebeAdapterBase(**call_kwargs)
+        expected_options = (('grpc.keepalive_time_ms', 45000),)
+        assert channel_mock.mock_calls[0].kwargs["options"] == expected_options
 
 
 @pytest.mark.usefixtures("revert_monkeypatch_after_test")
