@@ -113,6 +113,16 @@ Please make sure to update tests as appropriate.
 
 We use [SemVer](semver.org) for versioning. For the versions available, see the tags on this repository.
 
+In order to bump the current version run:
+
+```shell
+$ bump2version <part>
+```
+
+where part is the part that will be bumped (major/minor/patch/rc_version).
+
+This will bump the version in all relevant files as well as create a git commit.
+
 ## License
 
 We use the MIT license, see [LICENSE.md](LICENSE.md) for details
