@@ -18,6 +18,7 @@ sphinx-rtd-theme = "*"
 pytest-mock = "*"
 pytest-asyncio = "~=0.15.1"
 asyncmock = "~=0.4.2"
+bump2version = "~=1.0.1"
 
 [packages]
 oauthlib = "~=3.1.0"
