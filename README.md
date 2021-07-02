@@ -119,7 +119,7 @@ In order to bump the current version run:
 $ bump2version <part>
 ```
 
-where part is the part that will be bumped (major/minor/patch/rc_version).
+where part is the part that will be bumped (major/minor/patch/rc).
 
 This will bump the version in all relevant files as well as create a git commit.
 
