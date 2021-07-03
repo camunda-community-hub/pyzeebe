@@ -26,16 +26,7 @@ def create_channel(
     options: Dict[str, Any] = None
 ) -> grpc.aio.Channel:
     """
-    Create a gRPC channel.
-
-    Args:
-        connection_uri (str): The URI to Zeebe.
-        credentials (BaseCredentials): Credentials for accessing the channel. Default: None
-        secure_connection (bool): Create a secure channel (set to True when using credentials). Default: False
-        options (Dict[str, Any]): A key/value representation of `gRPC channel arguments_`. Default: None (will use library defaults)
-
-    Returns:
-        grpc.aio.Channel: A channel object set up to connect to Zeebe
+    options: A key/value representation of `gRPC channel arguments_`. Default: None (will use library defaults)
 
     .. _gRPC channel arguments:
         https://grpc.github.io/grpc/python/glossary.html#term-channel_arguments
