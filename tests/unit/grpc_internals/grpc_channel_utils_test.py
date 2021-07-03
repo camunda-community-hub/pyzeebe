@@ -26,6 +26,29 @@ class TestCreateChannel:
 
             channel_mock.assert_called_once()
 
+    def test_creates_secure_channel_with_default_options(self):
+        with patch("grpc.aio.insecure_channel") as channel_mock:
+            create_channel(str(uuid4()), options=None)
+
+            expected_options = (
+                ("grpc.keepalive_time_ms", 45000),
+            )
+            assert channel_mock.call_args[1]["options"] == expected_options
+
+    def test_creates_insecure_channel_with_options(self):
+        with patch("grpc.aio.insecure_channel") as channel_mock:
+            additional_options = {
+                "grpc.keepalive_timeout_ms": 120000,
+                "grpc.http2.min_time_between_pings_ms": 60000,
+            }
+            create_channel(str(uuid4()), options=additional_options)
+
+            expected_options = (
+                ("grpc.keepalive_time_ms", 45000),
+                ("grpc.keepalive_timeout_ms", 120000),
+                ("grpc.http2.min_time_between_pings_ms", 60000),
+            )
+            assert channel_mock.call_args[1]["options"] == expected_options
 
 class TestCreateConnectionUri:
     def test_uses_credentials_first(self):
