@@ -4,6 +4,7 @@ import socket
 from typing import List
 
 from pyzeebe import TaskDecorator
+from pyzeebe.connection.connection_utils import merge_options
 from pyzeebe.credentials.base_credentials import BaseCredentials
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.worker.job_executor import JobExecutor
@@ -35,8 +36,9 @@ class ZeebeWorker(ZeebeTaskRouter):
             max_task_count (int): The maximum amount of tasks the worker can handle simultaniously
         """
         super().__init__(before, after)
-        self.zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port, credentials=credentials,
-                                          secure_connection=secure_connection,
+        options = merge_options(hostname, port, credentials, secure_connection)
+        self.zeebe_adapter = ZeebeAdapter(hostname=options.hostname, port=options.port, credentials=options.credentials,
+                                          secure_connection=options.secure_connection,
                                           max_connection_retries=max_connection_retries)
         self.name = name or socket.gethostname()
         self.request_timeout = request_timeout

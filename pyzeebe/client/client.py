@@ -1,7 +1,6 @@
 from typing import Dict, List, Tuple
 
-import grpc
-
+from pyzeebe.connection.connection_utils import merge_options
 from pyzeebe.credentials.base_credentials import BaseCredentials
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 
@@ -17,9 +16,9 @@ class ZeebeClient(object):
             port (int): Port of the zeebe
             max_connection_retries (int): Amount of connection retries before client gives up on connecting to zeebe. To setup with infinite retries use -1
         """
-
-        self.zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port, credentials=credentials,
-                                          secure_connection=secure_connection,
+        options = merge_options(hostname, port, credentials, secure_connection)
+        self.zeebe_adapter = ZeebeAdapter(hostname=options.hostname, port=options.port, credentials=options.credentials,
+                                          secure_connection=options.secure_connection,
                                           max_connection_retries=max_connection_retries)
         self.zeebe_adapter.connect()
 
