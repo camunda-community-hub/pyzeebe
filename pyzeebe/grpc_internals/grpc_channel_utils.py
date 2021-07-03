@@ -4,7 +4,7 @@ from typing import Optional
 import grpc
 
 from pyzeebe.credentials.base_credentials import BaseCredentials
-
+from pyzeebe.grpc_internals.channel_options import get_channel_options
 
 def create_connection_uri(
     hostname: str = None,
@@ -23,8 +23,9 @@ def create_channel(
     credentials: Optional[BaseCredentials] = None,
     secure_connection: bool = False
 ) -> grpc.aio.Channel:
+    options = get_channel_options()
     if credentials:
-        return grpc.aio.secure_channel(connection_uri, credentials.grpc_credentials)
+        return grpc.aio.secure_channel(connection_uri, credentials.grpc_credentials, options=options)
     if secure_connection:
-        return grpc.aio.secure_channel(connection_uri, grpc.ssl_channel_credentials())
-    return grpc.aio.insecure_channel(connection_uri)
+        return grpc.aio.secure_channel(connection_uri, grpc.ssl_channel_credentials(), options=options)
+    return grpc.aio.insecure_channel(connection_uri, options=options)
