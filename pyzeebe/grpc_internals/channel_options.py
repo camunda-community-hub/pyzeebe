@@ -7,7 +7,7 @@ Time between keepalive pings. Following the official Zeebe Java/Go client, sendi
 
 https://docs.camunda.io/docs/product-manuals/zeebe/deployment-guide/operations/setting-up-a-cluster/#keep-alive-intervals
 """
-from typing import Dict, Any, Tuple
+from typing import Any, Dict, Tuple
 
 GRPC_CHANNEL_OPTIONS = {
     "grpc.keepalive_time_ms": 45_000

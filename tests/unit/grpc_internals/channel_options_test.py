@@ -1,12 +1,11 @@
 from copy import deepcopy
+from unittest.mock import Mock, patch
 
 import pytest
-from unittest.mock import patch, Mock
-
-from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 
 import pyzeebe.grpc_internals.channel_options
 from pyzeebe.grpc_internals.channel_options import get_channel_options
+from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 
 
 @pytest.fixture

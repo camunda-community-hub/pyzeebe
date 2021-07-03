@@ -1,10 +1,11 @@
 import os
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 import grpc
 
 from pyzeebe.credentials.base_credentials import BaseCredentials
 from pyzeebe.grpc_internals.channel_options import get_channel_options
+
 
 def create_connection_uri(
     hostname: str = None,
