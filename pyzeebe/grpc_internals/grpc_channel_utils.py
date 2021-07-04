@@ -1,9 +1,10 @@
 import os
-from typing import Optional
+from typing import Any, Dict, Optional
 
 import grpc
 
 from pyzeebe.credentials.base_credentials import BaseCredentials
+from pyzeebe.grpc_internals.channel_options import get_channel_options
 
 
 def create_connection_uri(
@@ -21,10 +22,18 @@ def create_connection_uri(
 def create_channel(
     connection_uri: str,
     credentials: Optional[BaseCredentials] = None,
-    secure_connection: bool = False
+    secure_connection: bool = False,
+    options: Dict[str, Any] = None
 ) -> grpc.aio.Channel:
+    """
+    options: A key/value representation of `gRPC channel arguments_`. Default: None (will use library defaults)
+
+    .. _gRPC channel arguments:
+        https://grpc.github.io/grpc/python/glossary.html#term-channel_arguments
+    """
+    channel_options = get_channel_options(options)
     if credentials:
-        return grpc.aio.secure_channel(connection_uri, credentials.grpc_credentials)
+        return grpc.aio.secure_channel(connection_uri, credentials.grpc_credentials, options=channel_options)
     if secure_connection:
-        return grpc.aio.secure_channel(connection_uri, grpc.ssl_channel_credentials())
-    return grpc.aio.insecure_channel(connection_uri)
+        return grpc.aio.secure_channel(connection_uri, grpc.ssl_channel_credentials(), options=channel_options)
+    return grpc.aio.insecure_channel(connection_uri, options=channel_options)
