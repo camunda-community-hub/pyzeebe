@@ -6,6 +6,7 @@ from zeebe_grpc.gateway_pb2_grpc import GatewayStub
 
 from pyzeebe.credentials.base_credentials import BaseCredentials
 from pyzeebe.exceptions import ZeebeBackPressure, ZeebeGatewayUnavailable, ZeebeInternalError
+from pyzeebe.grpc_internals.channel_options import get_channel_options
 
 logger = logging.getLogger(__name__)
 
@@ -41,11 +42,11 @@ class ZeebeAdapterBase(object):
     def _create_channel(connection_uri: str, credentials: BaseCredentials = None,
                         secure_connection: bool = False) -> grpc.Channel:
         if credentials:
-            return grpc.secure_channel(connection_uri, credentials.grpc_credentials)
+            return grpc.secure_channel(connection_uri, credentials.grpc_credentials, options=get_channel_options())
         elif secure_connection:
-            return grpc.secure_channel(connection_uri, grpc.ssl_channel_credentials())
+            return grpc.secure_channel(connection_uri, grpc.ssl_channel_credentials(), options=get_channel_options())
         else:
-            return grpc.insecure_channel(connection_uri)
+            return grpc.insecure_channel(connection_uri, options=get_channel_options())
 
     def _check_connectivity(self, value: grpc.ChannelConnectivity) -> None:
         logger.debug(f"Grpc channel connectivity changed to: {value}")
