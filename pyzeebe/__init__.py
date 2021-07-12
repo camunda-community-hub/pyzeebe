@@ -14,3 +14,4 @@ from pyzeebe.task.types import TaskDecorator
 from pyzeebe.worker.task_router import (ZeebeTaskRouter,
                                         default_exception_handler)
 from pyzeebe.worker.worker import ZeebeWorker
+from pyzeebe.channel import *
