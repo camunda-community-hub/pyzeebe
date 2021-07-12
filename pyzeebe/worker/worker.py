@@ -1,7 +1,9 @@
 import asyncio
 import logging
 import socket
-from typing import List
+from typing import List, Optional
+
+import grpc
 
 from pyzeebe import TaskDecorator
 from pyzeebe.credentials.base_credentials import BaseCredentials
@@ -17,15 +19,20 @@ logger = logging.getLogger(__name__)
 class ZeebeWorker(ZeebeTaskRouter):
     """A zeebe worker that can connect to a zeebe instance and perform tasks."""
 
-    def __init__(self, name: str = None, request_timeout: int = 0, hostname: str = None, port: int = None,
-                 credentials: BaseCredentials = None, secure_connection: bool = False,
-                 before: List[TaskDecorator] = None, after: List[TaskDecorator] = None,
-                 max_connection_retries: int = 10, watcher_max_errors_factor: int = 3,
-                 max_task_count: int = 32):
+    def __init__(
+        self,
+        grpc_channel: grpc.aio.Channel,
+        name: Optional[str] = None,
+        request_timeout: int = 0,
+        before: List[TaskDecorator] = None,
+        after: List[TaskDecorator] = None,
+        max_connection_retries: int = 10,
+        watcher_max_errors_factor: int = 3,
+        max_task_count: int = 32,
+    ):
         """
         Args:
-            hostname (str): Zeebe instance hostname
-            port (int): Port of the zeebe
+            grpc_channel (grpc.aio.Channel): GRPC Channel connected to a Zeebe gateway
             name (str): Name of zeebe worker
             request_timeout (int): Longpolling timeout for getting tasks from zeebe. If 0 default value is used
             before (List[TaskDecorator]): Decorators to be performed before each task
@@ -35,9 +42,7 @@ class ZeebeWorker(ZeebeTaskRouter):
             max_task_count (int): The maximum amount of tasks the worker can handle simultaniously
         """
         super().__init__(before, after)
-        self.zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port, credentials=credentials,
-                                          secure_connection=secure_connection,
-                                          max_connection_retries=max_connection_retries)
+        self.zeebe_adapter = ZeebeAdapter(grpc_channel, max_connection_retries)
         self.name = name or socket.gethostname()
         self.request_timeout = request_timeout
         self.watcher_max_errors_factor = watcher_max_errors_factor
@@ -58,19 +63,26 @@ class ZeebeWorker(ZeebeTaskRouter):
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
-        self.zeebe_adapter.connect()
         self._job_executors, self._job_pollers = [], []
 
         for task in self.tasks:
             jobs_queue: asyncio.Queue = asyncio.Queue()
-            poller = JobPoller(self.zeebe_adapter, task, jobs_queue,
-                               self.name, self.request_timeout, self._task_state, self.max_task_count)
+            poller = JobPoller(
+                self.zeebe_adapter,
+                task,
+                jobs_queue,
+                self.name,
+                self.request_timeout,
+                self._task_state,
+                self.max_task_count,
+            )
             executor = JobExecutor(task, jobs_queue, self._task_state)
             self._job_pollers.append(poller)
             self._job_executors.append(executor)
 
-        coroutines = [poller.poll() for poller in self._job_pollers] + \
-            [executor.execute() for executor in self._job_executors]
+        coroutines = [poller.poll() for poller in self._job_pollers] + [
+            executor.execute() for executor in self._job_executors
+        ]
 
         return await asyncio.gather(*coroutines)
 
@@ -83,8 +95,6 @@ class ZeebeWorker(ZeebeTaskRouter):
 
         for executor in self._job_executors:
             await executor.stop()
-
-        await self.zeebe_adapter.disconnect()
 
     def include_router(self, *routers: ZeebeTaskRouter) -> None:
         """

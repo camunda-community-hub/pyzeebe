@@ -9,19 +9,16 @@ from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 class ZeebeClient(object):
     """A zeebe client that can connect to a zeebe instance and perform actions."""
 
-    def __init__(self, hostname: str = None, port: int = None, credentials: BaseCredentials = None,
-                 secure_connection: bool = False, max_connection_retries: int = 10):
+    def __init__(
+        self, grpc_channel: grpc.aio.Channel, max_connection_retries: int = 10
+    ):
         """
         Args:
-            hostname (str): Zeebe instance hostname
-            port (int): Port of the zeebe
+            grpc_channel (grpc.aio.Channel): GRPC Channel connected to a Zeebe gateway
             max_connection_retries (int): Amount of connection retries before client gives up on connecting to zeebe. To setup with infinite retries use -1
         """
 
-        self.zeebe_adapter = ZeebeAdapter(hostname=hostname, port=port, credentials=credentials,
-                                          secure_connection=secure_connection,
-                                          max_connection_retries=max_connection_retries)
-        self.zeebe_adapter.connect()
+        self.zeebe_adapter = ZeebeAdapter(grpc_channel, max_connection_retries)
 
     async def run_process(self, bpmn_process_id: str, variables: Dict = None, version: int = -1) -> int:
         """

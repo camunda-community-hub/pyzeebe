@@ -3,9 +3,10 @@ import os
 from typing import Dict
 from uuid import uuid4
 
+import grpc
 import pytest
 
-from pyzeebe import Job, ZeebeClient, ZeebeWorker
+from pyzeebe import Job, ZeebeClient, ZeebeWorker, create_insecure_channel
 from pyzeebe.errors import ProcessDefinitionNotFoundError
 
 
@@ -17,13 +18,18 @@ def event_loop():
 
 
 @pytest.fixture(scope="session")
-def zeebe_client():
-    return ZeebeClient()
+def grpc_channel():
+    return create_insecure_channel()
 
 
 @pytest.fixture(scope="session")
-def zeebe_worker():
-    return ZeebeWorker()
+def zeebe_client(grpc_channel: grpc.aio.Channel):
+    return ZeebeClient(grpc_channel)
+
+
+@pytest.fixture(scope="session")
+def zeebe_worker(grpc_channel):
+    return ZeebeWorker(grpc_channel)
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -61,8 +67,7 @@ def start_worker(event_loop: asyncio.AbstractEventLoop, zeebe_worker: ZeebeWorke
 @pytest.mark.asyncio
 async def test_run_process(zeebe_client: ZeebeClient):
     process_key = await zeebe_client.run_process(
-        "test",
-        {"input": str(uuid4()), "should_throw": False}
+        "test", {"input": str(uuid4()), "should_throw": False}
     )
     assert isinstance(process_key, int)
 
@@ -77,8 +82,7 @@ async def test_non_existent_process(zeebe_client: ZeebeClient):
 async def test_run_process_with_result(zeebe_client: ZeebeClient):
     input = str(uuid4())
     process_instance_key, process_result = await zeebe_client.run_process_with_result(
-        "test",
-        {"input": input, "should_throw": False}
+        "test", {"input": input, "should_throw": False}
     )
     assert isinstance(process_instance_key, int)
     assert isinstance(process_result["output"], str)
@@ -88,7 +92,6 @@ async def test_run_process_with_result(zeebe_client: ZeebeClient):
 @pytest.mark.asyncio
 async def test_cancel_process(zeebe_client: ZeebeClient):
     process_key = await zeebe_client.run_process(
-        "test",
-        {"input": str(uuid4()), "should_throw": False}
+        "test", {"input": str(uuid4()), "should_throw": False}
     )
     await zeebe_client.cancel_process_instance(process_key)

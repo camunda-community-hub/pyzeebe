@@ -9,23 +9,17 @@ To create a client with default configuration:
 
 .. code-block:: python
 
-    from pyzeebe import ZeebeClient
+    from pyzeebe import ZeebeClient, create_insecure_channel
 
-    client = ZeebeClient()  # Will use ZEEBE_ADDRESS environment variable or localhost:26500
-
-
-To create a client with custom hostname and port:
-
-.. code-block:: python
-
-    client = ZeebeClient(hostname="zeebe_gateway", port=26500)
+    channel = create_insecure_channel()  # Will use ZEEBE_ADDRESS environment variable or localhost:26500
+    client = ZeebeClient(channel)
 
 
 To change connection retries:
 
 .. code-block:: python
 
-    client = ZeebeClient(max_connection_retries=1)  # Will only accept one failure and disconnect upon the second
+    client = ZeebeClient(grpc_channel, max_connection_retries=1)  # Will only accept one failure and disconnect upon the second
 
 
 This means the client will disconnect upon two consecutive failures. Each time the client connects successfully the counter is reset.
@@ -34,33 +28,6 @@ This means the client will disconnect upon two consecutive failures. Each time t
 
     The default behavior is 10 retries. If you want infinite retries just set to -1.
 
-
-
-To create a client with a secure connection:
-
-.. code-block:: python
-
-    client = ZeebeClient(secure_connection=True)
-
-To create a client with OAuth 2.0 authentication:
-
-.. code-block:: python
-
-    from pyzeebe import ZeebeClient, OAuthCredentials
-
-    credentials = OAuthCredentials(url="oauth_token_url", client_id="client_id", client_secret="client_secret",
-                                   audience="audience")
-    client = ZeebeClient()
-
-To create a client for a Camunda Cloud instance:
-
-.. code-block:: python
-
-    from pyzeebe import ZeebeClient, CamundaCloudCredentials
-
-    credentials = CamundaCloudCredentials(client_id="client_id", client_secret="client_secret",
-                                          cluster_id="cluster_id")
-    client = ZeebeClient()
 
 
 Run a Zeebe process instance

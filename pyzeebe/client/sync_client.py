@@ -3,15 +3,17 @@
 import asyncio
 from typing import Dict, List, Tuple
 
+import grpc
+
 from pyzeebe import ZeebeClient
 from pyzeebe.credentials.base_credentials import BaseCredentials
 
 
 class SyncZeebeClient(ZeebeClient):
-    def __init__(self, hostname: str = None, port: int = None, credentials: BaseCredentials = None,
-                 secure_connection: bool = False, max_connection_retries: int = 10):
-        super().__init__(hostname, port, credentials,
-                         secure_connection, max_connection_retries)
+    def __init__(
+        self, grpc_channel: grpc.aio.Channel, max_connection_retries: int = 10
+    ):
+        super().__init__(grpc_channel, max_connection_retries)
         self.loop = asyncio.get_event_loop()
 
     def run_process(self, bpmn_process_id: str, variables: Dict = None, version: int = -1) -> int:

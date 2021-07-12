@@ -1,7 +1,8 @@
 import asyncio
 from typing import Dict
 
-from pyzeebe import CamundaCloudCredentials, Job, ZeebeWorker
+from pyzeebe import (Job, ZeebeWorker, create_camunda_cloud_channel,
+                     create_insecure_channel, create_secure_channel)
 from pyzeebe.errors import BusinessError
 
 
@@ -12,15 +13,22 @@ async def example_logging_task_decorator(job: Job) -> Job:
 
 
 # Will use environment variable ZEEBE_ADDRESS or localhost:26500 and NOT use TLS
-worker = ZeebeWorker()
+# create_insecure_channel returns a grpc.aio.Channel instance. If needed you
+# can build one on your own
+grpc_channel = create_insecure_channel()
+worker = ZeebeWorker(grpc_channel)
 
 # Will use environment variable ZEEBE_ADDRESS or localhost:26500 and use TLS
-worker = ZeebeWorker(secure_connection=True)
+grpc_channel = create_secure_channel()
+worker = ZeebeWorker(grpc_channel)
 
 # Connect to zeebe cluster in camunda cloud
-camunda_cloud_credentials = CamundaCloudCredentials(client_id="<my_client_id>", client_secret="<my_client_secret>",
-                                                    cluster_id="<my_cluster_id>")
-worker = ZeebeWorker(credentials=camunda_cloud_credentials)
+grpc_channel = create_camunda_cloud_channel(
+    client_id="<my_client_id>",
+    client_secret="<my_client_secret>",
+    cluster_id="<my_cluster_id>",
+)
+worker = ZeebeWorker(grpc_channel)
 
 # Decorators allow us to add functionality before and after each job
 worker.before(example_logging_task_decorator)
@@ -32,10 +40,12 @@ worker.after(example_logging_task_decorator)
 def example_task() -> Dict:
     return {"output": f"Hello world, test!"}
 
+
 # Or like this:
 @worker.task(task_type="test2")
 async def second_example_task() -> Dict:
     return {"output": f"Hello world, test2!"}
+
 
 # Create a task that will return a single value (not a dict) like this:
 # This task will return to zeebe: { y: x + 1 }
@@ -56,9 +66,7 @@ def exception_task():
 async def example_exception_handler(exception: Exception, job: Job) -> None:
     print(exception)
     print(job)
-    await job.set_failure_status(
-        f"Failed to run task {job.type}. Reason: {exception}"
-    )
+    await job.set_failure_status(f"Failed to run task {job.type}. Reason: {exception}")
 
 
 @worker.task(task_type="exception_task", exception_handler=example_exception_handler)
@@ -70,8 +78,11 @@ async def exception_task():
 # The order of the decorators will be as follows:
 # Worker decorators -> Task decorators -> Task -> Task decorators -> Worker decorators
 # Here is how:
-@worker.task(task_type="decorator_task", before=[example_logging_task_decorator],
-             after=[example_logging_task_decorator])
+@worker.task(
+    task_type="decorator_task",
+    before=[example_logging_task_decorator],
+    after=[example_logging_task_decorator],
+)
 async def decorator_task() -> Dict:
     return {"output": "Hello world, test!"}
 
