@@ -1,6 +1,7 @@
 __version__ = "3.0.0rc2"
 
 from pyzeebe import errors
+from pyzeebe.channel import *
 from pyzeebe.client.client import ZeebeClient
 from pyzeebe.client.sync_client import SyncZeebeClient  # type: ignore
 from pyzeebe.credentials.camunda_cloud_credentials import \
@@ -14,4 +15,3 @@ from pyzeebe.task.types import TaskDecorator
 from pyzeebe.worker.task_router import (ZeebeTaskRouter,
                                         default_exception_handler)
 from pyzeebe.worker.worker import ZeebeWorker
-from pyzeebe.channel import *

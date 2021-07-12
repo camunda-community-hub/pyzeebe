@@ -1,7 +1,6 @@
-from mock import patch, Mock
-
 import grpc
 import pytest
+from mock import Mock, patch
 
 from pyzeebe import create_secure_channel
 from pyzeebe.channel.channel_options import get_channel_options

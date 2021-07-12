@@ -1,5 +1,4 @@
 import os
-
 from uuid import uuid4
 
 from pyzeebe.channel.utils import create_address
