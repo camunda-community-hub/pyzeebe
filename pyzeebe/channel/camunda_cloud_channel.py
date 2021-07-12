@@ -17,7 +17,7 @@ def create_camunda_cloud_channel(
     channel_options: Optional[Dict] = None,
 ) -> grpc.aio.Channel:
     """
-    Create an secure channel
+    Create channel connected to a Camunda Cloud cluster
 
     Args:
         client_id (str): The client id provided by Camunda Cloud

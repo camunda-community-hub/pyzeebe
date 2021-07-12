@@ -1,6 +1,7 @@
 from typing import Dict, Optional
 
 import grpc
+
 from pyzeebe.channel.channel_options import get_channel_options
 from pyzeebe.channel.utils import create_address
 
@@ -9,10 +10,10 @@ def create_secure_channel(
     hostname: Optional[str] = None,
     port: Optional[int] = None,
     channel_options: Optional[Dict] = None,
-    channel_credentials: Optional[grpc.ChannelCredentials] = None
+    channel_credentials: Optional[grpc.ChannelCredentials] = None,
 ) -> grpc.aio.Channel:
     """
-    Create an secure channel
+    Create a secure channel
 
     Args:
         hostname (Optional[str], optional): Zeebe gateway hostname
@@ -25,4 +26,6 @@ def create_secure_channel(
     """
     address = create_address(hostname, port)
     credentials = channel_credentials or grpc.ssl_channel_credentials()
-    return grpc.aio.secure_channel(address, credentials, options=get_channel_options(channel_options))
+    return grpc.aio.secure_channel(
+        address, credentials, options=get_channel_options(channel_options)
+    )
