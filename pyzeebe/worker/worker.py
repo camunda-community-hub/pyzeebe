@@ -6,7 +6,6 @@ from typing import List, Optional
 import grpc
 
 from pyzeebe import TaskDecorator
-from pyzeebe.credentials.base_credentials import BaseCredentials
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.worker.job_executor import JobExecutor
 from pyzeebe.worker.job_poller import JobPoller

@@ -5,7 +5,6 @@ from typing import Optional
 import grpc
 from zeebe_grpc.gateway_pb2_grpc import GatewayStub
 
-from pyzeebe.credentials.base_credentials import BaseCredentials
 from pyzeebe.errors import (ZeebeBackPressureError,
                             ZeebeGatewayUnavailableError, ZeebeInternalError)
 
@@ -24,7 +23,10 @@ class ZeebeAdapterBase:
         self._current_connection_retries = 0
 
     def _should_retry(self):
-        return self._max_connection_retries == -1 or self._current_connection_retries < self._max_connection_retries
+        return (
+            self._max_connection_retries == -1
+            or self._current_connection_retries < self._max_connection_retries
+        )
 
     async def _common_zeebe_grpc_errors(self, rpc_error: grpc.aio.AioRpcError):
         if self.is_error_status(rpc_error, grpc.StatusCode.RESOURCE_EXHAUSTED):

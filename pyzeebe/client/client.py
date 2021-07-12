@@ -2,7 +2,6 @@ from typing import Dict, List, Tuple
 
 import grpc
 
-from pyzeebe.credentials.base_credentials import BaseCredentials
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 
 
@@ -20,7 +19,9 @@ class ZeebeClient(object):
 
         self.zeebe_adapter = ZeebeAdapter(grpc_channel, max_connection_retries)
 
-    async def run_process(self, bpmn_process_id: str, variables: Dict = None, version: int = -1) -> int:
+    async def run_process(
+        self, bpmn_process_id: str, variables: Dict = None, version: int = -1
+    ) -> int:
         """
         Run process
 
@@ -41,10 +42,18 @@ class ZeebeClient(object):
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
-        return await self.zeebe_adapter.create_process_instance(bpmn_process_id=bpmn_process_id, variables=variables or {}, version=version)
+        return await self.zeebe_adapter.create_process_instance(
+            bpmn_process_id=bpmn_process_id, variables=variables or {}, version=version
+        )
 
-    async def run_process_with_result(self, bpmn_process_id: str, variables: Dict = None, version: int = -1,
-                                      timeout: int = 0, variables_to_fetch: List[str] = None) -> Tuple[int, Dict]:
+    async def run_process_with_result(
+        self,
+        bpmn_process_id: str,
+        variables: Dict = None,
+        version: int = -1,
+        timeout: int = 0,
+        variables_to_fetch: List[str] = None,
+    ) -> Tuple[int, Dict]:
         """
         Run process and wait for the result.
 
@@ -67,10 +76,13 @@ class ZeebeClient(object):
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
-        return await self.zeebe_adapter.create_process_instance_with_result(bpmn_process_id=bpmn_process_id,
-                                                                            variables=variables or {}, version=version,
-                                                                            timeout=timeout,
-                                                                            variables_to_fetch=variables_to_fetch or [])
+        return await self.zeebe_adapter.create_process_instance_with_result(
+            bpmn_process_id=bpmn_process_id,
+            variables=variables or {},
+            version=version,
+            timeout=timeout,
+            variables_to_fetch=variables_to_fetch or [],
+        )
 
     async def cancel_process_instance(self, process_instance_key: int) -> int:
         """
@@ -89,7 +101,9 @@ class ZeebeClient(object):
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
-        await self.zeebe_adapter.cancel_process_instance(process_instance_key=process_instance_key)
+        await self.zeebe_adapter.cancel_process_instance(
+            process_instance_key=process_instance_key
+        )
         return process_instance_key
 
     async def deploy_process(self, *process_file_path: str) -> None:
@@ -108,8 +122,14 @@ class ZeebeClient(object):
         """
         await self.zeebe_adapter.deploy_process(*process_file_path)
 
-    async def publish_message(self, name: str, correlation_key: str, variables: Dict = None,
-                              time_to_live_in_milliseconds: int = 60000, message_id: str = None) -> None:
+    async def publish_message(
+        self,
+        name: str,
+        correlation_key: str,
+        variables: Dict = None,
+        time_to_live_in_milliseconds: int = 60000,
+        message_id: str = None,
+    ) -> None:
         """
         Publish a message
 
@@ -128,6 +148,10 @@ class ZeebeClient(object):
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
-        await self.zeebe_adapter.publish_message(name=name, correlation_key=correlation_key,
-                                                 time_to_live_in_milliseconds=time_to_live_in_milliseconds,
-                                                 variables=variables or {}, message_id=message_id)
+        await self.zeebe_adapter.publish_message(
+            name=name,
+            correlation_key=correlation_key,
+            time_to_live_in_milliseconds=time_to_live_in_milliseconds,
+            variables=variables or {},
+            message_id=message_id,
+        )
