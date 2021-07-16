@@ -1,52 +1,28 @@
 from copy import deepcopy
 
 import pytest
-
 import pyzeebe.channel.channel_options
 from pyzeebe.channel.channel_options import get_channel_options
 
 
-@pytest.fixture
-def revert_monkeypatch_after_test():
-    """
-    This sort of exists in pytest already (docs.pytest.org/en/stable/monkeypatch.html),
-    however that means a bit of "magic" happens, this is a bit clearer and tests the users
-    approach to this.
-    """
-    options_before = deepcopy(
-        pyzeebe.channel.channel_options.GRPC_CHANNEL_OPTIONS)
-    yield
-    pyzeebe.channel.channel_options.GRPC_CHANNEL_OPTIONS = options_before
-
-
 def test_get_channel_options_returns_tuple_of_tuple_with_options():
-    assert get_channel_options() == (
-        ("grpc.keepalive_time_ms", 45000),
-    )
+    assert get_channel_options() == (("grpc.keepalive_time_ms", 45000),)
 
 
-@pytest.mark.usefixtures("revert_monkeypatch_after_test")
-def test_monkeypatching_with_options_override():
-    pyzeebe.channel.channel_options.GRPC_CHANNEL_OPTIONS["grpc.keepalive_time_ms"] = 4000
-    assert get_channel_options() == (
-        ("grpc.keepalive_time_ms", 4000),
-    )
+def test_overrides_default_values_if_provided():
+    grpc_options = {"grpc.keepalive_time_ms": 4000}
+
+    assert get_channel_options(grpc_options) == (("grpc.keepalive_time_ms", 4000),)
 
 
-@pytest.mark.usefixtures("revert_monkeypatch_after_test")
-def test_monkeypatching_with_options_added():
-    pyzeebe.channel.channel_options.GRPC_CHANNEL_OPTIONS.update({
+def test_adds_custom_options():
+    grpc_options = {
         "grpc.keepalive_timeout_ms": 120000,
         "grpc.http2.min_time_between_pings_ms": 60000,
-    })
-    assert get_channel_options() == (
+    }
+
+    assert get_channel_options(grpc_options) == (
         ("grpc.keepalive_time_ms", 45000),
         ("grpc.keepalive_timeout_ms", 120000),
-        ("grpc.http2.min_time_between_pings_ms", 60000)
+        ("grpc.http2.min_time_between_pings_ms", 60000),
     )
-
-
-@pytest.mark.usefixtures("revert_monkeypatch_after_test")
-def test_monkeypatching_with_options_removed():
-    pyzeebe.channel.channel_options.GRPC_CHANNEL_OPTIONS = {}
-    assert get_channel_options() == ()
