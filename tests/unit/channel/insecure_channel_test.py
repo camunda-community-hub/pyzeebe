@@ -5,7 +5,8 @@ import pytest
 from mock import Mock, patch
 from pyzeebe import create_insecure_channel
 from pyzeebe.channel.channel_options import get_channel_options
-from pyzeebe.channel.utils import DEFAULT_HOSTNAME, DEFAULT_PORT
+from pyzeebe.channel.utils import (DEFAULT_HOSTNAME, DEFAULT_PORT,
+                                   create_address)
 
 
 class TestCreateInsecureChannel:
@@ -24,6 +25,12 @@ class TestCreateInsecureChannel:
 
         insecure_channel_call = insecure_channel_mock.mock_calls[0]
         assert insecure_channel_call.kwargs["options"] == get_channel_options()
+
+    def test_uses_default_address(self, insecure_channel_mock: Mock):
+        create_insecure_channel()
+
+        insecure_channel_call = insecure_channel_mock.mock_calls[0]
+        assert insecure_channel_call.args[0] == create_address()
 
     def test_overrides_default_port_if_provided(self, insecure_channel_mock: Mock):
         port = 123
