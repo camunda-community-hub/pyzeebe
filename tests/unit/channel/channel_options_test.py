@@ -1,6 +1,7 @@
 from copy import deepcopy
 
 import pytest
+
 import pyzeebe.channel.channel_options
 from pyzeebe.channel.channel_options import get_channel_options
 

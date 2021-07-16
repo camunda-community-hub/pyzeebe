@@ -3,6 +3,7 @@ from uuid import uuid4
 import grpc
 import pytest
 from mock import Mock, patch
+
 from pyzeebe import create_insecure_channel
 from pyzeebe.channel.channel_options import get_channel_options
 from pyzeebe.channel.utils import (DEFAULT_HOSTNAME, DEFAULT_PORT,

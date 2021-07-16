@@ -2,11 +2,12 @@ from typing import Dict, Optional
 
 import grpc
 from oauthlib import oauth2
+from requests import HTTPError
+from requests_oauthlib import OAuth2Session
+
 from pyzeebe.channel.channel_options import get_channel_options
 from pyzeebe.errors import (InvalidCamundaCloudCredentialsError,
                             InvalidOAuthCredentialsError)
-from requests import HTTPError
-from requests_oauthlib import OAuth2Session
 
 
 def create_camunda_cloud_channel(
