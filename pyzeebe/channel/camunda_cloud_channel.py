@@ -2,12 +2,11 @@ from typing import Dict, Optional
 
 import grpc
 from oauthlib import oauth2
-from requests import HTTPError
-from requests_oauthlib import OAuth2Session
-
 from pyzeebe.channel.channel_options import get_channel_options
 from pyzeebe.errors import (InvalidCamundaCloudCredentialsError,
                             InvalidOAuthCredentialsError)
+from requests import HTTPError
+from requests_oauthlib import OAuth2Session
 
 
 def create_camunda_cloud_channel(
@@ -31,7 +30,7 @@ def create_camunda_cloud_channel(
     Raises:
         InvalidCamundaCloudCredentialsError: One of the provided camunda credentials is not correct
     """
-    channel_credentials = create_camunda_cloud_credentials(
+    channel_credentials = _create_camunda_cloud_credentials(
         client_id, client_secret, cluster_id
     )
 
@@ -42,24 +41,24 @@ def create_camunda_cloud_channel(
     )
 
 
-def create_camunda_cloud_credentials(
+def _create_camunda_cloud_credentials(
     client_id: str, client_secret: str, cluster_id: str
 ) -> grpc.ChannelCredentials:
     try:
-        access_token = get_access_token(
+        access_token = _get_access_token(
             "https://login.cloud.camunda.io/oauth/token",
             client_id,
             client_secret,
             cluster_id,
         )
-        return create_oauth_credentials(access_token)
+        return _create_oauth_credentials(access_token)
     except InvalidOAuthCredentialsError as oauth_error:
         raise InvalidCamundaCloudCredentialsError(
             client_id, cluster_id
         ) from oauth_error
 
 
-def get_access_token(
+def _get_access_token(
     url: str, client_id: str, client_secret: str, audience: str
 ) -> str:
     try:
@@ -82,7 +81,7 @@ def get_access_token(
         ) from http_error
 
 
-def create_oauth_credentials(access_token: str) -> grpc.ChannelCredentials:
+def _create_oauth_credentials(access_token: str) -> grpc.ChannelCredentials:
     token_credentials = grpc.access_token_call_credentials(access_token)
     ssl_credentials = grpc.ssl_channel_credentials()
     return grpc.composite_channel_credentials(ssl_credentials, token_credentials)
