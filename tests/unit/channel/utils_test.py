@@ -1,24 +1,25 @@
 import os
 from uuid import uuid4
 
-from pyzeebe.channel.utils import create_address
+from pyzeebe.channel.utils import (DEFAULT_ADDRESS, DEFAULT_HOSTNAME,
+                                   DEFAULT_PORT, create_address)
 
 
 class TestCreateAddress:
     def test_returns_default_address(self):
         address = create_address()
 
-        assert address == "localhost:26500"
+        assert address == DEFAULT_ADDRESS
 
     def test_default_port_is_26500(self):
         address = create_address(hostname=str(uuid4()))
 
-        assert address.split(":")[1] == "26500"
+        assert address.split(":")[1] == str(DEFAULT_PORT)
 
     def test_default_hostname_is_localhost(self):
         address = create_address(port=12)
 
-        assert address.split(":")[0] == "localhost"
+        assert address.split(":")[0] == DEFAULT_HOSTNAME
 
     def test_returns_env_var_if_provided(self):
         zeebe_address = str(uuid4())
