@@ -37,7 +37,7 @@ The `ZeebeWorker` class uses threading to get and run jobs.
 ```python
 import asyncio
 
-from pyzeebe import ZeebeWorker, Job
+from pyzeebe import ZeebeWorker, Job, create_insecure_channel
 
 
 async def on_error(exception: Exception, job: Job):
@@ -49,7 +49,8 @@ async def on_error(exception: Exception, job: Job):
 
 
 
-worker = ZeebeWorker(hostname="<zeebe_host>", port=26500) # Create a zeebe worker
+channel = create_insecure_channel(hostname="localhost", port=26500) # Create grpc channel
+worker = ZeebeWorker(channel) # Create a zeebe worker
 
 @worker.task(task_type="example", exception_handler=on_error)
 def example_task(input: str) -> dict:
@@ -72,10 +73,11 @@ await zeebe_worker.stop() # Stops worker after all running jobs have been comple
 ### Client
 
 ```python
-from pyzeebe import ZeebeClient
+from pyzeebe import ZeebeClient, create_insecure_channel
 
 # Create a zeebe client
-zeebe_client = ZeebeClient(hostname="localhost", port=26500)
+channel = create_insecure_channel(hostname="localhost", port=26500)
+zeebe_client = ZeebeClient(channel)
 
 # Run a Zeebe process instance
 process_instance_key = await zeebe_client.run_process(bpmn_process_id="My zeebe process", variables={})
