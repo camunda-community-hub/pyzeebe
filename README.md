@@ -40,6 +40,10 @@ import asyncio
 from pyzeebe import ZeebeWorker, Job, create_insecure_channel
 
 
+channel = create_insecure_channel(hostname="localhost", port=26500) # Create grpc channel
+worker = ZeebeWorker(channel) # Create a zeebe worker
+
+
 async def on_error(exception: Exception, job: Job):
     """
     on_error will be called when the task fails
@@ -47,10 +51,6 @@ async def on_error(exception: Exception, job: Job):
     print(exception)
     await job.set_error_status(f"Failed to handle job {job}. Error: {str(exception)}")
 
-
-
-channel = create_insecure_channel(hostname="localhost", port=26500) # Create grpc channel
-worker = ZeebeWorker(channel) # Create a zeebe worker
 
 @worker.task(task_type="example", exception_handler=on_error)
 def example_task(input: str) -> dict:
