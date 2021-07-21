@@ -43,22 +43,19 @@ def job_from_task(task):
 
 @pytest.fixture
 def zeebe_adapter(aio_grpc_channel: grpc.aio.Channel):
-    adapter = ZeebeAdapter()
-    adapter.connect(channel=aio_grpc_channel)
+    adapter = ZeebeAdapter(aio_grpc_channel)
     return adapter
 
 
 @pytest.fixture
-def zeebe_client(zeebe_adapter):
-    client = ZeebeClient()
-    client.zeebe_adapter = zeebe_adapter
+def zeebe_client(aio_grpc_channel: grpc.aio.Channel):
+    client = ZeebeClient(aio_grpc_channel)
     return client
 
 
 @pytest.fixture
-def zeebe_worker(zeebe_adapter):
-    worker = ZeebeWorker()
-    worker.zeebe_adapter = zeebe_adapter
+def zeebe_worker(aio_grpc_channel: grpc.aio.Channel):
+    worker = ZeebeWorker(aio_grpc_channel)
     return worker
 
 
@@ -84,7 +81,7 @@ def task_config(task_type):
         single_value=False,
         variable_name="",
         before=[],
-        after=[]
+        after=[],
     )
 
 

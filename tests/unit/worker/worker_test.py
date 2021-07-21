@@ -1,6 +1,7 @@
 from typing import List
 from uuid import uuid4
 
+import grpc
 import pytest
 
 from pyzeebe import TaskDecorator, ZeebeTaskRouter
@@ -55,13 +56,17 @@ class TestDecorator:
         assert len(zeebe_worker._after) == 1
         assert decorator in zeebe_worker._after
 
-    def test_add_constructor_before_decorator(self, decorator: TaskDecorator):
-        zeebe_worker = ZeebeWorker(before=[decorator])
+    def test_add_constructor_before_decorator(
+        self, aio_grpc_channel: grpc.aio.Channel, decorator: TaskDecorator
+    ):
+        zeebe_worker = ZeebeWorker(aio_grpc_channel, before=[decorator])
         assert len(zeebe_worker._before) == 1
         assert decorator in zeebe_worker._before
 
-    def test_add_constructor_after_decorator(self, decorator: TaskDecorator):
-        zeebe_worker = ZeebeWorker(after=[decorator])
+    def test_add_constructor_after_decorator(
+        self, aio_grpc_channel: grpc.aio.Channel, decorator: TaskDecorator
+    ):
+        zeebe_worker = ZeebeWorker(aio_grpc_channel, after=[decorator])
         assert len(zeebe_worker._after) == 1
         assert decorator in zeebe_worker._after
 

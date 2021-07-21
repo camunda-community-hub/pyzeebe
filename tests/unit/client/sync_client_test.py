@@ -1,5 +1,6 @@
 from uuid import uuid4
 
+import grpc
 import pytest
 from mock import AsyncMock
 
@@ -13,9 +14,8 @@ pytestmark = pytest.mark.asyncio
 
 
 @pytest.fixture
-def sync_zeebe_client(zeebe_adapter: ZeebeAdapter) -> SyncZeebeClient:
-    client = SyncZeebeClient()
-    client.zeebe_adapter = zeebe_adapter
+def sync_zeebe_client(aio_grpc_channel: grpc.aio.Channel) -> SyncZeebeClient:
+    client = SyncZeebeClient(aio_grpc_channel)
     return client
 
 

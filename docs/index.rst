@@ -19,9 +19,10 @@ Creating a worker
 
 .. code-block:: python
 
-   from pyzeebe import ZeebeWorker
+   from pyzeebe import ZeebeWorker, create_insecure_channel
 
-   worker = ZeebeWorker()
+   channel = create_insecure_channel()
+   worker = ZeebeWorker(channel)
 
    @worker.task(task_type="my_task")
    async def my_task(x: int):
@@ -33,9 +34,10 @@ Creating a client
 
 .. code-block:: python
 
-   from pyzeebe import ZeebeClient
+   from pyzeebe import ZeebeClient, create_insecure_channel
 
-   client = ZeebeClient()
+   channel = create_insecure_channel()
+   client = ZeebeClient(channel)
 
    await client.run_process("my_process")
 
@@ -61,5 +63,6 @@ Table Of Contents
 
     Client <client>
     Worker <worker>
+    Channels <channels>
     Decorators <decorators>
     Exceptions <errors>
