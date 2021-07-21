@@ -28,6 +28,8 @@ All ``pyzeebe`` errors inherit from :py:class:`PyZeebeError`
 
 .. autoexception:: pyzeebe.errors.ProcessDefinitionHasNoStartEventError
 
+.. autoexception:: pyzeebe.errors.ProcessTimeoutError
+
 .. autoexception:: pyzeebe.errors.ProcessInvalidError
 
 .. autoexception:: pyzeebe.errors.InvalidJSONError

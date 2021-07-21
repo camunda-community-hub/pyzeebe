@@ -14,7 +14,8 @@ from zeebe_grpc.gateway_pb2 import (CancelProcessInstanceRequest,
 from pyzeebe.errors import (InvalidJSONError,
                             ProcessDefinitionHasNoStartEventError,
                             ProcessDefinitionNotFoundError,
-                            ProcessInstanceNotFoundError, ProcessInvalidError)
+                            ProcessInstanceNotFoundError, ProcessInvalidError,
+                            ProcessTimeoutError)
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 
 
@@ -44,13 +45,14 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
                                      variables: Dict) -> None:
         if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
             raise ProcessDefinitionNotFoundError(
-                bpmn_process_id=bpmn_process_id, version=version)
+                bpmn_process_id=bpmn_process_id, version=version) from rpc_error
         elif self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
             raise InvalidJSONError(
-                f"Cannot start process: {bpmn_process_id} with version {version}. Variables: {variables}")
+                f"Cannot start process: {bpmn_process_id} with version {version}. Variables: {variables}") from rpc_error
         elif self.is_error_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
-            raise ProcessDefinitionHasNoStartEventError(
-                bpmn_process_id=bpmn_process_id)
+            raise ProcessDefinitionHasNoStartEventError(bpmn_process_id=bpmn_process_id) from rpc_error
+        elif self.is_error_status(rpc_error, grpc.StatusCode.DEADLINE_EXCEEDED):
+            raise ProcessTimeoutError(bpmn_process_id) from rpc_error
         else:
             await self._common_zeebe_grpc_errors(rpc_error)
 

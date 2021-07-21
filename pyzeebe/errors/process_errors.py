@@ -29,3 +29,9 @@ class ProcessInvalidError(PyZeebeError):
 
 class InvalidJSONError(PyZeebeError):
     pass
+
+
+class ProcessTimeoutError(PyZeebeError, TimeoutError):
+    def __init__(self, bpmn_process_id: str):
+        super().__init__(f"Timeout while waiting for {bpmn_process_id} to complete")
+        self.bpmn_process_id = bpmn_process_id

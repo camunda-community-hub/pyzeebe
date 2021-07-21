@@ -9,7 +9,8 @@ from mock import AsyncMock, MagicMock, patch
 from pyzeebe.errors import (InvalidJSONError,
                             ProcessDefinitionHasNoStartEventError,
                             ProcessDefinitionNotFoundError,
-                            ProcessInstanceNotFoundError, ProcessInvalidError)
+                            ProcessInstanceNotFoundError, ProcessInvalidError,
+                            ProcessTimeoutError)
 from pyzeebe.grpc_internals.zeebe_process_adapter import ZeebeProcessAdapter
 from tests.unit.utils.gateway_mock import GatewayMock
 from tests.unit.utils.grpc_utils import GRPCStatusCode
@@ -95,6 +96,30 @@ class TestCreateProcessWithResult:
         )
 
         assert isinstance(response, dict)
+
+    async def test_raises_on_process_timeout(
+        self, zeebe_adapter: ZeebeProcessAdapter, grpc_servicer: GatewayMock
+    ):
+        bpmn_process_id = str(uuid4())
+        version = randint(0, 10)
+
+        error = grpc.aio.AioRpcError(
+            grpc.StatusCode.DEADLINE_EXCEEDED, None, None
+        )
+
+        zeebe_adapter._gateway_stub.CreateProcessInstanceWithResult = AsyncMock(
+            side_effect=error
+        )
+
+
+        with pytest.raises(ProcessTimeoutError):
+            await zeebe_adapter.create_process_instance_with_result(
+                bpmn_process_id,
+                variables={},
+                version=version,
+                timeout=0,
+                variables_to_fetch=[],
+            )
 
 
 @pytest.mark.asyncio
