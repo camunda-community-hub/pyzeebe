@@ -13,8 +13,7 @@ Insecure
 Create a grpc channel connected to a Zeebe Gateway with tls disabled
 
 
-.. autoclass:: pyzeebe.create_insecure_channel
-    :members:
+.. autofunction:: pyzeebe.create_insecure_channel
 
 
 Example:
@@ -31,8 +30,7 @@ Secure
 
 Create a grpc channel with a secure connection to a Zeebe Gateway with tls
 
-.. autoclass:: pyzeebe.create_secure_channel
-    :members:
+.. autofunction:: pyzeebe.create_secure_channel
 
 Example:
 
@@ -51,8 +49,7 @@ Camunda Cloud
 
 Create a grpc channel connected to a Zeebe Gateway running in camunda cloud
 
-.. autoclass:: pyzeebe.create_camunda_cloud_channel
-    :members:
+.. autofunction:: pyzeebe.create_camunda_cloud_channel
 
 Example:
 
