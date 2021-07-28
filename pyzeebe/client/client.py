@@ -71,6 +71,7 @@ class ZeebeClient(object):
             ProcessDefinitionNotFoundError: No process with bpmn_process_id exists
             InvalidJSONError: variables is not JSONable
             ProcessDefinitionHasNoStartEventError: The specified process does not have a start event
+            ProcessTimeoutError: The process was not finished within the set timeout
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
