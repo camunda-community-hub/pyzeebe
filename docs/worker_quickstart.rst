@@ -55,3 +55,15 @@ To add a task to the worker:
     @worker.task(task_type="my_task")
     def second_task(x: int):
         return {"y": x + 1}
+
+Stopping a worker
+-----------------
+
+To stop a running worker:
+
+.. code-block:: python
+
+    # Trigger this on some event (SIGTERM for example)
+    async def shutdown():
+        await worker.stop()
+
