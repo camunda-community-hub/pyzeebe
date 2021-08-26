@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class JobPoller:
     def __init__(self, zeebe_adapter: ZeebeJobAdapter, task: Task, queue: asyncio.Queue, worker_name: str,
-                 request_timeout: int, task_state: TaskState, max_task_count: int):
+                 request_timeout: int, task_state: TaskState, max_task_count: int, poll_retry_delay: int):
         self.zeebe_adapter = zeebe_adapter
         self.task = task
         self.queue = queue
@@ -21,11 +21,16 @@ class JobPoller:
         self.request_timeout = request_timeout
         self.task_state = task_state
         self.max_task_count = max_task_count
+        self.poll_retry_delay = poll_retry_delay
         self.stop_event = asyncio.Event()
 
     async def poll(self):
         while self.should_poll():
-            await self.poll_once()
+            if self.calculate_max_jobs_to_activate() > 0:
+                await self.poll_once()
+            else:
+                logger.warning(f"Maximum number of jobs running for {self.task.type}. Polling again in in {self.poll_retry_delay} seconds...")
+                await asyncio.sleep(self.poll_retry_delay)
 
     async def poll_once(self):
         try:
@@ -53,8 +58,7 @@ class JobPoller:
 
     def should_poll(self) -> bool:
         return not self.stop_event.is_set() \
-            and (self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection) \
-            and self.calculate_max_jobs_to_activate() > 0
+            and (self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection)
 
     def calculate_max_jobs_to_activate(self) -> int:
         worker_max_jobs = self.max_task_count - self.task_state.count_active()

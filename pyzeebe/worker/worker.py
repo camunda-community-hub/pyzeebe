@@ -28,6 +28,7 @@ class ZeebeWorker(ZeebeTaskRouter):
         max_connection_retries: int = 10,
         watcher_max_errors_factor: int = 3,
         max_task_count: int = 32,
+        poll_retry_delay: int = 5,
     ):
         """
         Args:
@@ -39,6 +40,7 @@ class ZeebeWorker(ZeebeTaskRouter):
             max_connection_retries (int): Amount of connection retries before worker gives up on connecting to zeebe. To setup with infinite retries use -1
             watcher_max_errors_factor (int): Number of consequtive errors for a task watcher will accept before raising MaxConsecutiveTaskThreadError
             max_task_count (int): The maximum amount of tasks the worker can handle simultaniously
+            poll_retry_delay (int): The number of seconds to wait before attempting to poll again when the number of active tasks is equal to max_task_count
         """
         super().__init__(before, after)
         self.zeebe_adapter = ZeebeAdapter(grpc_channel, max_connection_retries)
@@ -47,6 +49,7 @@ class ZeebeWorker(ZeebeTaskRouter):
         self.watcher_max_errors_factor = watcher_max_errors_factor
         self._watcher_thread = None
         self.max_task_count = max_task_count
+        self.poll_retry_delay = poll_retry_delay
         self._task_state = TaskState()
         self._job_pollers: List[JobPoller] = []
         self._job_executors: List[JobExecutor] = []
@@ -74,6 +77,7 @@ class ZeebeWorker(ZeebeTaskRouter):
                 self.request_timeout,
                 self._task_state,
                 self.max_task_count,
+                self.poll_retry_delay,
             )
             executor = JobExecutor(task, jobs_queue, self._task_state)
             self._job_pollers.append(poller)
