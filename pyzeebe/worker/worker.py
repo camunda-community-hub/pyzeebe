@@ -37,8 +37,8 @@ class ZeebeWorker(ZeebeTaskRouter):
             before (List[TaskDecorator]): Decorators to be performed before each task
             after (List[TaskDecorator]): Decorators to be performed after each task
             max_connection_retries (int): Amount of connection retries before worker gives up on connecting to zeebe. To setup with infinite retries use -1
-            watcher_max_errors_factor (int): Number of consequtive errors for a task watcher will accept before raising MaxConsecutiveTaskThreadError
-            max_task_count (int): The maximum amount of tasks the worker can handle simultaniously
+            watcher_max_errors_factor (int): Number of consecutive errors for a task watcher will accept before raising MaxConsecutiveTaskThreadError
+            max_task_count (int): The maximum amount of tasks the worker can handle simultaneously
         """
         super().__init__(before, after)
         self.zeebe_adapter = ZeebeAdapter(grpc_channel, max_connection_retries)
