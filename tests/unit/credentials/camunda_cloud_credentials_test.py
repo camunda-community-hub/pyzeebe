@@ -15,8 +15,7 @@ def test_init():
     with patch("pyzeebe.credentials.oauth_credentials.OAuthCredentials.__init__") as init:
         CamundaCloudCredentials(client_id, client_secret, cluster_id)
         init.assert_called_with(url=f"https://login.cloud.camunda.io/oauth/token", client_id=client_id,
-                                client_secret=client_secret, audience=f"{cluster_id}.zeebe.camunda.io")
-
+                                client_secret=client_secret, audience=f"{cluster_id}.bru-2.zeebe.camunda.io")
 
 def test_invalid_credentials():
     CamundaCloudCredentials.get_access_token = MagicMock(

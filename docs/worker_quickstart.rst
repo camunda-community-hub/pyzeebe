@@ -74,7 +74,7 @@ To create a worker for a Camunda Cloud instance:
 
     credentials = CamundaCloudCredentials(client_id="client_id", client_secret="client_secret",
                                           cluster_id="cluster_id")
-    worker = ZeebeWorker()
+    worker = ZeebeWorker(credentials=credentials)
 
 
 Add a task

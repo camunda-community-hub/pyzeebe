@@ -59,8 +59,8 @@ To create a client for a Camunda Cloud instance:
     from pyzeebe import ZeebeClient, CamundaCloudCredentials
 
     credentials = CamundaCloudCredentials(client_id="client_id", client_secret="client_secret",
-                                          cluster_id="cluster_id")
-    client = ZeebeClient()
+                                          cluster_id="cluster_id", region="cluster_region")
+    client = ZeebeClient(credentials=credentials)
 
 
 Run a workflow
