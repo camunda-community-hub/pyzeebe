@@ -48,6 +48,7 @@ class ZeebeWorker(ZeebeTaskRouter):
         self._watcher_thread = None
         self.max_task_count = max_task_count
         self._task_state = TaskState()
+        self._work_task: Optional[asyncio.Future] = None
         self._job_pollers: List[JobPoller] = []
         self._job_executors: List[JobExecutor] = []
 
@@ -83,12 +84,21 @@ class ZeebeWorker(ZeebeTaskRouter):
             executor.execute() for executor in self._job_executors
         ]
 
-        return await asyncio.gather(*coroutines)
+        self._work_task = asyncio.gather(*coroutines)
+
+        try:
+            await self._work_task
+        except asyncio.CancelledError:
+            logger.info("Zeebe worker was stopped")
+            return
 
     async def stop(self) -> None:
         """
         Stop the worker. This will emit a signal asking tasks to complete the current task and stop polling for new.
         """
+        if self._work_task is not None:
+            self._work_task.cancel()
+
         for poller in self._job_pollers:
             await poller.stop()
 
