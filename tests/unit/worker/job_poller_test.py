@@ -1,4 +1,5 @@
 import asyncio
+import re
 
 import pytest
 
@@ -13,7 +14,7 @@ from tests.unit.utils.random_utils import random_job
 
 @pytest.fixture
 def job_poller(zeebe_adapter: ZeebeAdapter, task: Task, queue: asyncio.Queue, task_state: TaskState) -> JobPoller:
-    return JobPoller(zeebe_adapter, task, queue, "test_worker", 100, task_state, 10)
+    return JobPoller(zeebe_adapter, task, queue, "test_worker", 100, task_state, 10, 5)
 
 
 @pytest.mark.asyncio
@@ -59,11 +60,6 @@ class TestShouldPoll:
 
         assert not job_poller.should_poll()
 
-    def test_stops_polling_after_max_tasks_is_reached(self, job_poller: JobPoller):
-        job_poller.max_task_count = 0
-
-        assert not job_poller.should_poll()
-
 
 class TestMaxJobsToActivate:
     def test_returns_smallest_option(self, job_poller: JobPoller):
@@ -105,3 +101,22 @@ class TestMaxJobsToActivate:
         max_jobs_to_activate = job_poller.calculate_max_jobs_to_activate()
 
         assert max_jobs_to_activate == expected
+
+
+@pytest.mark.asyncio
+class TestPoll:
+    async def test_poll_if_jobs_to_activate_when_no_jobs_to_activate(self, job_poller: JobPoller, caplog):
+        job_poller.max_task_count = 0
+
+        await job_poller.poll_if_jobs_to_activate()
+
+        assert re.search("Maximum number of jobs running for .*. Polling again in in 5 seconds...", caplog.text)
+
+    async def test_poll_if_jobs_to_activate_when_jobs_to_activate(self, job_poller: JobPoller, queue: asyncio.Queue, job_from_task: Job,
+                                     grpc_servicer: GatewayMock):
+        grpc_servicer.active_jobs[job_from_task.key] = job_from_task
+
+        await job_poller.poll_if_jobs_to_activate()
+
+        job: Job = queue.get_nowait()
+        assert job.key == job_from_task.key
