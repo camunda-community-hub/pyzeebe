@@ -26,11 +26,7 @@ class JobPoller:
 
     async def poll(self):
         while self.should_poll():
-            if self.calculate_max_jobs_to_activate() > 0:
-                await self.poll_once()
-            else:
-                logger.warning(f"Maximum number of jobs running for {self.task.type}. Polling again in in {self.poll_retry_delay} seconds...")
-                await asyncio.sleep(self.poll_retry_delay)
+            self.poll_if_jobs_to_activate()
 
     async def poll_once(self):
         try:
@@ -67,3 +63,10 @@ class JobPoller:
     async def stop(self):
         self.stop_event.set()
         await self.queue.join()
+
+    async def poll_if_jobs_to_activate(self):
+        if self.calculate_max_jobs_to_activate() > 0:
+            await self.poll_once()
+        else:
+            logger.warning(f"Maximum number of jobs running for {self.task.type}. Polling again in in {self.poll_retry_delay} seconds...")
+            await asyncio.sleep(self.poll_retry_delay)
