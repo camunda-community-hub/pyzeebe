@@ -38,7 +38,7 @@ class JobPoller:
             raise
         except (ZeebeBackPressureError, ZeebeGatewayUnavailableError, ZeebeInternalError) as error:
             logger.warning(
-                f"Failed to activate jobs from the gateway. Exception: {str(error)}. Retrying in 5 seconds..."
+                f"Failed to activate jobs from the gateway. Exception: {repr(error)}. Retrying in 5 seconds..."
             )
             await asyncio.sleep(5)
 

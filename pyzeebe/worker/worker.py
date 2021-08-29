@@ -38,8 +38,8 @@ class ZeebeWorker(ZeebeTaskRouter):
             before (List[TaskDecorator]): Decorators to be performed before each task
             after (List[TaskDecorator]): Decorators to be performed after each task
             max_connection_retries (int): Amount of connection retries before worker gives up on connecting to zeebe. To setup with infinite retries use -1
-            watcher_max_errors_factor (int): Number of consequtive errors for a task watcher will accept before raising MaxConsecutiveTaskThreadError
-            max_task_count (int): The maximum amount of tasks the worker can handle simultaniously
+            watcher_max_errors_factor (int): Number of consecutive errors for a task watcher will accept before raising MaxConsecutiveTaskThreadError
+            max_task_count (int): The maximum amount of tasks the worker can handle simultaneously
             poll_retry_delay (int): The number of seconds to wait before attempting to poll again when the number of active tasks is equal to max_task_count
         """
         super().__init__(before, after)
@@ -51,6 +51,7 @@ class ZeebeWorker(ZeebeTaskRouter):
         self.max_task_count = max_task_count
         self.poll_retry_delay = poll_retry_delay
         self._task_state = TaskState()
+        self._work_task: Optional[asyncio.Future] = None
         self._job_pollers: List[JobPoller] = []
         self._job_executors: List[JobExecutor] = []
 
@@ -87,12 +88,21 @@ class ZeebeWorker(ZeebeTaskRouter):
             executor.execute() for executor in self._job_executors
         ]
 
-        return await asyncio.gather(*coroutines)
+        self._work_task = asyncio.gather(*coroutines)
+
+        try:
+            await self._work_task
+        except asyncio.CancelledError:
+            logger.info("Zeebe worker was stopped")
+            return
 
     async def stop(self) -> None:
         """
         Stop the worker. This will emit a signal asking tasks to complete the current task and stop polling for new.
         """
+        if self._work_task is not None:
+            self._work_task.cancel()
+
         for poller in self._job_pollers:
             await poller.stop()
 
