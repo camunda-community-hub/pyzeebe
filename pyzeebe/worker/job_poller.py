@@ -30,7 +30,17 @@ class JobPoller:
 
     async def poll_once(self):
         try:
-            raise ZeebeBackPressureError()
+            jobs = self.zeebe_adapter.activate_jobs(
+                task_type=self.task.type,
+                worker=self.worker_name,
+                timeout=self.task.config.timeout_ms,
+                max_jobs_to_activate=self.calculate_max_jobs_to_activate(),
+                variables_to_fetch=self.task.config.variables_to_fetch,
+                request_timeout=self.request_timeout,
+            )
+            async for job in jobs:
+                self.task_state.add(job)
+                await self.queue.put(job)
         except ActivateJobsRequestInvalidError:
             logger.warning(
                 f"Activate job requests was invalid for task {self.task.type}"
