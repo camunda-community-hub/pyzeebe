@@ -26,7 +26,7 @@ class JobPoller:
 
     async def poll(self):
         while self.should_poll():
-            self.handle_max_jobs_to_activate()
+            await self.handle_max_jobs_to_activate()
 
     async def poll_once(self):
         try:
