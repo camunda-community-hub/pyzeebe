@@ -105,18 +105,18 @@ class TestMaxJobsToActivate:
 
 @pytest.mark.asyncio
 class TestPoll:
-    async def test_poll_if_jobs_to_activate_when_no_jobs_to_activate(self, job_poller: JobPoller, caplog):
+    async def test_handle_max_jobs_to_activate_when_no_jobs_to_activate(self, job_poller: JobPoller, caplog):
         job_poller.max_task_count = 0
 
-        await job_poller.poll_if_jobs_to_activate()
+        await job_poller.handle_max_jobs_to_activate()
 
         assert re.search("Maximum number of jobs running for .*. Polling again in in 5 seconds...", caplog.text)
 
-    async def test_poll_if_jobs_to_activate_when_jobs_to_activate(self, job_poller: JobPoller, queue: asyncio.Queue, job_from_task: Job,
+    async def test_handle_max_jobs_to_activate_when_jobs_to_activate(self, job_poller: JobPoller, queue: asyncio.Queue, job_from_task: Job,
                                      grpc_servicer: GatewayMock):
         grpc_servicer.active_jobs[job_from_task.key] = job_from_task
 
-        await job_poller.poll_if_jobs_to_activate()
+        await job_poller.handle_max_jobs_to_activate()
 
         job: Job = queue.get_nowait()
         assert job.key == job_from_task.key
