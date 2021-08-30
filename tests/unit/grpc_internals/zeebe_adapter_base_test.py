@@ -116,7 +116,7 @@ def test_credentials_connection_uri_gotten(zeebe_adapter):
     CamundaCloudCredentials.get_access_token = MagicMock(return_value=str(uuid4()))
     credentials = CamundaCloudCredentials(client_id, client_secret, cluster_id)
     zeebe_adapter = ZeebeAdapterBase(credentials=credentials)
-    assert zeebe_adapter.connection_uri == f"{cluster_id}.zeebe.camunda.io:443"
+    assert zeebe_adapter.connection_uri == f"{cluster_id}.bru-2.zeebe.camunda.io:443"
 
 
 def test_credentials_no_connection_uri(zeebe_adapter):
