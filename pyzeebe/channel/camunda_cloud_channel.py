@@ -14,6 +14,7 @@ def create_camunda_cloud_channel(
     client_id: str,
     client_secret: str,
     cluster_id: str,
+    region: str = "bru-2",
     channel_options: Optional[Dict] = None,
 ) -> grpc.aio.Channel:
     """
@@ -23,6 +24,7 @@ def create_camunda_cloud_channel(
         client_id (str): The client id provided by Camunda Cloud
         client_secret (str): The client secret provided by Camunda Cloud
         cluster_id (str): The zeebe cluster id to connect to
+        region (str): The cluster's region. Defaults to bru-2
         channel_options (Optional[Dict], optional): GRPC channel options. See https://grpc.github.io/grpc/python/glossary.html
 
     Returns:
@@ -36,7 +38,7 @@ def create_camunda_cloud_channel(
     )
 
     return grpc.aio.secure_channel(
-        f"{cluster_id}.zeebe.camunda.io:443",
+        f"{cluster_id}.{region}.zeebe.camunda.io:443",
         channel_credentials,
         options=get_channel_options(channel_options),
     )
