@@ -60,7 +60,7 @@ To create a client for a Camunda Cloud instance:
 
     credentials = CamundaCloudCredentials(client_id="client_id", client_secret="client_secret",
                                           cluster_id="cluster_id")
-    client = ZeebeClient()
+    client = ZeebeClient(credentials=credentials)
 
 
 Run a workflow
