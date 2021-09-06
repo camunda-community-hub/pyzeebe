@@ -97,4 +97,5 @@ async def decorator_task() -> Dict:
 
 
 if __name__ == "__main__":
-    asyncio.run(worker.work())
+    loop = asyncio.get_running_loop()
+    loop.run_until_complete(worker.work())
