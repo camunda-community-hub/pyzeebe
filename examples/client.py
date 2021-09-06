@@ -14,6 +14,7 @@ grpc_channel = create_camunda_cloud_channel(
     client_id="<my_client_id>",
     client_secret="<my_client_secret>",
     cluster_id="<my_cluster_id>",
+    region="<region>" # Default is bru-2
 )
 zeebe_client = ZeebeClient(grpc_channel)
 
