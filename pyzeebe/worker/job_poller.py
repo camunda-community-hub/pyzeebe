@@ -68,5 +68,5 @@ class JobPoller:
         if self.calculate_max_jobs_to_activate() > 0:
             await self.poll_once()
         else:
-            logger.warning(f"Maximum number of jobs running for {self.task.type}. Polling again in in {self.poll_retry_delay} seconds...")
+            logger.warning(f"Maximum number of jobs running for {self.task.type}. Polling again in {self.poll_retry_delay} seconds...")
             await asyncio.sleep(self.poll_retry_delay)
