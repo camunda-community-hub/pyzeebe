@@ -1,4 +1,5 @@
 import pytest
+
 from pyzeebe.job.job import Job
 from pyzeebe.worker.task_state import TaskState
 
