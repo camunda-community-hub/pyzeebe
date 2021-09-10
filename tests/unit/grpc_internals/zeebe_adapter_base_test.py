@@ -24,21 +24,21 @@ class TestShouldRetry:
 
 @pytest.mark.asyncio
 class TestCommonZeebeGrpcErrors:
-    async def test_common_zeebe_grpc_error_internal(
+    async def test_raises_internal_error_on_internal_error_status(
         self, zeebe_adapter: ZeebeAdapterBase
     ):
         error = grpc.aio.AioRpcError(grpc.StatusCode.INTERNAL, None, None)
         with pytest.raises(ZeebeInternalError):
             await zeebe_adapter._common_zeebe_grpc_errors(error)
 
-    async def test_common_zeebe_grpc_error_back_pressure(
+    async def test_raises_back_pressure_error_on_resource_exhausted(
         self, zeebe_adapter: ZeebeAdapterBase
     ):
         error = grpc.aio.AioRpcError(grpc.StatusCode.RESOURCE_EXHAUSTED, None, None)
         with pytest.raises(ZeebeBackPressureError):
             await zeebe_adapter._common_zeebe_grpc_errors(error)
 
-    async def test_common_zeebe_grpc_error_gateway_unavailable(
+    async def test_raises_gateway_unavailable_on_unavailable_status(
         self,
         zeebe_adapter: ZeebeAdapterBase,
     ):
@@ -46,7 +46,7 @@ class TestCommonZeebeGrpcErrors:
         with pytest.raises(ZeebeGatewayUnavailableError):
             await zeebe_adapter._common_zeebe_grpc_errors(error)
 
-    async def test_common_zeebe_grpc_errors_raises_gateway_unavailable_on_cancelled(
+    async def test_raises_gateway_unavailable_on_cancelled_status(
         self,
         zeebe_adapter: ZeebeAdapterBase,
     ):
@@ -55,7 +55,7 @@ class TestCommonZeebeGrpcErrors:
         with pytest.raises(ZeebeGatewayUnavailableError):
             await zeebe_adapter._common_zeebe_grpc_errors(error)
 
-    async def test_common_zeebe_grpc_error_unkown_error(
+    async def test_reraises_unkown_error(
         self,
         zeebe_adapter: ZeebeAdapterBase,
     ):
@@ -63,9 +63,7 @@ class TestCommonZeebeGrpcErrors:
         with pytest.raises(grpc.aio.AioRpcError):
             await zeebe_adapter._common_zeebe_grpc_errors(error)
 
-    async def test_close_after_retried_unavailable(
-        self, zeebe_adapter: ZeebeAdapterBase
-    ):
+    async def test_closes_after_retries_exceeded(self, zeebe_adapter: ZeebeAdapterBase):
         error = grpc.aio.AioRpcError(grpc.StatusCode.UNAVAILABLE, None, None)
 
         zeebe_adapter._close = AsyncMock()
@@ -75,7 +73,7 @@ class TestCommonZeebeGrpcErrors:
 
         zeebe_adapter._close.assert_called_once()
 
-    async def test_close_after_retried_internal(self, zeebe_adapter: ZeebeAdapterBase):
+    async def test_closes_after_internal_error(self, zeebe_adapter: ZeebeAdapterBase):
         error = grpc.aio.AioRpcError(grpc.StatusCode.INTERNAL, None, None)
         zeebe_adapter._close = AsyncMock()
         zeebe_adapter._max_connection_retries = 1
