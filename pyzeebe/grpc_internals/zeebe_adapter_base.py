@@ -31,7 +31,9 @@ class ZeebeAdapterBase:
     async def _common_zeebe_grpc_errors(self, rpc_error: grpc.aio.AioRpcError):
         if self.is_error_status(rpc_error, grpc.StatusCode.RESOURCE_EXHAUSTED):
             raise ZeebeBackPressureError()
-        elif self.is_error_status(rpc_error, grpc.StatusCode.UNAVAILABLE):
+        elif self.is_error_status(
+            rpc_error, grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.CANCELLED
+        ):
             self._current_connection_retries += 1
             if not self._should_retry():
                 await self._close()
@@ -45,8 +47,10 @@ class ZeebeAdapterBase:
             raise rpc_error
 
     @staticmethod
-    def is_error_status(rpc_error: grpc.aio.AioRpcError, status_code: grpc.StatusCode):
-        return rpc_error.code() == status_code
+    def is_error_status(
+        rpc_error: grpc.aio.AioRpcError, *status_codes: grpc.StatusCode
+    ):
+        return rpc_error.code() in status_codes
 
     async def _close(self):
         try:
