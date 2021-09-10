@@ -8,11 +8,13 @@ from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 
 
 class TestShouldRetry:
-    def test_should_retry_no_current_retries(self, zeebe_adapter: ZeebeAdapterBase):
+    def test_returns_true_when_no_current_retries(
+        self, zeebe_adapter: ZeebeAdapterBase
+    ):
         zeebe_adapter._max_connection_retries = 1
         assert zeebe_adapter._should_retry()
 
-    def test_should_retry_current_retries_over_max(
+    def test_returns_false_when_current_retries_over_max(
         self, zeebe_adapter: ZeebeAdapterBase
     ):
         zeebe_adapter._max_connection_retries = 1
