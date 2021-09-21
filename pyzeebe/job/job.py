@@ -84,7 +84,9 @@ class Job(object):
         else:
             raise NoZeebeAdapterError()
 
-    def __eq__(self, other: "Job") -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Job):
+            raise NotImplementedError()
         return self.key == other.key
 
     def __repr__(self):
