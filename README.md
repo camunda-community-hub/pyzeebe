@@ -61,7 +61,8 @@ def example_task(input: str) -> dict:
 async def another_example_task(name: str) -> dict: # Tasks can also be async
     return {"output": f"Hello world, {name} from async task!"}
 
-asyncio.run(worker.work()) # Now every time that a task with type `example` or `example2` is called, the corresponding function will be called
+loop = asyncio.get_running_loop()
+loop.run_until_complete(worker.work()) # Now every time that a task with type `example` or `example2` is called, the corresponding function will be called
 ```
 
 Stop a worker:
