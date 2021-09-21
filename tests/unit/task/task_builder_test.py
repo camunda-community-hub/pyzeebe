@@ -2,6 +2,7 @@ import copy
 from typing import Callable
 
 import pytest
+
 from pyzeebe import Job, TaskDecorator
 from pyzeebe.task import task_builder
 from pyzeebe.task.task import Task
