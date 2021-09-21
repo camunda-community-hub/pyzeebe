@@ -106,11 +106,12 @@ class TestMaxJobsToActivate:
 @pytest.mark.asyncio
 class TestActivateMaxJobs:
     async def test_writes_warning_log_when_no_jobs_to_activate(self, job_poller: JobPoller, caplog):
+        job_poller.poll_retry_delay = 0
         job_poller.max_task_count = 0
 
         await job_poller.activate_max_jobs()
 
-        assert re.search("Maximum number of jobs running for .*. Polling again in 5 seconds...", caplog.text)
+        assert re.search("Maximum number of jobs running for .*. Polling again in 0 seconds...", caplog.text)
 
     async def test_puts_job_in_queue_with_one_available_job(self, job_poller: JobPoller, queue: asyncio.Queue, job_from_task: Job,
                                      grpc_servicer: GatewayMock):
