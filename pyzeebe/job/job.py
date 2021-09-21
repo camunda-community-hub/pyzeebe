@@ -1,3 +1,4 @@
+import copy
 from typing import Dict
 
 from pyzeebe.errors import NoZeebeAdapterError
@@ -83,6 +84,9 @@ class Job(object):
         else:
             raise NoZeebeAdapterError()
 
+    def __eq__(self, other: "Job") -> bool:
+        return self.key == other.key
+
     def __repr__(self):
         return str({"jobKey": self.key, "taskType": self.type, "processInstanceKey": self.process_instance_key,
                     "bpmnProcessId": self.bpmn_process_id,
@@ -90,3 +94,21 @@ class Job(object):
                     "elementId": self.element_id, "elementInstanceKey": self.element_instance_key,
                     "customHeaders": self.custom_headers, "worker": self.worker, "retries": self.retries,
                     "deadline": self.deadline, "variables": self.variables})
+
+def create_copy(job: Job) -> Job:
+    return Job(
+        job.key, 
+        job.type, 
+        job.process_instance_key,
+        job.bpmn_process_id, 
+        job.process_definition_version,
+        job.process_definition_key, 
+        job.element_id,
+        job.element_instance_key, 
+        copy.deepcopy(job.custom_headers), job.worker,
+        job.retries, 
+        job.deadline, 
+        copy.deepcopy(job.variables), 
+        job.status,
+        job.zeebe_adapter
+    )
