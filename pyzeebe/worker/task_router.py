@@ -34,9 +34,9 @@ class ZeebeTaskRouter:
         self.tasks: List[Task] = []
 
     def task(self, task_type: str, exception_handler: ExceptionHandler = default_exception_handler,
-             variables_to_fetch: Optional[List[str]] = None, timeout_ms: int = 10000, max_jobs_to_activate: int = 32,
-             before: List[TaskDecorator] = None, after: List[TaskDecorator] = None, single_value: bool = False,
-             variable_name: str = None):
+             variables_to_fetch: Optional[List[str]] = None, timeout_ms: int = 10000, max_jobs_to_activate: int = 32, 
+             max_running_jobs: int = 32, before: List[TaskDecorator] = None, after: List[TaskDecorator] = None, 
+             single_value: bool = False, variable_name: str = None):
         """
         Decorator to create a task
 
@@ -46,7 +46,8 @@ class ZeebeTaskRouter:
             variables_to_fetch (Optional[List[str]]): The variables to request from Zeebe when activating jobs.
             timeout_ms (int): Maximum duration of the task in milliseconds. If the timeout is surpassed Zeebe will give up 
                                 on the worker and retry it. Default: 10000 (10 seconds).
-            max_jobs_to_activate (int):  Maximum jobs the worker will execute in parallel (of this task). Default: 32
+            max_jobs_to_activate (int):  Maximum amount of jobs the worker will activate in one request to the Zeebe gateway. Default: 32
+            max_running_jobs (int): Maximum amount of jobs that will run simultaneously. Default: 32
             before (List[TaskDecorator]): All decorators which should be performed before the task.
             after (List[TaskDecorator]): All decorators which should be performed after the task.
             single_value (bool): If the function returns a single value (int, string, list) and not a dictionary set
@@ -58,12 +59,14 @@ class ZeebeTaskRouter:
             DuplicateTaskTypeError: If a task from the router already exists in the worker
             NoVariableNameGivenError: When single_value is set, but no variable_name is given
         """
+
         def task_wrapper(task_function: Callable):
             config = TaskConfig(
                 task_type,
                 exception_handler,
                 timeout_ms,
                 max_jobs_to_activate,
+                max_running_jobs,
                 variables_to_fetch or parameter_tools.get_parameters_from_function(
                     task_function),
                 single_value,
@@ -91,6 +94,7 @@ class ZeebeTaskRouter:
             exception_handler=config.exception_handler,
             timeout_ms=config.timeout_ms,
             max_jobs_to_activate=config.max_jobs_to_activate,
+            max_running_jobs=config.max_running_jobs,
             variables_to_fetch=config.variables_to_fetch,
             single_value=config.single_value,
             variable_name=config.variable_name,
