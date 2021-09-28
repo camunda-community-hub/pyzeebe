@@ -47,7 +47,6 @@ class ZeebeWorker(ZeebeTaskRouter):
         self.watcher_max_errors_factor = watcher_max_errors_factor
         self._watcher_thread = None
         self.poll_retry_delay = poll_retry_delay
-        self._task_state = TaskState()
         self._work_task: Optional[asyncio.Future] = None
         self._job_pollers: List[JobPoller] = []
         self._job_executors: List[JobExecutor] = []
@@ -67,16 +66,18 @@ class ZeebeWorker(ZeebeTaskRouter):
 
         for task in self.tasks:
             jobs_queue: asyncio.Queue = asyncio.Queue()
+            task_state = TaskState()
+
             poller = JobPoller(
                 self.zeebe_adapter,
                 task,
                 jobs_queue,
                 self.name,
                 self.request_timeout,
-                self._task_state,
+                task_state,
                 self.poll_retry_delay,
             )
-            executor = JobExecutor(task, jobs_queue, self._task_state)
+            executor = JobExecutor(task, jobs_queue, task_state)
             self._job_pollers.append(poller)
             self._job_executors.append(executor)
 
