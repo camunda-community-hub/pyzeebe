@@ -3,6 +3,7 @@ from uuid import uuid4
 import pytest
 from mock import AsyncMock
 
+from pyzeebe import Job
 from pyzeebe.errors import NoZeebeAdapterError
 
 
@@ -76,3 +77,8 @@ async def test_failure_no_zeebe_adapter(job_without_adapter):
     with pytest.raises(NoZeebeAdapterError):
         message = str(uuid4())
         await job_without_adapter.set_failure_status(message)
+
+
+def test_equality_raises_not_implemented_on_other_type(job_without_adapter: Job):
+    with pytest.raises(NotImplementedError):
+        job_without_adapter == "test"

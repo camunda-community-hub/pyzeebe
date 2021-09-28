@@ -7,6 +7,7 @@ from pyzeebe.function_tools import AsyncFunction, DictFunction, Function
 from pyzeebe.function_tools.async_tools import asyncify, is_async_function
 from pyzeebe.function_tools.dict_tools import convert_to_dict_function
 from pyzeebe.function_tools.parameter_tools import get_job_parameter_name
+from pyzeebe.job.job import create_copy
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_config import TaskConfig
 from pyzeebe.task.types import AsyncTaskDecorator, DecoratorRunner, JobHandler
@@ -28,7 +29,7 @@ def build_job_handler(task_function: Function, task_config: TaskConfig) -> JobHa
     @functools.wraps(task_function)
     async def job_handler(job: Job) -> Job:
         if task_config.job_parameter_name:
-            job.variables[task_config.job_parameter_name] = job
+            job.variables[task_config.job_parameter_name] = create_copy(job)
 
         job = await before_decorator_runner(job)
         job.variables, succeeded = await run_original_task_function(
