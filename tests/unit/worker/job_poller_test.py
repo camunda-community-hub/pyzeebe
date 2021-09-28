@@ -14,7 +14,7 @@ from tests.unit.utils.random_utils import random_job
 
 @pytest.fixture
 def job_poller(zeebe_adapter: ZeebeAdapter, task: Task, queue: asyncio.Queue, task_state: TaskState) -> JobPoller:
-    return JobPoller(zeebe_adapter, task, queue, "test_worker", 100, task_state, 10, 5)
+    return JobPoller(zeebe_adapter, task, queue, "test_worker", 100, task_state, 0)
 
 
 @pytest.mark.asyncio
@@ -63,14 +63,14 @@ class TestShouldPoll:
 
 class TestMaxJobsToActivate:
     def test_returns_smallest_option(self, job_poller: JobPoller):
-        job_poller.max_task_count = 0
+        job_poller.task.config.max_running_jobs = 0
 
         max_jobs_to_activate = job_poller.calculate_max_jobs_to_activate()
 
         assert max_jobs_to_activate == 0
 
     def test_returns_zero_when_max_number_of_jobs_are_running(self, job_poller: JobPoller):
-        for _ in range(job_poller.max_task_count):
+        for _ in range(job_poller.task.config.max_running_jobs):
             job = random_job()
             job_poller.task_state.add(job)
 
@@ -79,19 +79,19 @@ class TestMaxJobsToActivate:
         assert max_jobs_to_activate == 0
 
     calculate_max_jobs_to_activate_cases = dict(
-        max_task_count_minus_active_decides=(4, 10, 12, 6),
-        max_task_count_minus_active_decides_2=(4, 12, 10, 8),
-        max_task_count_minus_active_decides_zero_free=(4, 4, 12, 0),
+        max_running_jobs_minus_active_decides=(4, 10, 12, 6),
+        max_running_jobs_minus_active_decides_2=(4, 12, 10, 8),
+        max_running_jobs_minus_active_decides_zero_free=(4, 4, 12, 0),
         max_jobs_to_activate_decides=(4, 10, 5, 5),
         max_jobs_to_activate_decides_zero_active=(0, 10, 5, 5)
     )
 
-    @pytest.mark.parametrize("active_jobs,max_worker_task_count,max_jobs_to_activate_on_task,expected",
+    @pytest.mark.parametrize("active_jobs,max_running_jobs,max_jobs_to_activate_on_task,expected",
                              calculate_max_jobs_to_activate_cases.values(),
                              ids=calculate_max_jobs_to_activate_cases.keys())
-    def test_calculate_max_jobs_to_activate(self, job_poller: JobPoller, active_jobs: int, max_worker_task_count: int,
+    def test_calculate_max_jobs_to_activate(self, job_poller: JobPoller, active_jobs: int, max_running_jobs: int,
                                             max_jobs_to_activate_on_task: int, expected: int):
-        job_poller.max_task_count = max_worker_task_count
+        job_poller.task.config.max_running_jobs = max_running_jobs
         job_poller.task.config.max_jobs_to_activate = max_jobs_to_activate_on_task
 
         for _ in range(active_jobs):
@@ -107,7 +107,7 @@ class TestMaxJobsToActivate:
 class TestActivateMaxJobs:
     async def test_writes_warning_log_when_no_jobs_to_activate(self, job_poller: JobPoller, caplog):
         job_poller.poll_retry_delay = 0
-        job_poller.max_task_count = 0
+        job_poller.task.config.max_running_jobs = 0
 
         await job_poller.activate_max_jobs()
 
