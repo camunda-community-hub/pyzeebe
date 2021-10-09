@@ -34,7 +34,7 @@ def create_camunda_cloud_channel(
         InvalidCamundaCloudCredentialsError: One of the provided camunda credentials is not correct
     """
     channel_credentials = _create_camunda_cloud_credentials(
-        client_id, client_secret, cluster_id
+        client_id, client_secret, cluster_id, region
     )
 
     return grpc.aio.secure_channel(
@@ -45,14 +45,14 @@ def create_camunda_cloud_channel(
 
 
 def _create_camunda_cloud_credentials(
-    client_id: str, client_secret: str, cluster_id: str
+    client_id: str, client_secret: str, cluster_id: str, region: str
 ) -> grpc.ChannelCredentials:
     try:
         access_token = _get_access_token(
             "https://login.cloud.camunda.io/oauth/token",
             client_id,
             client_secret,
-            cluster_id,
+            f"{cluster_id}.{region}.zeebe.camunda.io",
         )
         return _create_oauth_credentials(access_token)
     except InvalidOAuthCredentialsError as oauth_error:
