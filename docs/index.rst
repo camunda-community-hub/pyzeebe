@@ -19,28 +19,30 @@ Creating a worker
 
 .. code-block:: python
 
-   from pyzeebe import ZeebeWorker
+   from pyzeebe import ZeebeWorker, create_insecure_channel
 
-   worker = ZeebeWorker()
+   channel = create_insecure_channel()
+   worker = ZeebeWorker(channel)
 
    @worker.task(task_type="my_task")
-   def my_task(x: int):
+   async def my_task(x: int):
       return {"y": x + 1}
 
-   worker.work()
+   await worker.work()
 
 Creating a client
 
 .. code-block:: python
 
-   from pyzeebe import ZeebeClient
+   from pyzeebe import ZeebeClient, create_insecure_channel
 
-   client = ZeebeClient()
+   channel = create_insecure_channel()
+   client = ZeebeClient(channel)
 
-   client.run_workflow("my_workflow")
+   await client.run_process("my_process")
 
-   # Run workflow with variables:
-   client.run_workflow("my_workflow", variables={"x": 0})
+   # Run process with variables:
+   await client.run_process("my_process", variables={"x": 0})
 
 
 Dependencies
@@ -61,5 +63,6 @@ Table Of Contents
 
     Client <client>
     Worker <worker>
+    Channels <channels>
     Decorators <decorators>
-    Exceptions <exceptions>
+    Exceptions <errors>

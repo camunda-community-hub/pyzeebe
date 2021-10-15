@@ -1,10 +1,6 @@
 name: Test pyzeebe
 
-on:
-  push:
-    branches: [ master, development, feature/*, bugfix/*, maintenance/* ]
-  pull_request:
-    branches: [ master, development, feature/*, bugfix/*, maintenance/* ]
+on: [push, pull_request]
 
 jobs:
   build:
