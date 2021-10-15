@@ -62,6 +62,9 @@ disable = ["C0114", "C0115", "C0116"]
 [tool.black]
 line-length = 120
 
+[tool.isort]
+profile = "black"
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
