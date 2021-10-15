@@ -7,7 +7,7 @@ verify_ssl = true
 autopep8 = "~=1.5.4"
 pylint = "~=2.7.2"
 coverage = "~=5.5"
-pytest = "~=6.2.2"
+pytest = "~=6.2.5"
 pytest-grpc = "~=0.8.0"
 mypy = "~=0.812"
 coveralls = "~=2.2.0"
