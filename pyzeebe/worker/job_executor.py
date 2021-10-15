@@ -18,13 +18,12 @@ class JobExecutor:
         self.jobs = jobs
         self.task_state = task_state
         self.stop_event = asyncio.Event()
+        self.loop = asyncio.get_event_loop()
 
     async def execute(self) -> None:
         while self.should_execute():
             job = await self.get_next_job()
-            task = asyncio.create_task(
-                self.execute_one_job(job)
-            )
+            task = self.loop.create_task(self.execute_one_job(job))
             task.add_done_callback(create_job_callback(self, job))
 
     async def get_next_job(self) -> Job:
@@ -34,9 +33,7 @@ class JobExecutor:
         try:
             await self.task.job_handler(job)
         except JobAlreadyDeactivatedError as error:
-            logger.warning(
-                f"Job was already deactivated. Job key: {error.job_key}"
-            )
+            logger.warning(f"Job was already deactivated. Job key: {error.job_key}")
 
     def should_execute(self) -> bool:
         return not self.stop_event.is_set()
