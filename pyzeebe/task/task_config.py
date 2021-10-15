@@ -11,7 +11,7 @@ class TaskConfig:
     after: List[AsyncTaskDecorator]
 
     def __init__(self, type: str, exception_handler: ExceptionHandler,
-                 timeout_ms: int, max_jobs_to_activate: int,
+                 timeout_ms: int, max_jobs_to_activate: int, max_running_jobs: int,
                  variables_to_fetch: List[str],
                  single_value: bool, variable_name: str, before: List[TaskDecorator],
                  after: List[TaskDecorator]):
@@ -22,6 +22,7 @@ class TaskConfig:
         self.exception_handler = exception_handler
         self.timeout_ms = timeout_ms
         self.max_jobs_to_activate = max_jobs_to_activate
+        self.max_running_jobs = max_running_jobs
         self.variables_to_fetch = variables_to_fetch
         self.single_value = single_value
         self.variable_name = variable_name
@@ -30,7 +31,10 @@ class TaskConfig:
         self.job_parameter_name: Optional[str] = None
 
     def __repr__(self):
-        return f"TaskConfig(type={self.type}, exception_handler={self.exception_handler}, " \
-               f"timeout_ms={self.timeout_ms}, max_jobs_to_activate={self.max_jobs_to_activate}, " \
-               f"variables_to_fetch={self.variables_to_fetch}, single_value={self.single_value}, " \
-               f"variable_name={self.variable_name}, before={self.before}, after={self.after})"
+        return (
+            f"TaskConfig(type={self.type}, exception_handler={self.exception_handler}, "
+            f"timeout_ms={self.timeout_ms}, max_jobs_to_activate={self.max_jobs_to_activate}, "
+            f"max_running_jobs={self.max_running_jobs}, variables_to_fetch={self.variables_to_fetch},"
+            f"single_value={self.single_value}, variable_name={self.variable_name},"
+            f"before={self.before}, after={self.after})"
+        )

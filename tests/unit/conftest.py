@@ -77,6 +77,7 @@ def task_config(task_type):
         exception_handler=AsyncMock(),
         timeout_ms=10000,
         max_jobs_to_activate=32,
+        max_running_jobs=32,
         variables_to_fetch=[],
         single_value=False,
         variable_name="",
@@ -146,6 +147,7 @@ def decorator():
 @pytest.fixture(scope="module")
 def grpc_add_to_server():
     from zeebe_grpc.gateway_pb2_grpc import add_GatewayServicer_to_server
+
     return add_GatewayServicer_to_server
 
 
@@ -157,6 +159,7 @@ def grpc_servicer():
 @pytest.fixture(scope="module")
 def grpc_stub_cls(grpc_channel):
     from zeebe_grpc.gateway_pb2_grpc import GatewayStub
+
     return GatewayStub
 
 
