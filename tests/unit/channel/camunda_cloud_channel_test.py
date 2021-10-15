@@ -33,6 +33,11 @@ def cluster_id() -> str:
 
 
 @pytest.fixture
+def region() -> str:
+    return str(uuid4())
+
+
+@pytest.fixture
 def url() -> str:
     return "https://login.cloud.camunda.io/oauth/token"
 
@@ -88,12 +93,11 @@ class TestCamundaCloudChannel:
         client_id: str,
         client_secret: str,
         cluster_id: str,
+        region: str,
     ):
-        expected_request_body = (
-            f"client_id={client_id}&client_secret={client_secret}&audience={cluster_id}"
-        )
+        expected_request_body = f"client_id={client_id}&client_secret={client_secret}&audience={cluster_id}.{region}.zeebe.camunda.io"
 
-        create_camunda_cloud_channel(client_id, client_secret, cluster_id)
+        create_camunda_cloud_channel(client_id, client_secret, cluster_id, region)
 
         request = mocked_responses.calls[0].request
         assert request.body == expected_request_body
