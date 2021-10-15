@@ -59,6 +59,8 @@ ignore_missing_imports = true
 [tool.pylint.master]
 disable = ["C0114", "C0115", "C0116"]
 
+[tool.black]
+line-length = 120
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
