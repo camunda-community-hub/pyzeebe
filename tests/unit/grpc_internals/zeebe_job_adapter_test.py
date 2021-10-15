@@ -2,11 +2,9 @@ from random import randint
 from uuid import uuid4
 
 import pytest
-from zeebe_grpc.gateway_pb2 import (CompleteJobResponse, FailJobResponse,
-                                    ThrowErrorResponse)
+from zeebe_grpc.gateway_pb2 import CompleteJobResponse, FailJobResponse, ThrowErrorResponse
 
-from pyzeebe.errors import (ActivateJobsRequestInvalidError,
-                            JobAlreadyDeactivatedError, JobNotFoundError)
+from pyzeebe.errors import ActivateJobsRequestInvalidError, JobAlreadyDeactivatedError, JobNotFoundError
 from pyzeebe.grpc_internals.zeebe_job_adapter import ZeebeJobAdapter
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
@@ -37,9 +35,11 @@ class TestActivateJobs:
         timeout=randint(10, 100),
         request_timeout=100,
         max_jobs_to_activate=1,
-        variables_to_fetch=[]
+        variables_to_fetch=[],
     ):
-        return self.zeebe_job_adapter.activate_jobs(task_type, worker, timeout, max_jobs_to_activate, variables_to_fetch, request_timeout)
+        return self.zeebe_job_adapter.activate_jobs(
+            task_type, worker, timeout, max_jobs_to_activate, variables_to_fetch, request_timeout
+        )
 
     async def test_returns_correct_amount_of_jobs(self, grpc_servicer: GatewayMock, task: Task):
         active_jobs_count = randint(4, 100)

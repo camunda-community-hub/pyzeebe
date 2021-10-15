@@ -4,12 +4,10 @@ import mock
 import pytest
 
 from pyzeebe import TaskDecorator
-from pyzeebe.errors import (BusinessError, DuplicateTaskTypeError,
-                            TaskNotFoundError)
+from pyzeebe.errors import BusinessError, DuplicateTaskTypeError, TaskNotFoundError
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
-from pyzeebe.worker.task_router import (ZeebeTaskRouter,
-                                        default_exception_handler)
+from pyzeebe.worker.task_router import ZeebeTaskRouter, default_exception_handler
 from tests.unit.utils.random_utils import randint
 
 
@@ -55,6 +53,7 @@ def test_remove_task_from_many(router: ZeebeTaskRouter, task: Task):
     router.tasks.append(task)
 
     for _ in range(1, randint(0, 100)):
+
         @router.task(str(uuid4()))
         def dummy_function():
             pass

@@ -15,5 +15,7 @@ class Task:
         return self.config.type
 
     def __repr__(self):
-        return f"Task(config= {self.config}, original_function={self.original_function}, " \
-               f"job_handler={self.job_handler})"
+        return (
+            f"Task(config= {self.config}, original_function={self.original_function}, "
+            f"job_handler={self.job_handler})"
+        )

@@ -12,8 +12,9 @@ async def test_run_process(zeebe_client, grpc_servicer):
     bpmn_process_id = str(uuid4())
     version = randint(0, 10)
     grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
-    assert isinstance(await zeebe_client.run_process(
-        bpmn_process_id=bpmn_process_id, variables={}, version=version), int)
+    assert isinstance(
+        await zeebe_client.run_process(bpmn_process_id=bpmn_process_id, variables={}, version=version), int
+    )
 
 
 @pytest.mark.asyncio
@@ -21,9 +22,7 @@ class TestRunProcessWithResult:
     async def test_run_process_with_result_instance_key_is_int(self, zeebe_client, deployed_process):
         bpmn_process_id, version = deployed_process
 
-        process_instance_key, _ = await zeebe_client.run_process_with_result(
-            bpmn_process_id, {}, version
-        )
+        process_instance_key, _ = await zeebe_client.run_process_with_result(bpmn_process_id, {}, version)
 
         assert isinstance(process_instance_key, int)
 
@@ -31,9 +30,7 @@ class TestRunProcessWithResult:
         expected = {}
         bpmn_process_id, version = deployed_process
 
-        _, output_variables = await zeebe_client.run_process_with_result(
-            bpmn_process_id, {}, version
-        )
+        _, output_variables = await zeebe_client.run_process_with_result(bpmn_process_id, {}, version)
 
         assert output_variables == expected
 
@@ -64,7 +61,8 @@ async def test_cancel_process_instance(zeebe_client, grpc_servicer):
     version = randint(0, 10)
     grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
     process_instance_key = await zeebe_client.run_process(
-        bpmn_process_id=bpmn_process_id, variables={}, version=version)
+        bpmn_process_id=bpmn_process_id, variables={}, version=version
+    )
     assert isinstance(await zeebe_client.cancel_process_instance(process_instance_key=process_instance_key), int)
 
 

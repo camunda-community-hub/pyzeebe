@@ -24,15 +24,11 @@ def test_add_then_remove_results_in_0_active(task_state: TaskState, job_from_tas
     assert task_state.count_active() == 0
 
 
-def test_remove_non_existing_job_dont_withdraw_from_active_jobs(
-    task_state: TaskState, job_from_task: Job
-):
+def test_remove_non_existing_job_dont_withdraw_from_active_jobs(task_state: TaskState, job_from_task: Job):
     task_state.remove(job_from_task)
     assert task_state.count_active() == 0
 
 
-def test_add_already_activated_job_does_not_raise_an_error(
-    task_state: TaskState, job_from_task: Job
-):
+def test_add_already_activated_job_does_not_raise_an_error(task_state: TaskState, job_from_task: Job):
     task_state.add(job_from_task)
     task_state.add(job_from_task)

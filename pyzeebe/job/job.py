@@ -6,10 +6,24 @@ from pyzeebe.job.job_status import JobStatus
 
 
 class Job(object):
-    def __init__(self, key: int, _type: str, process_instance_key: int, bpmn_process_id: str,
-                 process_definition_version: int, process_definition_key: int, element_id: str, element_instance_key: int,
-                 custom_headers: Dict, worker: str, retries: int, deadline: int, variables: Dict,
-                 status: JobStatus = JobStatus.Running, zeebe_adapter=None):
+    def __init__(
+        self,
+        key: int,
+        _type: str,
+        process_instance_key: int,
+        bpmn_process_id: str,
+        process_definition_version: int,
+        process_definition_key: int,
+        element_id: str,
+        element_instance_key: int,
+        custom_headers: Dict,
+        worker: str,
+        retries: int,
+        deadline: int,
+        variables: Dict,
+        status: JobStatus = JobStatus.Running,
+        zeebe_adapter=None,
+    ):
         self.key = key
         self.type = _type
         self.process_instance_key = process_instance_key
@@ -58,7 +72,7 @@ class Job(object):
 
         """
         if self.zeebe_adapter:
-            await self.zeebe_adapter.fail_job(job_key=self.key, retries=self.retries-1, message=message)
+            await self.zeebe_adapter.fail_job(job_key=self.key, retries=self.retries - 1, message=message)
         else:
             raise NoZeebeAdapterError()
 
@@ -90,28 +104,40 @@ class Job(object):
         return self.key == other.key
 
     def __repr__(self):
-        return str({"jobKey": self.key, "taskType": self.type, "processInstanceKey": self.process_instance_key,
-                    "bpmnProcessId": self.bpmn_process_id,
-                    "processDefinitionVersion": self.process_definition_version, "processDefinitionKey": self.process_definition_key,
-                    "elementId": self.element_id, "elementInstanceKey": self.element_instance_key,
-                    "customHeaders": self.custom_headers, "worker": self.worker, "retries": self.retries,
-                    "deadline": self.deadline, "variables": self.variables})
+        return str(
+            {
+                "jobKey": self.key,
+                "taskType": self.type,
+                "processInstanceKey": self.process_instance_key,
+                "bpmnProcessId": self.bpmn_process_id,
+                "processDefinitionVersion": self.process_definition_version,
+                "processDefinitionKey": self.process_definition_key,
+                "elementId": self.element_id,
+                "elementInstanceKey": self.element_instance_key,
+                "customHeaders": self.custom_headers,
+                "worker": self.worker,
+                "retries": self.retries,
+                "deadline": self.deadline,
+                "variables": self.variables,
+            }
+        )
+
 
 def create_copy(job: Job) -> Job:
     return Job(
-        job.key, 
-        job.type, 
+        job.key,
+        job.type,
         job.process_instance_key,
-        job.bpmn_process_id, 
+        job.bpmn_process_id,
         job.process_definition_version,
-        job.process_definition_key, 
+        job.process_definition_key,
         job.element_id,
-        job.element_instance_key, 
-        copy.deepcopy(job.custom_headers), 
+        job.element_instance_key,
+        copy.deepcopy(job.custom_headers),
         job.worker,
-        job.retries, 
-        job.deadline, 
-        copy.deepcopy(job.variables), 
+        job.retries,
+        job.deadline,
+        copy.deepcopy(job.variables),
         job.status,
-        job.zeebe_adapter
+        job.zeebe_adapter,
     )

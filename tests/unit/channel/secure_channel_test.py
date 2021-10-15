@@ -6,8 +6,7 @@ from mock import Mock, patch
 
 from pyzeebe import create_secure_channel
 from pyzeebe.channel.channel_options import get_channel_options
-from pyzeebe.channel.utils import (DEFAULT_HOSTNAME, DEFAULT_PORT,
-                                   create_address)
+from pyzeebe.channel.utils import DEFAULT_HOSTNAME, DEFAULT_PORT, create_address
 
 
 class TestCreateSecureChannel:

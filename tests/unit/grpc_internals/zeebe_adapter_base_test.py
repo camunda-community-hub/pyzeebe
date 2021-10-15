@@ -2,21 +2,16 @@ import grpc
 import pytest
 from mock import AsyncMock
 
-from pyzeebe.errors import (ZeebeBackPressureError,
-                            ZeebeGatewayUnavailableError, ZeebeInternalError)
+from pyzeebe.errors import ZeebeBackPressureError, ZeebeGatewayUnavailableError, ZeebeInternalError
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 
 
 class TestShouldRetry:
-    def test_returns_true_when_no_current_retries(
-        self, zeebe_adapter: ZeebeAdapterBase
-    ):
+    def test_returns_true_when_no_current_retries(self, zeebe_adapter: ZeebeAdapterBase):
         zeebe_adapter._max_connection_retries = 1
         assert zeebe_adapter._should_retry()
 
-    def test_returns_false_when_current_retries_over_max(
-        self, zeebe_adapter: ZeebeAdapterBase
-    ):
+    def test_returns_false_when_current_retries_over_max(self, zeebe_adapter: ZeebeAdapterBase):
         zeebe_adapter._max_connection_retries = 1
         zeebe_adapter._current_connection_retries = 1
         assert not zeebe_adapter._should_retry()
@@ -24,16 +19,12 @@ class TestShouldRetry:
 
 @pytest.mark.asyncio
 class TestCommonZeebeGrpcErrors:
-    async def test_raises_internal_error_on_internal_error_status(
-        self, zeebe_adapter: ZeebeAdapterBase
-    ):
+    async def test_raises_internal_error_on_internal_error_status(self, zeebe_adapter: ZeebeAdapterBase):
         error = grpc.aio.AioRpcError(grpc.StatusCode.INTERNAL, None, None)
         with pytest.raises(ZeebeInternalError):
             await zeebe_adapter._common_zeebe_grpc_errors(error)
 
-    async def test_raises_back_pressure_error_on_resource_exhausted(
-        self, zeebe_adapter: ZeebeAdapterBase
-    ):
+    async def test_raises_back_pressure_error_on_resource_exhausted(self, zeebe_adapter: ZeebeAdapterBase):
         error = grpc.aio.AioRpcError(grpc.StatusCode.RESOURCE_EXHAUSTED, None, None)
         with pytest.raises(ZeebeBackPressureError):
             await zeebe_adapter._common_zeebe_grpc_errors(error)

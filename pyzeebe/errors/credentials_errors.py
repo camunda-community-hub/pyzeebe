@@ -4,7 +4,8 @@ from pyzeebe.errors.pyzeebe_errors import PyZeebeError
 class InvalidOAuthCredentialsError(PyZeebeError):
     def __init__(self, url: str, client_id: str, audience: str):
         super().__init__(
-            f"Invalid OAuth credentials supplied for {url} with audience {audience} and client id {client_id}")
+            f"Invalid OAuth credentials supplied for {url} with audience {audience} and client id {client_id}"
+        )
 
 
 class InvalidCamundaCloudCredentialsError(PyZeebeError):

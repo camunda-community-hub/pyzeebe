@@ -7,8 +7,7 @@ from mock import Mock, patch
 from requests import HTTPError
 
 from pyzeebe import create_camunda_cloud_channel
-from pyzeebe.errors import (InvalidCamundaCloudCredentialsError,
-                            InvalidOAuthCredentialsError)
+from pyzeebe.errors import InvalidCamundaCloudCredentialsError, InvalidOAuthCredentialsError
 
 
 @pytest.fixture
@@ -48,12 +47,8 @@ def access_token() -> str:
 
 
 @pytest.fixture
-def mock_access_token_response(
-    mocked_responses: responses.RequestsMock, url: str, access_token: str
-):
-    mocked_responses.add(
-        responses.POST, url, json={"access_token": access_token}, status=200
-    )
+def mock_access_token_response(mocked_responses: responses.RequestsMock, url: str, access_token: str):
+    mocked_responses.add(responses.POST, url, json={"access_token": access_token}, status=200)
 
 
 class TestCamundaCloudChannel:
@@ -95,7 +90,9 @@ class TestCamundaCloudChannel:
         cluster_id: str,
         region: str,
     ):
-        expected_request_body = f"client_id={client_id}&client_secret={client_secret}&audience={cluster_id}.{region}.zeebe.camunda.io"
+        expected_request_body = (
+            f"client_id={client_id}&client_secret={client_secret}&audience={cluster_id}.{region}.zeebe.camunda.io"
+        )
 
         create_camunda_cloud_channel(client_id, client_secret, cluster_id, region)
 
