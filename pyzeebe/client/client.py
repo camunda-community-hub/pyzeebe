@@ -8,9 +8,7 @@ from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 class ZeebeClient(object):
     """A zeebe client that can connect to a zeebe instance and perform actions."""
 
-    def __init__(
-        self, grpc_channel: grpc.aio.Channel, max_connection_retries: int = 10
-    ):
+    def __init__(self, grpc_channel: grpc.aio.Channel, max_connection_retries: int = 10):
         """
         Args:
             grpc_channel (grpc.aio.Channel): GRPC Channel connected to a Zeebe gateway
@@ -19,9 +17,7 @@ class ZeebeClient(object):
 
         self.zeebe_adapter = ZeebeAdapter(grpc_channel, max_connection_retries)
 
-    async def run_process(
-        self, bpmn_process_id: str, variables: Dict = None, version: int = -1
-    ) -> int:
+    async def run_process(self, bpmn_process_id: str, variables: Dict = None, version: int = -1) -> int:
         """
         Run process
 
@@ -102,9 +98,7 @@ class ZeebeClient(object):
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
-        await self.zeebe_adapter.cancel_process_instance(
-            process_instance_key=process_instance_key
-        )
+        await self.zeebe_adapter.cancel_process_instance(process_instance_key=process_instance_key)
         return process_instance_key
 
     async def deploy_process(self, *process_file_path: str) -> None:

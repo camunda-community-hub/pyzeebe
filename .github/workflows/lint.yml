@@ -31,3 +31,17 @@ jobs:
       - name: Check imports
         run: |
           poetry run isort . --check --diff
+
+  format-checking:
+    runs-on: ubuntu-latest
+
+    container: python:3.8
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          poetry install
+      - name: Check imports
+        run: |
+          poetry run black --check .

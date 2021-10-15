@@ -6,8 +6,10 @@ from requests import HTTPError
 from requests_oauthlib import OAuth2Session
 
 from pyzeebe.channel.channel_options import get_channel_options
-from pyzeebe.errors import (InvalidCamundaCloudCredentialsError,
-                            InvalidOAuthCredentialsError)
+from pyzeebe.errors import (
+    InvalidCamundaCloudCredentialsError,
+    InvalidOAuthCredentialsError,
+)
 
 
 def create_camunda_cloud_channel(
@@ -33,9 +35,7 @@ def create_camunda_cloud_channel(
     Raises:
         InvalidCamundaCloudCredentialsError: One of the provided camunda credentials is not correct
     """
-    channel_credentials = _create_camunda_cloud_credentials(
-        client_id, client_secret, cluster_id, region
-    )
+    channel_credentials = _create_camunda_cloud_credentials(client_id, client_secret, cluster_id, region)
 
     return grpc.aio.secure_channel(
         f"{cluster_id}.{region}.zeebe.camunda.io:443",
@@ -56,14 +56,10 @@ def _create_camunda_cloud_credentials(
         )
         return _create_oauth_credentials(access_token)
     except InvalidOAuthCredentialsError as oauth_error:
-        raise InvalidCamundaCloudCredentialsError(
-            client_id, cluster_id
-        ) from oauth_error
+        raise InvalidCamundaCloudCredentialsError(client_id, cluster_id) from oauth_error
 
 
-def _get_access_token(
-    url: str, client_id: str, client_secret: str, audience: str
-) -> str:
+def _get_access_token(url: str, client_id: str, client_secret: str, audience: str) -> str:
     try:
         client = oauth2.BackendApplicationClient(client_id)
         client.prepare_request_body(include_client_id=True)
@@ -79,9 +75,7 @@ def _get_access_token(
             response.raise_for_status()
             return response.json()["access_token"]
     except HTTPError as http_error:
-        raise InvalidOAuthCredentialsError(
-            url=url, client_id=client_id, audience=audience
-        ) from http_error
+        raise InvalidOAuthCredentialsError(url=url, client_id=client_id, audience=audience) from http_error
 
 
 def _create_oauth_credentials(access_token: str) -> grpc.ChannelCredentials:

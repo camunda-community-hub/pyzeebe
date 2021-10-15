@@ -3,9 +3,7 @@ from pyzeebe.errors.pyzeebe_errors import PyZeebeError
 
 class ProcessDefinitionNotFoundError(PyZeebeError):
     def __init__(self, bpmn_process_id: str, version: int):
-        super().__init__(
-            f"Process definition: {bpmn_process_id}  with {version} was not found"
-        )
+        super().__init__(f"Process definition: {bpmn_process_id}  with {version} was not found")
         self.bpmn_process_id = bpmn_process_id
         self.version = version
 
@@ -18,9 +16,7 @@ class ProcessInstanceNotFoundError(PyZeebeError):
 
 class ProcessDefinitionHasNoStartEventError(PyZeebeError):
     def __init__(self, bpmn_process_id: str):
-        super().__init__(
-            f"Process {bpmn_process_id} has no start event that can be called manually"
-        )
+        super().__init__(f"Process {bpmn_process_id} has no start event that can be called manually")
         self.bpmn_process_id = bpmn_process_id
 
 
@@ -34,7 +30,5 @@ class InvalidJSONError(PyZeebeError):
 
 class ProcessTimeoutError(PyZeebeError, TimeoutError):
     def __init__(self, bpmn_process_id: str):
-        super().__init__(
-            f"Timeout while waiting for process {bpmn_process_id} to complete"
-        )
+        super().__init__(f"Timeout while waiting for process {bpmn_process_id} to complete")
         self.bpmn_process_id = bpmn_process_id

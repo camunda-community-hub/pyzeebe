@@ -1,8 +1,12 @@
 import logging
 from typing import Callable, List, Optional, Tuple
 
-from pyzeebe.errors import (BusinessError, DuplicateTaskTypeError,
-                            NoVariableNameGivenError, TaskNotFoundError)
+from pyzeebe.errors import (
+    BusinessError,
+    DuplicateTaskTypeError,
+    NoVariableNameGivenError,
+    TaskNotFoundError,
+)
 from pyzeebe.function_tools import parameter_tools
 from pyzeebe.job.job import Job
 from pyzeebe.task import task_builder
@@ -33,18 +37,27 @@ class ZeebeTaskRouter:
         self._after: List[TaskDecorator] = after or []
         self.tasks: List[Task] = []
 
-    def task(self, task_type: str, exception_handler: ExceptionHandler = default_exception_handler,
-             variables_to_fetch: Optional[List[str]] = None, timeout_ms: int = 10000, max_jobs_to_activate: int = 32, 
-             max_running_jobs: int = 32, before: List[TaskDecorator] = None, after: List[TaskDecorator] = None, 
-             single_value: bool = False, variable_name: str = None):
+    def task(
+        self,
+        task_type: str,
+        exception_handler: ExceptionHandler = default_exception_handler,
+        variables_to_fetch: Optional[List[str]] = None,
+        timeout_ms: int = 10000,
+        max_jobs_to_activate: int = 32,
+        max_running_jobs: int = 32,
+        before: List[TaskDecorator] = None,
+        after: List[TaskDecorator] = None,
+        single_value: bool = False,
+        variable_name: str = None,
+    ):
         """
         Decorator to create a task
 
         Args:
             task_type (str): The task type
-            exception_handler (ExceptionHandler): Handler that will be called when a job fails. 
+            exception_handler (ExceptionHandler): Handler that will be called when a job fails.
             variables_to_fetch (Optional[List[str]]): The variables to request from Zeebe when activating jobs.
-            timeout_ms (int): Maximum duration of the task in milliseconds. If the timeout is surpassed Zeebe will give up 
+            timeout_ms (int): Maximum duration of the task in milliseconds. If the timeout is surpassed Zeebe will give up
                                 on the worker and retry it. Default: 10000 (10 seconds).
             max_jobs_to_activate (int):  Maximum amount of jobs the worker will activate in one request to the Zeebe gateway. Default: 32
             max_running_jobs (int): Maximum amount of jobs that will run simultaneously. Default: 32
@@ -67,18 +80,15 @@ class ZeebeTaskRouter:
                 timeout_ms,
                 max_jobs_to_activate,
                 max_running_jobs,
-                variables_to_fetch or parameter_tools.get_parameters_from_function(
-                    task_function),
+                variables_to_fetch or parameter_tools.get_parameters_from_function(task_function),
                 single_value,
                 variable_name or "",
                 before or [],
-                after or []
+                after or [],
             )
             config_with_decorators = self._add_decorators_to_config(config)
 
-            task = task_builder.build_task(
-                task_function, config_with_decorators
-            )
+            task = task_builder.build_task(task_function, config_with_decorators)
             self._add_task(task)
             return task_function
 
@@ -99,7 +109,7 @@ class ZeebeTaskRouter:
             single_value=config.single_value,
             variable_name=config.variable_name,
             before=self._before + config.before,  # type: ignore
-            after=config.after + self._after  # type: ignore
+            after=config.after + self._after,  # type: ignore
         )
         return new_task_config
 

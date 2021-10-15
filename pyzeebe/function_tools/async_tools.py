@@ -21,6 +21,7 @@ def asyncify(task_function: SyncFunction) -> AsyncFunction:
     async def async_function(*args, **kwargs):
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, functools.partial(task_function, *args, **kwargs))
+
     return async_function
 
 

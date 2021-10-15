@@ -10,11 +10,19 @@ class TaskConfig:
     before: List[AsyncTaskDecorator]
     after: List[AsyncTaskDecorator]
 
-    def __init__(self, type: str, exception_handler: ExceptionHandler,
-                 timeout_ms: int, max_jobs_to_activate: int, max_running_jobs: int,
-                 variables_to_fetch: List[str],
-                 single_value: bool, variable_name: str, before: List[TaskDecorator],
-                 after: List[TaskDecorator]):
+    def __init__(
+        self,
+        type: str,
+        exception_handler: ExceptionHandler,
+        timeout_ms: int,
+        max_jobs_to_activate: int,
+        max_running_jobs: int,
+        variables_to_fetch: List[str],
+        single_value: bool,
+        variable_name: str,
+        before: List[TaskDecorator],
+        after: List[TaskDecorator],
+    ):
         if single_value and not variable_name:
             raise NoVariableNameGivenError(type)
 

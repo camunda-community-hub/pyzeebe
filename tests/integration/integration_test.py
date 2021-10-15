@@ -50,9 +50,7 @@ def task(zeebe_worker: ZeebeWorker):
 async def deploy_process(zeebe_client: ZeebeClient):
     try:
         integration_tests_path = os.path.join("tests", "integration")
-        await zeebe_client.deploy_process(
-            os.path.join(integration_tests_path, "test.bpmn")
-        )
+        await zeebe_client.deploy_process(os.path.join(integration_tests_path, "test.bpmn"))
     except FileNotFoundError:
         await zeebe_client.deploy_process("test.bpmn")
 
@@ -66,9 +64,7 @@ def start_worker(event_loop: asyncio.AbstractEventLoop, zeebe_worker: ZeebeWorke
 
 @pytest.mark.asyncio
 async def test_run_process(zeebe_client: ZeebeClient):
-    process_key = await zeebe_client.run_process(
-        "test", {"input": str(uuid4()), "should_throw": False}
-    )
+    process_key = await zeebe_client.run_process("test", {"input": str(uuid4()), "should_throw": False})
     assert isinstance(process_key, int)
 
 
@@ -91,7 +87,5 @@ async def test_run_process_with_result(zeebe_client: ZeebeClient):
 
 @pytest.mark.asyncio
 async def test_cancel_process(zeebe_client: ZeebeClient):
-    process_key = await zeebe_client.run_process(
-        "test", {"input": str(uuid4()), "should_throw": False}
-    )
+    process_key = await zeebe_client.run_process("test", {"input": str(uuid4()), "should_throw": False})
     await zeebe_client.cancel_process_instance(process_key)

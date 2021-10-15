@@ -1,8 +1,13 @@
 import asyncio
 from typing import Dict
 
-from pyzeebe import (Job, ZeebeWorker, create_camunda_cloud_channel,
-                     create_insecure_channel, create_secure_channel)
+from pyzeebe import (
+    Job,
+    ZeebeWorker,
+    create_camunda_cloud_channel,
+    create_insecure_channel,
+    create_secure_channel,
+)
 from pyzeebe.errors import BusinessError
 
 
@@ -35,7 +40,7 @@ grpc_channel = create_camunda_cloud_channel(
     client_id="<my_client_id>",
     client_secret="<my_client_secret>",
     cluster_id="<my_cluster_id>",
-    region="<region>" # Default value is bru-2
+    region="<region>",  # Default value is bru-2
 )
 worker = ZeebeWorker(grpc_channel)
 

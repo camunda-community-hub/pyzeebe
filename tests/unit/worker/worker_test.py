@@ -41,8 +41,7 @@ class TestAddTask:
         def dummy_function(x):
             pass
 
-        assert zeebe_worker.get_task(
-            task_type).config.variables_to_fetch == expected_variables_to_fetch
+        assert zeebe_worker.get_task(task_type).config.variables_to_fetch == expected_variables_to_fetch
 
 
 class TestDecorator:
@@ -56,16 +55,12 @@ class TestDecorator:
         assert len(zeebe_worker._after) == 1
         assert decorator in zeebe_worker._after
 
-    def test_add_constructor_before_decorator(
-        self, aio_grpc_channel: grpc.aio.Channel, decorator: TaskDecorator
-    ):
+    def test_add_constructor_before_decorator(self, aio_grpc_channel: grpc.aio.Channel, decorator: TaskDecorator):
         zeebe_worker = ZeebeWorker(aio_grpc_channel, before=[decorator])
         assert len(zeebe_worker._before) == 1
         assert decorator in zeebe_worker._before
 
-    def test_add_constructor_after_decorator(
-        self, aio_grpc_channel: grpc.aio.Channel, decorator: TaskDecorator
-    ):
+    def test_add_constructor_after_decorator(self, aio_grpc_channel: grpc.aio.Channel, decorator: TaskDecorator):
         zeebe_worker = ZeebeWorker(aio_grpc_channel, after=[decorator])
         assert len(zeebe_worker._after) == 1
         assert decorator in zeebe_worker._after
@@ -84,9 +79,9 @@ class TestIncludeRouter:
         assert len(zeebe_worker.tasks) == len(routers)
 
     @pytest.mark.asyncio
-    async def test_router_before_decorator(self, zeebe_worker: ZeebeWorker, router: ZeebeTaskRouter,
-                                           decorator: TaskDecorator,
-                                           mocked_job_with_adapter: Job):
+    async def test_router_before_decorator(
+        self, zeebe_worker: ZeebeWorker, router: ZeebeTaskRouter, decorator: TaskDecorator, mocked_job_with_adapter: Job
+    ):
         router.before(decorator)
         task = self.include_router_with_task(zeebe_worker, router)
 
@@ -95,9 +90,9 @@ class TestIncludeRouter:
         decorator.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_router_after_decorator(self, zeebe_worker: ZeebeWorker, router: ZeebeTaskRouter,
-                                          decorator: TaskDecorator,
-                                          mocked_job_with_adapter: Job):
+    async def test_router_after_decorator(
+        self, zeebe_worker: ZeebeWorker, router: ZeebeTaskRouter, decorator: TaskDecorator, mocked_job_with_adapter: Job
+    ):
         router.after(decorator)
         task = self.include_router_with_task(zeebe_worker, router)
 

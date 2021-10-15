@@ -32,9 +32,7 @@ def build_job_handler(task_function: Function, task_config: TaskConfig) -> JobHa
             job.variables[task_config.job_parameter_name] = create_copy(job)
 
         job = await before_decorator_runner(job)
-        job.variables, succeeded = await run_original_task_function(
-            prepared_task_function, task_config, job
-        )
+        job.variables, succeeded = await run_original_task_function(prepared_task_function, task_config, job)
         job = await after_decorator_runner(job)
         if succeeded:
             await job.set_success_status()
@@ -48,13 +46,13 @@ def prepare_task_function(task_function: Function, task_config: TaskConfig) -> D
         task_function = asyncify(task_function)
 
     if task_config.single_value:
-        task_function = convert_to_dict_function(
-            task_function, task_config.variable_name
-        )
+        task_function = convert_to_dict_function(task_function, task_config.variable_name)
     return task_function
 
 
-async def run_original_task_function(task_function: DictFunction, task_config: TaskConfig, job: Job) -> Tuple[Dict, bool]:
+async def run_original_task_function(
+    task_function: DictFunction, task_config: TaskConfig, job: Job
+) -> Tuple[Dict, bool]:
     try:
         return await task_function(**job.variables), True  # type: ignore
     except Exception as e:

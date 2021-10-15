@@ -13,7 +13,9 @@ class TestConstructor:
     def sync_decorator(self, job: Job) -> Job:
         return job
 
-    def exception_handler(self, ):
+    def exception_handler(
+        self,
+    ):
         pass
 
     def test_before_decorators_are_async(self, task_type: str):
@@ -27,7 +29,7 @@ class TestConstructor:
             False,
             "",
             [self.sync_decorator, self.async_decorator],
-            []
+            [],
         )
 
         assert functions_are_all_async(task_config.before)
@@ -43,7 +45,7 @@ class TestConstructor:
             False,
             "",
             [],
-            [self.sync_decorator, self.async_decorator]
+            [self.sync_decorator, self.async_decorator],
         )
 
         assert functions_are_all_async(task_config.after)

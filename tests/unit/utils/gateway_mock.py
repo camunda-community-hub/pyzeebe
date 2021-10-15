@@ -48,18 +48,23 @@ class GatewayMock(GatewayServicer):
         jobs = []
         for active_job in self.active_jobs.values():
             if active_job.type == request.type:
-                jobs.append(ActivatedJob(key=active_job.key, type=active_job.type,
-                                         processInstanceKey=active_job.process_instance_key,
-                                         bpmnProcessId=active_job.bpmn_process_id,
-                                         processDefinitionVersion=active_job.process_definition_version,
-                                         processDefinitionKey=active_job.process_definition_key,
-                                         elementId=active_job.element_id,
-                                         elementInstanceKey=active_job.element_instance_key,
-                                         customHeaders=json.dumps(
-                                             active_job.custom_headers),
-                                         worker=active_job.worker, retries=active_job.retries,
-                                         deadline=active_job.deadline,
-                                         variables=json.dumps(active_job.variables)))
+                jobs.append(
+                    ActivatedJob(
+                        key=active_job.key,
+                        type=active_job.type,
+                        processInstanceKey=active_job.process_instance_key,
+                        bpmnProcessId=active_job.bpmn_process_id,
+                        processDefinitionVersion=active_job.process_definition_version,
+                        processDefinitionKey=active_job.process_definition_key,
+                        elementId=active_job.element_id,
+                        elementInstanceKey=active_job.element_instance_key,
+                        customHeaders=json.dumps(active_job.custom_headers),
+                        worker=active_job.worker,
+                        retries=active_job.retries,
+                        deadline=active_job.deadline,
+                        variables=json.dumps(active_job.variables),
+                    )
+                )
         yield ActivateJobsResponse(jobs=jobs)
 
     def CompleteJob(self, request, context):
@@ -105,9 +110,12 @@ class GatewayMock(GatewayServicer):
 
             process_instance_key = randint(0, RANDOM_RANGE)
             self.active_processes[process_instance_key] = request.bpmnProcessId
-            return CreateProcessInstanceResponse(processDefinitionKey=randint(0, RANDOM_RANGE),
-                                                 bpmnProcessId=request.bpmnProcessId,
-                                                 version=request.version, processInstanceKey=process_instance_key)
+            return CreateProcessInstanceResponse(
+                processDefinitionKey=randint(0, RANDOM_RANGE),
+                bpmnProcessId=request.bpmnProcessId,
+                version=request.version,
+                processInstanceKey=process_instance_key,
+            )
         else:
             context.set_code(grpc.StatusCode.NOT_FOUND)
             return CreateProcessInstanceResponse()
@@ -117,10 +125,13 @@ class GatewayMock(GatewayServicer):
             process_instance_key = randint(0, RANDOM_RANGE)
             self.active_processes[process_instance_key] = request.request.bpmnProcessId
 
-            return CreateProcessInstanceWithResultResponse(processDefinitionKey=request.request.processDefinitionKey,
-                                                           processInstanceKey=process_instance_key,
-                                                           bpmnProcessId=request.request.bpmnProcessId,
-                                                           version=randint(0, 10), variables=request.request.variables)
+            return CreateProcessInstanceWithResultResponse(
+                processDefinitionKey=request.request.processDefinitionKey,
+                processInstanceKey=process_instance_key,
+                bpmnProcessId=request.request.bpmnProcessId,
+                version=randint(0, 10),
+                variables=request.request.variables,
+            )
         else:
             context.set_code(grpc.StatusCode.NOT_FOUND)
             return CreateProcessInstanceWithResultResponse()
@@ -136,8 +147,12 @@ class GatewayMock(GatewayServicer):
     def DeployProcess(self, request, context):
         processes = []
         for process in request.processes:
-            process_metadata = ProcessMetadata(bpmnProcessId=str(uuid4()), version=randint(0, 10),
-                                               processDefinitionKey=randint(0, RANDOM_RANGE), resourceName=process.name)
+            process_metadata = ProcessMetadata(
+                bpmnProcessId=str(uuid4()),
+                version=randint(0, 10),
+                processDefinitionKey=randint(0, RANDOM_RANGE),
+                resourceName=process.name,
+            )
             processes.append(process_metadata)
 
         return DeployProcessResponse(key=randint(0, RANDOM_RANGE), processes=processes)
@@ -150,5 +165,8 @@ class GatewayMock(GatewayServicer):
         return PublishMessageResponse()
 
     def mock_deploy_process(self, bpmn_process_id: str, version: int, tasks: List[Task]):
-        self.deployed_processes[bpmn_process_id] = {"bpmn_process_id": bpmn_process_id, "version": version,
-                                                    "tasks": tasks}
+        self.deployed_processes[bpmn_process_id] = {
+            "bpmn_process_id": bpmn_process_id,
+            "version": version,
+            "tasks": tasks,
+        }

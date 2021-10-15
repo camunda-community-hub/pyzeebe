@@ -23,9 +23,11 @@ class TestPublishMessage:
         variables={},
         correlation_key=str(uuid4()),
         time_to_live_in_milliseconds=randint(0, RANDOM_RANGE),
-        message_id=str(uuid4())
+        message_id=str(uuid4()),
     ):
-        return await self.zeebe_message_adapter.publish_message(name, correlation_key, time_to_live_in_milliseconds, variables, message_id)
+        return await self.zeebe_message_adapter.publish_message(
+            name, correlation_key, time_to_live_in_milliseconds, variables, message_id
+        )
 
     async def test_response_is_of_correct_type(self):
         response = await self.publish_message()

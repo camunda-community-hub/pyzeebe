@@ -14,9 +14,7 @@ async def test_success(job_with_adapter):
 
     await job_with_adapter.set_success_status()
 
-    complete_job_mock.assert_called_with(
-        job_key=job_with_adapter.key, variables=job_with_adapter.variables
-    )
+    complete_job_mock.assert_called_with(job_key=job_with_adapter.key, variables=job_with_adapter.variables)
 
 
 @pytest.mark.asyncio
@@ -33,9 +31,7 @@ async def test_error(job_with_adapter):
 
     await job_with_adapter.set_error_status(message)
 
-    throw_error_mock.assert_called_with(
-        job_key=job_with_adapter.key, message=message, error_code=""
-    )
+    throw_error_mock.assert_called_with(job_key=job_with_adapter.key, message=message, error_code="")
 
 
 @pytest.mark.asyncio
@@ -47,9 +43,7 @@ async def test_error_with_code(job_with_adapter):
 
     await job_with_adapter.set_error_status(message, error_code)
 
-    throw_error_mock.assert_called_with(
-        job_key=job_with_adapter.key, message=message, error_code=error_code
-    )
+    throw_error_mock.assert_called_with(job_key=job_with_adapter.key, message=message, error_code=error_code)
 
 
 @pytest.mark.asyncio
@@ -68,7 +62,7 @@ async def test_failure(job_with_adapter):
     await job_with_adapter.set_failure_status(message)
 
     fail_job_mock.assert_called_with(
-        job_key=job_with_adapter.key, retries=job_with_adapter.retries-1, message=message
+        job_key=job_with_adapter.key, retries=job_with_adapter.retries - 1, message=message
     )
 
 

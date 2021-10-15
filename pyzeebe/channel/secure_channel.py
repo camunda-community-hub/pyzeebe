@@ -26,6 +26,4 @@ def create_secure_channel(
     """
     address = create_address(hostname, port)
     credentials = channel_credentials or grpc.ssl_channel_credentials()
-    return grpc.aio.secure_channel(
-        address, credentials, options=get_channel_options(channel_options)
-    )
+    return grpc.aio.secure_channel(address, credentials, options=get_channel_options(channel_options))

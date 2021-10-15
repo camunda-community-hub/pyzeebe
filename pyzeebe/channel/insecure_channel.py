@@ -7,9 +7,7 @@ from pyzeebe.channel.utils import create_address
 
 
 def create_insecure_channel(
-    hostname: Optional[str] = None,
-    port: Optional[int] = None,
-    channel_options: Optional[Dict] = None
+    hostname: Optional[str] = None, port: Optional[int] = None, channel_options: Optional[Dict] = None
 ) -> grpc.aio.Channel:
     """
     Create an insecure channel
