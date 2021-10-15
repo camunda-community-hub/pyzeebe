@@ -1,4 +1,4 @@
-__version__ = "3.0.0rc5"
+__version__ = "3.0.0"
 
 from pyzeebe import errors
 from pyzeebe.channel import *
