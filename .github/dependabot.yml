@@ -2,7 +2,7 @@ version: 2
 updates:
   - package-ecosystem: "pip"
     directory: "/"
-    target-branch: "development"
+    target-branch: "master"
     schedule:
       interval: "daily"
     labels:
