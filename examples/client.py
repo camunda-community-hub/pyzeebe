@@ -1,4 +1,9 @@
-from pyzeebe import ZeebeClient, create_camunda_cloud_channel, create_insecure_channel, create_secure_channel
+from pyzeebe import (
+    ZeebeClient,
+    create_camunda_cloud_channel,
+    create_insecure_channel,
+    create_secure_channel,
+)
 
 # Create a zeebe client without credentials
 grpc_channel = create_insecure_channel(hostname="localhost", port=26500)

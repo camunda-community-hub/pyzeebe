@@ -5,7 +5,11 @@ from typing import Optional
 import grpc
 from zeebe_grpc.gateway_pb2_grpc import GatewayStub
 
-from pyzeebe.errors import ZeebeBackPressureError, ZeebeGatewayUnavailableError, ZeebeInternalError
+from pyzeebe.errors import (
+    ZeebeBackPressureError,
+    ZeebeGatewayUnavailableError,
+    ZeebeInternalError,
+)
 
 logger = logging.getLogger(__name__)
 

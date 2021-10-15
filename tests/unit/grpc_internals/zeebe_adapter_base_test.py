@@ -2,7 +2,11 @@ import grpc
 import pytest
 from mock import AsyncMock
 
-from pyzeebe.errors import ZeebeBackPressureError, ZeebeGatewayUnavailableError, ZeebeInternalError
+from pyzeebe.errors import (
+    ZeebeBackPressureError,
+    ZeebeGatewayUnavailableError,
+    ZeebeInternalError,
+)
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 
 

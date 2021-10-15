@@ -2,9 +2,17 @@ from random import randint
 from uuid import uuid4
 
 import pytest
-from zeebe_grpc.gateway_pb2 import CompleteJobResponse, FailJobResponse, ThrowErrorResponse
+from zeebe_grpc.gateway_pb2 import (
+    CompleteJobResponse,
+    FailJobResponse,
+    ThrowErrorResponse,
+)
 
-from pyzeebe.errors import ActivateJobsRequestInvalidError, JobAlreadyDeactivatedError, JobNotFoundError
+from pyzeebe.errors import (
+    ActivateJobsRequestInvalidError,
+    JobAlreadyDeactivatedError,
+    JobNotFoundError,
+)
 from pyzeebe.grpc_internals.zeebe_job_adapter import ZeebeJobAdapter
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task

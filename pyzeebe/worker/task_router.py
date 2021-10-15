@@ -1,7 +1,12 @@
 import logging
 from typing import Callable, List, Optional, Tuple
 
-from pyzeebe.errors import BusinessError, DuplicateTaskTypeError, NoVariableNameGivenError, TaskNotFoundError
+from pyzeebe.errors import (
+    BusinessError,
+    DuplicateTaskTypeError,
+    NoVariableNameGivenError,
+    TaskNotFoundError,
+)
 from pyzeebe.function_tools import parameter_tools
 from pyzeebe.job.job import Job
 from pyzeebe.task import task_builder

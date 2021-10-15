@@ -7,7 +7,10 @@ from mock import Mock, patch
 from requests import HTTPError
 
 from pyzeebe import create_camunda_cloud_channel
-from pyzeebe.errors import InvalidCamundaCloudCredentialsError, InvalidOAuthCredentialsError
+from pyzeebe.errors import (
+    InvalidCamundaCloudCredentialsError,
+    InvalidOAuthCredentialsError,
+)
 
 
 @pytest.fixture

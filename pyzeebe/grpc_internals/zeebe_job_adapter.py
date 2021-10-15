@@ -13,7 +13,11 @@ from zeebe_grpc.gateway_pb2 import (
     ThrowErrorResponse,
 )
 
-from pyzeebe.errors import ActivateJobsRequestInvalidError, JobAlreadyDeactivatedError, JobNotFoundError
+from pyzeebe.errors import (
+    ActivateJobsRequestInvalidError,
+    JobAlreadyDeactivatedError,
+    JobNotFoundError,
+)
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 from pyzeebe.job.job import Job
 

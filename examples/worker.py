@@ -1,7 +1,13 @@
 import asyncio
 from typing import Dict
 
-from pyzeebe import Job, ZeebeWorker, create_camunda_cloud_channel, create_insecure_channel, create_secure_channel
+from pyzeebe import (
+    Job,
+    ZeebeWorker,
+    create_camunda_cloud_channel,
+    create_insecure_channel,
+    create_secure_channel,
+)
 from pyzeebe.errors import BusinessError
 
 
