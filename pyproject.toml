@@ -54,6 +54,11 @@ module = [
 ]
 ignore_missing_imports = true
 
+
+[tool.pylint.master]
+disable = ["C0114", "C0115", "C0116"]
+
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
