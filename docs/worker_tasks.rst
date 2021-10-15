@@ -2,7 +2,7 @@
 Tasks
 =====
 
-Tasks are the building blocks of workflows
+Tasks are the building blocks of processes
 
 Creating a Task
 ---------------
@@ -12,7 +12,7 @@ To create a task you must first create a :py:class:`ZeebeWorker` or :py:class:`Z
 .. code-block:: python
 
     @worker.task(task_type="my_task")
-    def my_task():
+    async def my_task():
         return {}
 
 This is a task that does nothing. It receives no parameters and also doesn't return any.
@@ -20,8 +20,35 @@ This is a task that does nothing. It receives no parameters and also doesn't ret
 
 .. note::
 
-    While this task indeed returns a python dictionary, it doesn't return anything to Zeebe. Do do that we have to fill the dictionary.
+    While this task indeed returns a python dictionary, it doesn't return anything to Zeebe. To do that we have to fill the dictionary with values.
 
+
+Async/Sync Tasks
+----------------
+
+Tasks can be regular or async functions. If given a regular function, pyzeebe will convert it into an async one by running `asyncio.run_in_executor`
+
+.. note::
+
+    Make sure not to call any blocking function in an async task. This would slow the entire worker down.
+    
+    Do:
+
+    .. code-block:: python
+
+        @worker.task(task_type="my_task")
+        def my_task():
+            time.sleep(10) # Blocking call
+            return {}
+
+    Don't:
+
+    .. code-block:: python
+
+        @worker.task(task_type="my_task")
+        async def my_task():
+            time.sleep(10) # Blocking call
+            return {}
 
 Task Exception Handler
 ----------------------
@@ -30,7 +57,7 @@ An exception handler's signature:
 
 .. code-block:: python
 
-    Callable[[Exception, Job], None]
+    Callable[[Exception, Job], Awaitable[None]]
 
 In other words: an exception handler is a function that receives an :class:`Exception` and :py:class:`Job` instance (a pyzeebe class).
 
@@ -43,9 +70,9 @@ To add an exception handler to a task:
     from pyzeebe import Job
 
 
-    def my_exception_handler(exception: Exception, job: Job) -> None:
+    async def my_exception_handler(exception: Exception, job: Job) -> None:
         print(exception)
-        job.set_failure_status(message=str(exception))
+        await job.set_failure_status(message=str(exception))
 
 
     @worker.task(task_type="my_task", exception_handler=my_exception_handler)
@@ -56,7 +83,7 @@ Now every time ``my_task`` is called (and then fails), ``my_exception_handler`` 
 
 *What does job.set_failure_status do?*
 
-This tells Zeebe that the job failed. The job will then be retried (if configured in workflow definition).
+This tells Zeebe that the job failed. The job will then be retried (if configured in process definition).
 
 
 Task timeout
@@ -104,4 +131,26 @@ This can be helpful when we don't want to read return values from a dictionary e
 .. note::
 
     The parameter ``variable_name`` must be supplied if ``single_value`` is true. If not given a :class:`NoVariableNameGiven` will be raised.
+
+Accessing the job object directly
+---------------------------------
+
+It is possible to receive the job object as a parameter inside a task function. Simply annotate the parameter with the :py:class:`pyzeebe.Job` type.
+
+Example:
+
+.. code-block:: python
+
+    from pyzeebe import Job
+
+
+    @worker.task(task_type="my_task")
+    async def my_task(job: Job):
+        print(job.process_instance_key)
+        return {**job.custom_headers}
+
+.. note::
+
+    Do not set the status for the job (set_success_status, set_failure_status or set_error_status) inside the task. 
+    This will cause pyzeebe to raise an :py:class:`pyzeebe.errors.ActivateJobsRequestInvalidError`.
 

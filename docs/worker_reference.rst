@@ -2,9 +2,10 @@
 Worker Reference
 ================
 
-The :py:class:`ZeebeTaskHandler` class from which both :py:class:`ZeebeWorker` and :py:class:`ZeebeTaskRouter` inherit.
+The :py:class:`ZeebeWorker` class inherits from :py:class:`ZeebeTaskRouter` class.
+This means that all methods that :py:class:`ZeebeTaskRouter` has will also appear in :py:class:`ZeebeWorker`.
 
-.. autoclass:: pyzeebe.worker.task_handler.ZeebeTaskHandler
+.. autoclass:: pyzeebe.ZeebeTaskRouter
    :members:
    :undoc-members:
 
@@ -13,9 +14,6 @@ The :py:class:`ZeebeTaskHandler` class from which both :py:class:`ZeebeWorker` a
    :members:
    :undoc-members:
 
-.. autoclass:: pyzeebe.ZeebeTaskRouter
-   :members:
-   :undoc-members:
 
 .. autoclass:: pyzeebe.Job
    :members:

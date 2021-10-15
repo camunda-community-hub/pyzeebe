@@ -1,10 +1,6 @@
 name: Integration test pyzeebe
 
-on:
-  push:
-    branches: [ master, development, feature/*, bugfix/*, maintenance/* ]
-  pull_request:
-    branches: [ master, development, feature/*, bugfix/*, maintenance/* ]
+on: [push, pull_request]
 
 jobs:
   test:
@@ -13,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        zeebe-version: [ "0.23.7", "0.24.6", "0.25.3", "0.26.0" ]
+        zeebe-version: [ "1.0.0" ]
 
     container: python:3.6
 

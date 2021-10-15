@@ -19,6 +19,7 @@ Zeebe version support:
 
 | Pyzeebe version | Tested Zeebe versions  |
 | :-------------: | ---------------------- |
+|      3.x.x      | 1.0.0                  |
 |      2.x.x      | 0.23, 0.24, 0.25, 0.26 |
 |      1.x.x      | 0.23, 0.24             |
 
@@ -37,58 +38,68 @@ For full documentation please visit: https://pyzeebe.readthedocs.io/en/stable/
 The `ZeebeWorker` class uses threading to get and run jobs.
 
 ```python
-from pyzeebe import ZeebeWorker, Job
+import asyncio
+
+from pyzeebe import ZeebeWorker, Job, create_insecure_channel
 
 
-def on_error(exception: Exception, job: Job):
+channel = create_insecure_channel(hostname="localhost", port=26500) # Create grpc channel
+worker = ZeebeWorker(channel) # Create a zeebe worker
+
+
+async def on_error(exception: Exception, job: Job):
     """
     on_error will be called when the task fails
     """
     print(exception)
-    job.set_error_status(f"Failed to handle job {job}. Error: {str(exception)}")
+    await job.set_error_status(f"Failed to handle job {job}. Error: {str(exception)}")
 
-
-
-worker = ZeebeWorker(hostname="<zeebe_host>", port=26500) # Create a zeebe worker
 
 @worker.task(task_type="example", exception_handler=on_error)
-def example_task(input: str):
+def example_task(input: str) -> dict:
     return {"output": f"Hello world, {input}!"}
 
 
-worker.work() # Now every time that a task with type example is called example_task will be called
+@worker.task(task_type="example2", exception_handler=on_error)
+async def another_example_task(name: str) -> dict: # Tasks can also be async
+    return {"output": f"Hello world, {name} from async task!"}
+
+loop = asyncio.get_running_loop()
+loop.run_until_complete(worker.work()) # Now every time that a task with type `example` or `example2` is called, the corresponding function will be called
 ```
 
 Stop a worker:
 
 ```python
-zeebe_worker.work() # Worker will begin working
-zeebe_worker.stop() # Stops worker after all running jobs have been completed
+await zeebe_worker.stop() # Stops worker after all running jobs have been completed
 ```
 
 ### Client
 
 ```python
-from pyzeebe import ZeebeClient
+from pyzeebe import ZeebeClient, create_insecure_channel
 
 # Create a zeebe client
-zeebe_client = ZeebeClient(hostname="localhost", port=26500)
+channel = create_insecure_channel(hostname="localhost", port=26500)
+zeebe_client = ZeebeClient(channel)
 
-# Run a workflow
-workflow_instance_key = zeebe_client.run_workflow(bpmn_process_id="My zeebe workflow", variables={})
+# Run a Zeebe process instance
+process_instance_key = await zeebe_client.run_process(bpmn_process_id="My zeebe process", variables={})
 
-# Run a workflow and receive the result
-workflow_result = zeebe_client.run_workflow_with_result(bpmn_process_id="My zeebe workflow",
-                                                        timeout=10000)  # Will wait 10000 milliseconds (10 seconds)
+# Run a process and receive the result
+process_instance_key, process_result = await zeebe_client.run_process_with_result(
+    bpmn_process_id="My zeebe process",
+    timeout=10000
+)
 
-# Deploy a bpmn workflow definition
-zeebe_client.deploy_workflow("workflow.bpmn")
+# Deploy a BPMN process definition
+await zeebe_client.deploy_process("process.bpmn")
 
-# Cancel a running workflow
-zeebe_client.cancel_workflow_instance(workflow_instance_key=12345)
+# Cancel a running process
+await zeebe_client.cancel_process_instance(process_instance_key=12345)
 
 # Publish message
-zeebe_client.publish_message(name="message_name", correlation_key="some_id")
+await zeebe_client.publish_message(name="message_name", correlation_key="some_id")
 
 ```
 
@@ -107,6 +118,16 @@ Please make sure to update tests as appropriate.
 ## Versioning
 
 We use [SemVer](semver.org) for versioning. For the versions available, see the tags on this repository.
+
+In order to bump the current version run:
+
+```shell
+$ bump2version <part>
+```
+
+where part is the part that will be bumped (major/minor/patch/rc).
+
+This will bump the version in all relevant files as well as create a git commit.
 
 ## License
 

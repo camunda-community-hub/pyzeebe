@@ -26,7 +26,7 @@ copyright = '2020, Jonatan Martens'
 author = 'Jonatan Martens'
 
 # The full version, including alpha/beta/rc tags
-release = '2.4.0'
+release = '3.0.0'
 
 # -- General configuration ---------------------------------------------------
 
@@ -36,7 +36,8 @@ release = '2.4.0'
 extensions = [
     "sphinx_rtd_theme",
     "sphinx.ext.autodoc",
-    "sphinx.ext.napoleon"
+    "sphinx.ext.napoleon",
+    "sphinx.ext.autosectionlabel"
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -59,6 +60,6 @@ html_theme = "sphinx_rtd_theme"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-version = "2.4.0"
+version = "3.0.0"
 
 master_doc = 'index'

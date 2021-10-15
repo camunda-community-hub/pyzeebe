@@ -1,63 +1,97 @@
+import asyncio
 import os
 from typing import Dict
 from uuid import uuid4
 
+import grpc
 import pytest
 
-from pyzeebe import ZeebeWorker, ZeebeClient, Job
-from pyzeebe.exceptions import WorkflowNotFound
-
-zeebe_client: ZeebeClient
-zeebe_worker = ZeebeWorker()
+from pyzeebe import Job, ZeebeClient, ZeebeWorker, create_insecure_channel
+from pyzeebe.errors import ProcessDefinitionNotFoundError
 
 
-def exception_handler(exc: Exception, job: Job) -> None:
-    job.set_error_status(f"Failed to run task {job.type}. Reason: {exc}")
+@pytest.fixture(scope="module")
+def event_loop():
+    loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
 
 
-@zeebe_worker.task(task_type="test", exception_handler=exception_handler)
-def task_handler(should_throw: bool, input: str) -> Dict:
-    if should_throw:
-        raise Exception("Error thrown")
-    else:
-        return {"output": input + str(uuid4())}
+@pytest.fixture(scope="module")
+def grpc_channel():
+    return create_insecure_channel()
 
 
-@pytest.fixture(scope="module", autouse=True)
-def setup():
-    global zeebe_client, task_handler
+@pytest.fixture(scope="module")
+def zeebe_client(grpc_channel: grpc.aio.Channel):
+    return ZeebeClient(grpc_channel)
 
-    zeebe_worker.work(watch=True)
 
-    zeebe_client = ZeebeClient()
+@pytest.fixture(scope="module")
+def zeebe_worker(grpc_channel):
+    return ZeebeWorker(grpc_channel)
+
+
+@pytest.fixture(autouse=True, scope="module")
+def task(zeebe_worker: ZeebeWorker):
+    def exception_handler(exc: Exception, job: Job) -> None:
+        job.set_error_status(f"Failed to run task {job.type}. Reason: {exc}")
+
+    @zeebe_worker.task("test", exception_handler)
+    async def task_handler(should_throw: bool, input: str) -> Dict:
+        if should_throw:
+            raise Exception("Error thrown")
+        else:
+            return {"output": input + str(uuid4())}
+
+
+@pytest.mark.asyncio
+@pytest.fixture(autouse=True, scope="module")
+async def deploy_process(zeebe_client: ZeebeClient):
     try:
         integration_tests_path = os.path.join("tests", "integration")
-        zeebe_client.deploy_workflow(os.path.join(integration_tests_path, "test.bpmn"))
+        await zeebe_client.deploy_process(
+            os.path.join(integration_tests_path, "test.bpmn")
+        )
     except FileNotFoundError:
-        zeebe_client.deploy_workflow("test.bpmn")
-
-    yield zeebe_client
-    zeebe_worker.stop(wait=True)
-    assert not zeebe_worker._watcher_thread.is_alive()
+        await zeebe_client.deploy_process("test.bpmn")
 
 
-def test_run_workflow():
-    workflow_key = zeebe_client.run_workflow("test", {"input": str(uuid4()), "should_throw": False})
-    assert isinstance(workflow_key, int)
+@pytest.fixture(autouse=True, scope="module")
+def start_worker(event_loop: asyncio.AbstractEventLoop, zeebe_worker: ZeebeWorker):
+    event_loop.create_task(zeebe_worker.work())
+    yield
+    event_loop.create_task(zeebe_worker.stop())
 
 
-def test_non_existent_workflow():
-    with pytest.raises(WorkflowNotFound):
-        zeebe_client.run_workflow(str(uuid4()))
+@pytest.mark.asyncio
+async def test_run_process(zeebe_client: ZeebeClient):
+    process_key = await zeebe_client.run_process(
+        "test", {"input": str(uuid4()), "should_throw": False}
+    )
+    assert isinstance(process_key, int)
 
 
-def test_run_workflow_with_result():
+@pytest.mark.asyncio
+async def test_non_existent_process(zeebe_client: ZeebeClient):
+    with pytest.raises(ProcessDefinitionNotFoundError):
+        await zeebe_client.run_process(str(uuid4()))
+
+
+@pytest.mark.asyncio
+async def test_run_process_with_result(zeebe_client: ZeebeClient):
     input = str(uuid4())
-    output = zeebe_client.run_workflow_with_result("test", {"input": input, "should_throw": False})
-    assert isinstance(output["output"], str)
-    assert output["output"].startswith(input)
+    process_instance_key, process_result = await zeebe_client.run_process_with_result(
+        "test", {"input": input, "should_throw": False}
+    )
+    assert isinstance(process_instance_key, int)
+    assert isinstance(process_result["output"], str)
+    assert process_result["output"].startswith(input)
 
 
-def test_cancel_workflow():
-    workflow_key = zeebe_client.run_workflow("test", {"input": str(uuid4()), "should_throw": False})
-    zeebe_client.cancel_workflow_instance(workflow_key)
+@pytest.mark.asyncio
+async def test_cancel_process(zeebe_client: ZeebeClient):
+    process_key = await zeebe_client.run_process(
+        "test", {"input": str(uuid4()), "should_throw": False}
+    )
+    await zeebe_client.cancel_process_instance(process_key)

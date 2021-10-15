@@ -1,126 +1,130 @@
-from random import randint
-from unittest.mock import patch
 from uuid import uuid4
 
+import mock
+import pytest
+
+from pyzeebe import TaskDecorator
+from pyzeebe.errors import (BusinessError, DuplicateTaskTypeError,
+                            TaskNotFoundError)
 from pyzeebe.job.job import Job
+from pyzeebe.task.task import Task
+from pyzeebe.worker.task_router import (ZeebeTaskRouter,
+                                        default_exception_handler)
+from tests.unit.utils.random_utils import randint
 
 
-def decorator(job: Job) -> Job:
-    return job
+def test_get_task(router: ZeebeTaskRouter, task: Task):
+    router.tasks.append(task)
+
+    found_task = router.get_task(task.type)
+
+    assert found_task == task
 
 
-def test_add_task_through_decorator(router):
-    task_type = str(uuid4())
-    timeout = randint(0, 10000)
-    max_jobs_to_activate = randint(0, 1000)
-
-    @router.task(task_type=task_type, timeout=timeout, max_jobs_to_activate=max_jobs_to_activate)
-    def example_test_task(x):
-        return {"x": x}
-
-    assert len(router.tasks) == 1
-
-    variable = str(uuid4())
-    assert example_test_task(variable) == {"x": variable}
-
-    task = router.get_task(task_type)
-    assert task is not None
-
-    variable = str(uuid4())
-    assert task.inner_function(variable) == {"x": variable}
-    assert task.variables_to_fetch == ["x"]
-    assert task.timeout == timeout
-    assert task.max_jobs_to_activate == max_jobs_to_activate
+def test_get_fake_task(router: ZeebeTaskRouter):
+    with pytest.raises(TaskNotFoundError):
+        router.get_task(str(uuid4()))
 
 
-def test_router_before_decorator(router):
-    task_type = str(uuid4())
+def test_get_task_index(router: ZeebeTaskRouter, task: Task):
+    router.tasks.append(task)
+
+    index = router._get_task_index(task.type)
+
+    assert router.tasks[index] == task
+
+
+def test_get_task_and_index(router: ZeebeTaskRouter, task: Task):
+    router.tasks.append(task)
+
+    found_task, index = router._get_task_and_index(task.type)
+
+    assert router.tasks[index] == task
+    assert found_task == task
+
+
+def test_remove_task(router: ZeebeTaskRouter, task: Task):
+    router.tasks.append(task)
+
+    router.remove_task(task.type)
+
+    assert task not in router.tasks
+
+
+def test_remove_task_from_many(router: ZeebeTaskRouter, task: Task):
+    router.tasks.append(task)
+
+    for _ in range(1, randint(0, 100)):
+        @router.task(str(uuid4()))
+        def dummy_function():
+            pass
+
+    router.remove_task(task.type)
+
+    assert task not in router.tasks
+
+
+def test_remove_fake_task(router: ZeebeTaskRouter):
+    with pytest.raises(TaskNotFoundError):
+        router.remove_task(str(uuid4()))
+
+
+def test_check_is_task_duplicate_with_duplicate(router: ZeebeTaskRouter, task: Task):
+    router.tasks.append(task)
+    with pytest.raises(DuplicateTaskTypeError):
+        router._is_task_duplicate(task.type)
+
+
+def test_no_duplicate_task_type_error_is_raised(router: ZeebeTaskRouter, task: Task):
+    router._is_task_duplicate(task.type)
+
+
+def test_add_before_decorator(router: ZeebeTaskRouter, decorator: TaskDecorator):
     router.before(decorator)
 
-    @router.task(task_type=task_type)
-    def task_fn(x):
-        return {"x": x}
-
-    task = router.get_task(task_type)
-    assert task is not None
-    assert len(task._before) == 1
-    assert len(task._after) == 0
+    assert len(router._before) == 1
 
 
-def test_router_after_before_multiple(router):
-    task_type = str(uuid4())
-    router.before(decorator)
-
-    @router.task(task_type=task_type, before=[decorator])
-    def task_fn(x):
-        return {"x": x}
-
-    task = router.get_task(task_type)
-    assert task is not None
-    assert len(task._before) == 2
-    assert len(task._after) == 0
-
-
-def test_router_after_decorator(router):
-    task_type = str(uuid4())
+def test_add_after_decorator(router: ZeebeTaskRouter, decorator: TaskDecorator):
     router.after(decorator)
 
-    @router.task(task_type=task_type)
-    def task_fn(x):
-        return {"x": x}
-
-    task = router.get_task(task_type)
-    assert task is not None
-    assert len(task._after) == 1
-    assert len(task._before) == 0
+    assert len(router._after) == 1
 
 
-def test_router_after_decorator_multiple(router):
-    task_type = str(uuid4())
-    router.after(decorator)
+def test_add_before_decorator_through_constructor(decorator: TaskDecorator):
+    router = ZeebeTaskRouter(before=[decorator])
 
-    @router.task(task_type=task_type, after=[decorator])
-    def task_fn(x):
-        return {"x": x}
-
-    task = router.get_task(task_type)
-    assert task is not None
-    assert len(task._after) == 2
-    assert len(task._before) == 0
+    assert len(router._before) == 1
 
 
-def test_router_non_dict_task(router):
-    with patch("pyzeebe.worker.task_handler.ZeebeTaskHandler._single_value_function_to_dict") as single_value_mock:
-        task_type = str(uuid4())
-        variable_name = str(uuid4())
+def test_add_after_decorator_through_constructor(decorator: TaskDecorator):
+    router = ZeebeTaskRouter(after=[decorator])
 
-        @router.task(task_type=task_type, single_value=True, variable_name=variable_name)
-        def task_fn(x):
-            return {"x": x}
-
-        single_value_mock.assert_called_with(variable_name=variable_name, fn=task_fn)
-    assert len(router.tasks) == 1
+    assert len(router._after) == 1
 
 
-def test_router_dict_task(router):
-    task_type = str(uuid4())
+@pytest.mark.asyncio
+async def test_default_exception_handler_logs_a_warning(mocked_job_with_adapter: Job):
+    with mock.patch("pyzeebe.worker.task_router.logger.warning") as logging_mock:
+        await default_exception_handler(Exception(), mocked_job_with_adapter)
 
-    @router.task(task_type=task_type)
-    def task_fn(x):
-        return {"x": x}
-
-    assert len(router.tasks) == 1
-
-
-def test_add_decorators_to_task(router, task):
-    router._add_decorators_to_task(task, [decorator], [decorator])
-    assert len(task._before) == 1
-    assert len(task._after) == 1
+        mocked_job_with_adapter.set_failure_status.assert_called()
+        logging_mock.assert_called()
 
 
-def test_add_decorators_to_task_with_router_decorators(router, task):
-    router.before(decorator)
-    router.after(decorator)
-    router._add_decorators_to_task(task, [decorator], [decorator])
-    assert len(task._before) == 2
-    assert len(task._after) == 2
+@pytest.mark.asyncio
+async def test_default_exception_handler_uses_business_error(job_without_adapter):
+    with mock.patch("pyzeebe.job.job.Job.set_error_status") as failure_mock:
+        error_code = "custom-error-code"
+        exception = BusinessError(error_code)
+        await default_exception_handler(exception, job_without_adapter)
+        failure_mock.assert_called_with(mock.ANY, error_code=error_code)
+
+
+@pytest.mark.asyncio
+async def test_default_exception_handler_warns_of_job_failure(job_without_adapter):
+    with mock.patch("pyzeebe.worker.task_router.logger.warning") as logging_mock:
+        with mock.patch("pyzeebe.job.job.Job.set_error_status"):
+            exception = BusinessError("custom-error-code")
+            await default_exception_handler(exception, job_without_adapter)
+        logging_mock.assert_called()

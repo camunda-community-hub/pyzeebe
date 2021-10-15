@@ -2,7 +2,7 @@ name: Publish pyzeebe
 
 on:
   release:
-    types: [created]
+    types: [created, prereleased]
 
 jobs:
   publish:
