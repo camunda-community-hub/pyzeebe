@@ -786,7 +786,7 @@ python-versions = "*"
 
 [[package]]
 name = "zeebe-grpc"
-version = "1.0.0"
+version = "1.2.0"
 description = "zeebe Python gRPC Gateway"
 category = "main"
 optional = false
@@ -811,7 +811,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6"
-content-hash = "7d2f00247953ec9285c231df974bdf67413ec1f8e6680c4376c319fa042d33ee"
+content-hash = "5bdcd6d6deedb2282db96d9ad2c69a72d74b3c08dffad8585743b63e85a2ce1c"
 
 [metadata.files]
 aiofiles = [
@@ -1364,8 +1364,8 @@ wrapt = [
     {file = "wrapt-1.12.1.tar.gz", hash = "sha256:b62ffa81fb85f4332a4f609cab4ac40709470da05643a082ec1eb88e6d9b97d7"},
 ]
 zeebe-grpc = [
-    {file = "zeebe_grpc-1.0.0-py3-none-any.whl", hash = "sha256:be2eafa4068335b9554b2f28dd90711625392252e2f5dd50ddd61043ecf77b69"},
-    {file = "zeebe_grpc-1.0.0.tar.gz", hash = "sha256:6a5b8b281dc57a949882ad28b82d3516898df07fdb9cdb0acd9db71aa8865eb5"},
+    {file = "zeebe_grpc-1.2.0-py3-none-any.whl", hash = "sha256:34885239a59b61982b707c7e0126d54135a3a90c9720cc0a891a757cae039feb"},
+    {file = "zeebe_grpc-1.2.0.tar.gz", hash = "sha256:028e9152abfae61bc0a4dcae34e0a7ec63244cc4db713bdcea0035aa34097ed2"},
 ]
 zipp = [
     {file = "zipp-3.6.0-py3-none-any.whl", hash = "sha256:9fe5ea21568a0a70e50f273397638d39b03353731e6cbbb3fd8502a33fec40bc"},
