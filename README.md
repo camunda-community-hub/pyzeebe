@@ -103,6 +103,15 @@ await zeebe_client.publish_message(name="message_name", correlation_key="some_id
 
 ```
 
+### Connecting to Camunda Cloud
+In order to connect a client to Camunda Cloud a grcp channel to a Zeebe Gateway is needed. In order to achieve this the **create_camunda_cloud_channel** needs to be imported. Additionally the ClientId, ClientSecret and ClusterID needs to be set. 
+
+```python
+from pyzeebe import create_camunda_cloud_channel
+
+channel = create_camunda_cloud_channel("client_id", "client_secret", "cluster_id")
+```
+
 ## Tests
 
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install pyzeebe
