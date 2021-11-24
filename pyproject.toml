@@ -26,7 +26,7 @@ zeebe-grpc = "^1.2.0"
 aiofiles = "~=0.7.0"
 
 [tool.poetry.dev-dependencies]
-autopep8 = "~=1.5.4"
+autopep8 = "~=1.6.0"
 pylint = "~=2.11.1"
 coverage = "~=5.5"
 pytest = "~=6.2.2"
