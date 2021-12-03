@@ -21,7 +21,7 @@ Run using event loop
     async def my_task(x: int):
         return {"y": x + 1}
 
-    loop = asyncio.get_running_loop()
+    loop = asyncio.get_event_loop()
     loop.run_until_complete(worker.work())
 
 .. warning::
