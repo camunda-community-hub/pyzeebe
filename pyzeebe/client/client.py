@@ -36,6 +36,7 @@ class ZeebeClient(object):
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
+            UnkownGrpcStatusCodeError: If Zeebe returns an unexpected status code
 
         """
         return await self.zeebe_adapter.create_process_instance(
@@ -71,6 +72,7 @@ class ZeebeClient(object):
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
+            UnkownGrpcStatusCodeError: If Zeebe returns an unexpected status code
 
         """
         return await self.zeebe_adapter.create_process_instance_with_result(
@@ -96,6 +98,7 @@ class ZeebeClient(object):
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
+            UnkownGrpcStatusCodeError: If Zeebe returns an unexpected status code
 
         """
         await self.zeebe_adapter.cancel_process_instance(process_instance_key=process_instance_key)
@@ -113,6 +116,7 @@ class ZeebeClient(object):
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
+            UnkownGrpcStatusCodeError: If Zeebe returns an unexpected status code
 
         """
         await self.zeebe_adapter.deploy_process(*process_file_path)
@@ -141,6 +145,7 @@ class ZeebeClient(object):
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
+            UnkownGrpcStatusCodeError: If Zeebe returns an unexpected status code
 
         """
         await self.zeebe_adapter.publish_message(
