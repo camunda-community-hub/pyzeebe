@@ -5,6 +5,7 @@ import grpc
 from zeebe_grpc.gateway_pb2 import PublishMessageRequest, PublishMessageResponse
 
 from pyzeebe.errors import MessageAlreadyExistsError
+from pyzeebe.grpc_internals.grpc_utils import is_error_status
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 
 
@@ -28,7 +29,7 @@ class ZeebeMessageAdapter(ZeebeAdapterBase):
                 )
             )
         except grpc.aio.AioRpcError as rpc_error:
-            if self.is_error_status(rpc_error, grpc.StatusCode.ALREADY_EXISTS):
+            if is_error_status(rpc_error, grpc.StatusCode.ALREADY_EXISTS):
                 raise MessageAlreadyExistsError()
             else:
                 await self._common_zeebe_grpc_errors(rpc_error)

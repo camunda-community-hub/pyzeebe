@@ -21,6 +21,7 @@ from pyzeebe.errors import (
     ProcessInvalidError,
     ProcessTimeoutError,
 )
+from pyzeebe.grpc_internals.grpc_utils import is_error_status
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 
 
@@ -56,15 +57,15 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
     async def _create_process_errors(
         self, rpc_error: grpc.aio.AioRpcError, bpmn_process_id: str, version: int, variables: Dict
     ) -> None:
-        if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
+        if is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
             raise ProcessDefinitionNotFoundError(bpmn_process_id=bpmn_process_id, version=version) from rpc_error
-        elif self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
+        elif is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
             raise InvalidJSONError(
                 f"Cannot start process: {bpmn_process_id} with version {version}. Variables: {variables}"
             ) from rpc_error
-        elif self.is_error_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
+        elif is_error_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
             raise ProcessDefinitionHasNoStartEventError(bpmn_process_id=bpmn_process_id) from rpc_error
-        elif self.is_error_status(rpc_error, grpc.StatusCode.DEADLINE_EXCEEDED):
+        elif is_error_status(rpc_error, grpc.StatusCode.DEADLINE_EXCEEDED):
             raise ProcessTimeoutError(bpmn_process_id) from rpc_error
         else:
             await self._common_zeebe_grpc_errors(rpc_error)
@@ -75,7 +76,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
                 CancelProcessInstanceRequest(processInstanceKey=process_instance_key)
             )
         except grpc.aio.AioRpcError as rpc_error:
-            if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
+            if is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
                 raise ProcessInstanceNotFoundError(process_instance_key=process_instance_key)
             else:
                 await self._common_zeebe_grpc_errors(rpc_error)
@@ -88,7 +89,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
                 )
             )
         except grpc.aio.AioRpcError as rpc_error:
-            if self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
+            if is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
                 raise ProcessInvalidError()
             else:
                 await self._common_zeebe_grpc_errors(rpc_error)
