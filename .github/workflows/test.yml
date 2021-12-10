@@ -21,7 +21,7 @@ jobs:
           poetry run coverage run --source=pyzeebe -m py.test tests/unit
       - name: Upload to coveralls
         run: |
-          poetry run coveralls
+          poetry run coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
