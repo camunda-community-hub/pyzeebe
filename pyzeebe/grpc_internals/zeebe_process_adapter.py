@@ -83,7 +83,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
         try:
             return await self._gateway_stub.DeployProcess(
                 DeployProcessRequest(
-                    processes=[await result for result in map(self._get_process_request_object, process_file_path)]
+                    processes=[await result for result in map(_create_process_request, process_file_path)]
                 )
             )
         except grpc.aio.AioRpcError as grpc_error:
@@ -91,7 +91,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
                 raise ProcessInvalidError() from grpc_error
             await self._handle_grpc_error(grpc_error)
 
-    @staticmethod
-    async def _get_process_request_object(process_file_path: str) -> ProcessRequestObject:
-        async with aiofiles.open(process_file_path, "rb") as file:
-            return ProcessRequestObject(name=os.path.basename(process_file_path), definition=await file.read())
+
+async def _create_process_request(process_file_path: str) -> ProcessRequestObject:
+    async with aiofiles.open(process_file_path, "rb") as file:
+        return ProcessRequestObject(name=os.path.basename(process_file_path), definition=await file.read())
