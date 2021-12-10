@@ -77,7 +77,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
             )
         except grpc.aio.AioRpcError as rpc_error:
             if is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
-                raise ProcessInstanceNotFoundError(process_instance_key=process_instance_key)
+                raise ProcessInstanceNotFoundError(process_instance_key=process_instance_key) from rpc_error
             else:
                 await self._common_zeebe_grpc_errors(rpc_error)
 
@@ -90,7 +90,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
             )
         except grpc.aio.AioRpcError as rpc_error:
             if is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
-                raise ProcessInvalidError()
+                raise ProcessInvalidError() from rpc_error
             else:
                 await self._common_zeebe_grpc_errors(rpc_error)
 

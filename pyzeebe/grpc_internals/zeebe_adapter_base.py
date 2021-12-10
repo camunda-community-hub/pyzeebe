@@ -32,12 +32,12 @@ class ZeebeAdapterBase:
             self._current_connection_retries += 1
             if not self._should_retry():
                 await self._close()
-            raise ZeebeGatewayUnavailableError()
+            raise ZeebeGatewayUnavailableError() from rpc_error
         elif is_error_status(rpc_error, grpc.StatusCode.INTERNAL):
             self._current_connection_retries += 1
             if not self._should_retry():
                 await self._close()
-            raise ZeebeInternalError()
+            raise ZeebeInternalError() from rpc_error
         else:
             raise rpc_error
 
