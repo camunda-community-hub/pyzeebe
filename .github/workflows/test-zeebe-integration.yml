@@ -9,16 +9,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        zeebe-version: [ "1.2.1" ]
+        zeebe-version: ["1.2.1"]
 
-    container: python:3.6
+    container: python:3.7
 
     services:
       zeebe:
         image: camunda/zeebe:${{ matrix.zeebe-version }}
         ports:
           - 26500/tcp
-
 
     steps:
       - uses: actions/checkout@v2
@@ -30,7 +29,7 @@ jobs:
       - name: Sleep for 30 seconds
         uses: jakejarvis/wait-action@master
         with:
-          time: '30s'
+          time: "30s"
 
       - name: Run integration tests
         run: |
