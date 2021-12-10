@@ -67,8 +67,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
             raise ProcessDefinitionHasNoStartEventError(bpmn_process_id=bpmn_process_id) from rpc_error
         elif is_error_status(rpc_error, grpc.StatusCode.DEADLINE_EXCEEDED):
             raise ProcessTimeoutError(bpmn_process_id) from rpc_error
-        else:
-            await self._common_zeebe_grpc_errors(rpc_error)
+        await self._handle_rpc_error(rpc_error)
 
     async def cancel_process_instance(self, process_instance_key: int) -> None:
         try:
@@ -78,8 +77,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
         except grpc.aio.AioRpcError as rpc_error:
             if is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
                 raise ProcessInstanceNotFoundError(process_instance_key=process_instance_key) from rpc_error
-            else:
-                await self._common_zeebe_grpc_errors(rpc_error)
+            await self._handle_rpc_error(rpc_error)
 
     async def deploy_process(self, *process_file_path: str) -> DeployProcessResponse:
         try:
@@ -91,8 +89,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
         except grpc.aio.AioRpcError as rpc_error:
             if is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
                 raise ProcessInvalidError() from rpc_error
-            else:
-                await self._common_zeebe_grpc_errors(rpc_error)
+            await self._handle_rpc_error(rpc_error)
 
     @staticmethod
     async def _get_process_request_object(process_file_path: str) -> ProcessRequestObject:
