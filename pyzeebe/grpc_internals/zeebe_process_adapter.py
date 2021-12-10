@@ -21,6 +21,7 @@ from pyzeebe.errors import (
     ProcessInvalidError,
     ProcessTimeoutError,
 )
+from pyzeebe.grpc_internals.grpc_utils import is_error_status
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 
 
@@ -32,8 +33,8 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
                     bpmnProcessId=bpmn_process_id, version=version, variables=json.dumps(variables)
                 )
             )
-        except grpc.aio.AioRpcError as rpc_error:
-            await self._create_process_errors(rpc_error, bpmn_process_id, version, variables)
+        except grpc.aio.AioRpcError as grpc_error:
+            await self._create_process_errors(grpc_error, bpmn_process_id, version, variables)
         return response.processInstanceKey
 
     async def create_process_instance_with_result(
@@ -49,51 +50,48 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
                     fetchVariables=variables_to_fetch,
                 )
             )
-        except grpc.aio.AioRpcError as rpc_error:
-            await self._create_process_errors(rpc_error, bpmn_process_id, version, variables)
+        except grpc.aio.AioRpcError as grpc_error:
+            await self._create_process_errors(grpc_error, bpmn_process_id, version, variables)
         return response.processInstanceKey, json.loads(response.variables)
 
     async def _create_process_errors(
-        self, rpc_error: grpc.aio.AioRpcError, bpmn_process_id: str, version: int, variables: Dict
+        self, grpc_error: grpc.aio.AioRpcError, bpmn_process_id: str, version: int, variables: Dict
     ) -> None:
-        if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
-            raise ProcessDefinitionNotFoundError(bpmn_process_id=bpmn_process_id, version=version) from rpc_error
-        elif self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
+        if is_error_status(grpc_error, grpc.StatusCode.NOT_FOUND):
+            raise ProcessDefinitionNotFoundError(bpmn_process_id=bpmn_process_id, version=version) from grpc_error
+        elif is_error_status(grpc_error, grpc.StatusCode.INVALID_ARGUMENT):
             raise InvalidJSONError(
                 f"Cannot start process: {bpmn_process_id} with version {version}. Variables: {variables}"
-            ) from rpc_error
-        elif self.is_error_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
-            raise ProcessDefinitionHasNoStartEventError(bpmn_process_id=bpmn_process_id) from rpc_error
-        elif self.is_error_status(rpc_error, grpc.StatusCode.DEADLINE_EXCEEDED):
-            raise ProcessTimeoutError(bpmn_process_id) from rpc_error
-        else:
-            await self._common_zeebe_grpc_errors(rpc_error)
+            ) from grpc_error
+        elif is_error_status(grpc_error, grpc.StatusCode.FAILED_PRECONDITION):
+            raise ProcessDefinitionHasNoStartEventError(bpmn_process_id=bpmn_process_id) from grpc_error
+        elif is_error_status(grpc_error, grpc.StatusCode.DEADLINE_EXCEEDED):
+            raise ProcessTimeoutError(bpmn_process_id) from grpc_error
+        await self._handle_grpc_error(grpc_error)
 
     async def cancel_process_instance(self, process_instance_key: int) -> None:
         try:
             await self._gateway_stub.CancelProcessInstance(
                 CancelProcessInstanceRequest(processInstanceKey=process_instance_key)
             )
-        except grpc.aio.AioRpcError as rpc_error:
-            if self.is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
-                raise ProcessInstanceNotFoundError(process_instance_key=process_instance_key)
-            else:
-                await self._common_zeebe_grpc_errors(rpc_error)
+        except grpc.aio.AioRpcError as grpc_error:
+            if is_error_status(grpc_error, grpc.StatusCode.NOT_FOUND):
+                raise ProcessInstanceNotFoundError(process_instance_key=process_instance_key) from grpc_error
+            await self._handle_grpc_error(grpc_error)
 
     async def deploy_process(self, *process_file_path: str) -> DeployProcessResponse:
         try:
             return await self._gateway_stub.DeployProcess(
                 DeployProcessRequest(
-                    processes=[await result for result in map(self._get_process_request_object, process_file_path)]
+                    processes=[await result for result in map(_create_process_request, process_file_path)]
                 )
             )
-        except grpc.aio.AioRpcError as rpc_error:
-            if self.is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
-                raise ProcessInvalidError()
-            else:
-                await self._common_zeebe_grpc_errors(rpc_error)
+        except grpc.aio.AioRpcError as grpc_error:
+            if is_error_status(grpc_error, grpc.StatusCode.INVALID_ARGUMENT):
+                raise ProcessInvalidError() from grpc_error
+            await self._handle_grpc_error(grpc_error)
 
-    @staticmethod
-    async def _get_process_request_object(process_file_path: str) -> ProcessRequestObject:
-        async with aiofiles.open(process_file_path, "rb") as file:
-            return ProcessRequestObject(name=os.path.basename(process_file_path), definition=await file.read())
+
+async def _create_process_request(process_file_path: str) -> ProcessRequestObject:
+    async with aiofiles.open(process_file_path, "rb") as file:
+        return ProcessRequestObject(name=os.path.basename(process_file_path), definition=await file.read())

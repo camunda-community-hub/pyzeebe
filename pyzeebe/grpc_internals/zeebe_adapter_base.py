@@ -1,15 +1,16 @@
 import logging
-import os
-from typing import Optional
 
 import grpc
 from zeebe_grpc.gateway_pb2_grpc import GatewayStub
 
 from pyzeebe.errors import (
+    UnkownGrpcStatusCodeError,
     ZeebeBackPressureError,
     ZeebeGatewayUnavailableError,
     ZeebeInternalError,
 )
+from pyzeebe.errors.pyzeebe_errors import PyZeebeError
+from pyzeebe.grpc_internals.grpc_utils import is_error_status
 
 logger = logging.getLogger(__name__)
 
@@ -26,28 +27,28 @@ class ZeebeAdapterBase:
     def _should_retry(self):
         return self._max_connection_retries == -1 or self._current_connection_retries < self._max_connection_retries
 
-    async def _common_zeebe_grpc_errors(self, rpc_error: grpc.aio.AioRpcError):
-        if self.is_error_status(rpc_error, grpc.StatusCode.RESOURCE_EXHAUSTED):
-            raise ZeebeBackPressureError()
-        elif self.is_error_status(rpc_error, grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.CANCELLED):
+    async def _handle_grpc_error(self, grpc_error: grpc.aio.AioRpcError):
+        try:
+            pyzeebe_error = _create_pyzeebe_error_from_grpc_error(grpc_error)
+            raise pyzeebe_error
+        except (ZeebeGatewayUnavailableError, ZeebeInternalError):
             self._current_connection_retries += 1
             if not self._should_retry():
                 await self._close()
-            raise ZeebeGatewayUnavailableError()
-        elif self.is_error_status(rpc_error, grpc.StatusCode.INTERNAL):
-            self._current_connection_retries += 1
-            if not self._should_retry():
-                await self._close()
-            raise ZeebeInternalError()
-        else:
-            raise rpc_error
-
-    @staticmethod
-    def is_error_status(rpc_error: grpc.aio.AioRpcError, *status_codes: grpc.StatusCode):
-        return rpc_error.code() in status_codes
+            raise
 
     async def _close(self):
         try:
             await self._channel.close()
         except Exception as exception:
             logger.exception(f"Failed to close channel, {type(exception).__name__} exception was raised")
+
+
+def _create_pyzeebe_error_from_grpc_error(grpc_error: grpc.aio.AioRpcError) -> PyZeebeError:
+    if is_error_status(grpc_error, grpc.StatusCode.RESOURCE_EXHAUSTED):
+        return ZeebeBackPressureError()
+    elif is_error_status(grpc_error, grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.CANCELLED):
+        return ZeebeGatewayUnavailableError()
+    elif is_error_status(grpc_error, grpc.StatusCode.INTERNAL):
+        return ZeebeInternalError()
+    return UnkownGrpcStatusCodeError(grpc_error)
