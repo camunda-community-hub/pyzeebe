@@ -172,14 +172,14 @@ toml = ["toml"]
 
 [[package]]
 name = "coveralls"
-version = "2.2.0"
+version = "3.3.1"
 description = "Show coverage stats online via coveralls.io"
 category = "dev"
 optional = false
 python-versions = ">= 3.5"
 
 [package.dependencies]
-coverage = ">=4.1,<6.0"
+coverage = ">=4.1,<6.0.0 || >6.1,<6.1.1 || >6.1.1,<7.0"
 docopt = ">=0.6.1"
 requests = ">=1.0.0"
 
@@ -802,7 +802,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6"
-content-hash = "600c1036ae7ac35cb4a179260c0cb51854231f40b8faecfae999e17bfa161d70"
+content-hash = "3340f521135b2768d8129766ced1cb416a04df547b36dee88ec8647b55cfdff6"
 
 [metadata.files]
 aiofiles = [
@@ -916,8 +916,8 @@ coverage = [
     {file = "coverage-5.5.tar.gz", hash = "sha256:ebe78fe9a0e874362175b02371bdfbee64d8edc42a044253ddf4ee7d3c15212c"},
 ]
 coveralls = [
-    {file = "coveralls-2.2.0-py2.py3-none-any.whl", hash = "sha256:2301a19500b06649d2ec4f2858f9c69638d7699a4c63027c5d53daba666147cc"},
-    {file = "coveralls-2.2.0.tar.gz", hash = "sha256:b990ba1f7bc4288e63340be0433698c1efe8217f78c689d254c2540af3d38617"},
+    {file = "coveralls-3.3.1-py2.py3-none-any.whl", hash = "sha256:f42015f31d386b351d4226389b387ae173207058832fbf5c8ec4b40e27b16026"},
+    {file = "coveralls-3.3.1.tar.gz", hash = "sha256:b32a8bb5d2df585207c119d6c01567b81fba690c9c10a753bfe27a335bfc43ea"},
 ]
 dataclasses = [
     {file = "dataclasses-0.8-py3-none-any.whl", hash = "sha256:0201d89fa866f68c8ebd9d08ee6ff50c0b255f8ec63a71c16fda7af82bb887bf"},
