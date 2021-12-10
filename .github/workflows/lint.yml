@@ -4,7 +4,6 @@ on: [push, pull_request]
 
 jobs:
   type-checking:
-
     runs-on: ubuntu-latest
 
     container: python:3.8
