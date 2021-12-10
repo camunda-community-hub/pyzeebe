@@ -51,5 +51,4 @@ def _create_pyzeebe_error_from_grpc_error(grpc_error: grpc.aio.AioRpcError) -> P
         return ZeebeGatewayUnavailableError()
     elif is_error_status(grpc_error, grpc.StatusCode.INTERNAL):
         return ZeebeInternalError()
-    else:
-        return UnkownGrpcStatusCodeError(grpc_error)
+    return UnkownGrpcStatusCodeError(grpc_error)
