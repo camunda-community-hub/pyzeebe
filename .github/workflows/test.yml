@@ -1,0 +1,58 @@
+name: Test pyzeebe
+
+on: [push, pull_request]
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
+
+    container: python:${{ matrix.python-version }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          poetry install
+      - name: Test with pytest
+        run: |
+          poetry run coverage run --source=pyzeebe -m py.test tests/unit
+      - name: Upload to coveralls
+        run: |
+          poetry run coveralls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  integration-test:
+    env:
+      ZEEBE_ADDRESS: "zeebe:26500"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        zeebe-version: ["1.2.1"]
+
+    container: python:3.7
+
+    services:
+      zeebe:
+        image: camunda/zeebe:${{ matrix.zeebe-version }}
+        ports:
+          - 26500/tcp
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          poetry install
+
+      - name: Sleep for 30 seconds
+        uses: jakejarvis/wait-action@master
+        with:
+          time: "30s"
+
+      - name: Run integration tests
+        run: |
+          poetry run pytest tests/integration
