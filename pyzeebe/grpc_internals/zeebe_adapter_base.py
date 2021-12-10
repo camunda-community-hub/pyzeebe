@@ -1,6 +1,4 @@
 import logging
-import os
-from typing import Optional
 
 import grpc
 from zeebe_grpc.gateway_pb2_grpc import GatewayStub
