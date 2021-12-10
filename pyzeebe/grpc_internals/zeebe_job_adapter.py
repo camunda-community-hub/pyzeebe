@@ -50,10 +50,10 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
                     job = self._create_job_from_raw_job(raw_job)
                     logger.debug(f"Got job: {job} from zeebe")
                     yield job
-        except grpc.aio.AioRpcError as rpc_error:
-            if is_error_status(rpc_error, grpc.StatusCode.INVALID_ARGUMENT):
-                raise ActivateJobsRequestInvalidError(task_type, worker, timeout, max_jobs_to_activate) from rpc_error
-            await self._handle_rpc_error(rpc_error)
+        except grpc.aio.AioRpcError as grpc_error:
+            if is_error_status(grpc_error, grpc.StatusCode.INVALID_ARGUMENT):
+                raise ActivateJobsRequestInvalidError(task_type, worker, timeout, max_jobs_to_activate) from grpc_error
+            await self._handle_grpc_error(grpc_error)
 
     def _create_job_from_raw_job(self, response) -> Job:
         return Job(
@@ -78,33 +78,33 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
             return await self._gateway_stub.CompleteJob(
                 CompleteJobRequest(jobKey=job_key, variables=json.dumps(variables))
             )
-        except grpc.aio.AioRpcError as rpc_error:
-            if is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
-                raise JobNotFoundError(job_key=job_key) from rpc_error
-            elif is_error_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
-                raise JobAlreadyDeactivatedError(job_key=job_key) from rpc_error
-            await self._handle_rpc_error(rpc_error)
+        except grpc.aio.AioRpcError as grpc_error:
+            if is_error_status(grpc_error, grpc.StatusCode.NOT_FOUND):
+                raise JobNotFoundError(job_key=job_key) from grpc_error
+            elif is_error_status(grpc_error, grpc.StatusCode.FAILED_PRECONDITION):
+                raise JobAlreadyDeactivatedError(job_key=job_key) from grpc_error
+            await self._handle_grpc_error(grpc_error)
 
     async def fail_job(self, job_key: int, retries: int, message: str) -> FailJobResponse:
         try:
             return await self._gateway_stub.FailJob(
                 FailJobRequest(jobKey=job_key, retries=retries, errorMessage=message)
             )
-        except grpc.aio.AioRpcError as rpc_error:
-            if is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
-                raise JobNotFoundError(job_key=job_key) from rpc_error
-            elif is_error_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
-                raise JobAlreadyDeactivatedError(job_key=job_key) from rpc_error
-            await self._handle_rpc_error(rpc_error)
+        except grpc.aio.AioRpcError as grpc_error:
+            if is_error_status(grpc_error, grpc.StatusCode.NOT_FOUND):
+                raise JobNotFoundError(job_key=job_key) from grpc_error
+            elif is_error_status(grpc_error, grpc.StatusCode.FAILED_PRECONDITION):
+                raise JobAlreadyDeactivatedError(job_key=job_key) from grpc_error
+            await self._handle_grpc_error(grpc_error)
 
     async def throw_error(self, job_key: int, message: str, error_code: str = "") -> ThrowErrorResponse:
         try:
             return await self._gateway_stub.ThrowError(
                 ThrowErrorRequest(jobKey=job_key, errorMessage=message, errorCode=error_code)
             )
-        except grpc.aio.AioRpcError as rpc_error:
-            if is_error_status(rpc_error, grpc.StatusCode.NOT_FOUND):
-                raise JobNotFoundError(job_key=job_key) from rpc_error
-            elif is_error_status(rpc_error, grpc.StatusCode.FAILED_PRECONDITION):
-                raise JobAlreadyDeactivatedError(job_key=job_key) from rpc_error
-            await self._handle_rpc_error(rpc_error)
+        except grpc.aio.AioRpcError as grpc_error:
+            if is_error_status(grpc_error, grpc.StatusCode.NOT_FOUND):
+                raise JobNotFoundError(job_key=job_key) from grpc_error
+            elif is_error_status(grpc_error, grpc.StatusCode.FAILED_PRECONDITION):
+                raise JobAlreadyDeactivatedError(job_key=job_key) from grpc_error
+            await self._handle_grpc_error(grpc_error)

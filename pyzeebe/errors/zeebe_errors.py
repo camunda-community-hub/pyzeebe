@@ -15,7 +15,7 @@ class ZeebeInternalError(PyZeebeError):
     pass
 
 
-class UnkownRpcStatusCodeError(PyZeebeError):
-    def __init__(self, rpc_error: grpc.aio.AioRpcError):
+class UnkownGrpcStatusCodeError(PyZeebeError):
+    def __init__(self, grpc_error: grpc.aio.AioRpcError):
         super().__init__()
-        self.rpc_error = rpc_error
+        self.grpc_error = grpc_error

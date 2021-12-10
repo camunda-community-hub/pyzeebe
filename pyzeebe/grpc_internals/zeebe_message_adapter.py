@@ -28,7 +28,7 @@ class ZeebeMessageAdapter(ZeebeAdapterBase):
                     variables=json.dumps(variables),
                 )
             )
-        except grpc.aio.AioRpcError as rpc_error:
-            if is_error_status(rpc_error, grpc.StatusCode.ALREADY_EXISTS):
-                raise MessageAlreadyExistsError() from rpc_error
-            await self._handle_rpc_error(rpc_error)
+        except grpc.aio.AioRpcError as grpc_error:
+            if is_error_status(grpc_error, grpc.StatusCode.ALREADY_EXISTS):
+                raise MessageAlreadyExistsError() from grpc_error
+            await self._handle_grpc_error(grpc_error)
