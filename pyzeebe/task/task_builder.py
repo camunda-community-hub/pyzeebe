@@ -56,7 +56,7 @@ async def run_original_task_function(
     try:
         return await task_function(**job.variables), True  # type: ignore
     except Exception as e:
-        logger.debug(f"Failed job: {job}. Error: {e}.")
+        logger.debug("Failed job: %s. Error: %s.", job, e)
         await task_config.exception_handler(e, job)
         return job.variables, False
 
@@ -74,5 +74,5 @@ async def run_decorator(decorator: AsyncTaskDecorator, job: Job) -> Job:
     try:
         return await decorator(job)
     except Exception as e:
-        logger.warning(f"Failed to run decorator {decorator}. Exception: {e}")
+        logger.warning("Failed to run decorator %s. Exception: %s", decorator, e)
         return job
