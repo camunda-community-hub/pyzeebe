@@ -48,7 +48,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
             ):
                 for raw_job in response.jobs:
                     job = self._create_job_from_raw_job(raw_job)
-                    logger.debug(f"Got job: {job} from zeebe")
+                    logger.debug("Got job: %s from zeebe", job)
                     yield job
         except grpc.aio.AioRpcError as grpc_error:
             if is_error_status(grpc_error, grpc.StatusCode.INVALID_ARGUMENT):

@@ -41,7 +41,7 @@ class ZeebeAdapterBase:
         try:
             await self._channel.close()
         except Exception as exception:
-            logger.exception(f"Failed to close channel, {type(exception).__name__} exception was raised")
+            logger.exception("Failed to close channel, %s exception was raised", type(exception).__name__)
 
 
 def _create_pyzeebe_error_from_grpc_error(grpc_error: grpc.aio.AioRpcError) -> PyZeebeError:

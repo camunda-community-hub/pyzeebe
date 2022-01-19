@@ -33,7 +33,7 @@ class JobExecutor:
         try:
             await self.task.job_handler(job)
         except JobAlreadyDeactivatedError as error:
-            logger.warning(f"Job was already deactivated. Job key: {error.job_key}")
+            logger.warning("Job was already deactivated. Job key: %s", error.job_key)
 
     def should_execute(self) -> bool:
         return not self.stop_event.is_set()

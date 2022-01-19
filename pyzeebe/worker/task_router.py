@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 async def default_exception_handler(e: Exception, job: Job) -> None:
-    logger.warning(f"Task type: {job.type} - failed job {job}. Error: {e}.")
+    logger.warning("Task type: %s - failed job %s. Error: %s.", job.type, job, e)
     if isinstance(e, BusinessError):
         await job.set_error_status(f"Failed job. Recoverable error: {e}", error_code=e.error_code)
     else:
