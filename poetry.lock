@@ -777,7 +777,7 @@ python-versions = "*"
 
 [[package]]
 name = "zeebe-grpc"
-version = "1.2.3"
+version = "1.3.5"
 description = "zeebe Python gRPC Gateway"
 category = "main"
 optional = false
@@ -1313,8 +1313,8 @@ wrapt = [
     {file = "wrapt-1.12.1.tar.gz", hash = "sha256:b62ffa81fb85f4332a4f609cab4ac40709470da05643a082ec1eb88e6d9b97d7"},
 ]
 zeebe-grpc = [
-    {file = "zeebe_grpc-1.2.3-py3-none-any.whl", hash = "sha256:3590b5e6590a3e497f3662ac9dff326ad65e7dc651ca81a7ef7c8e26b1bc7be0"},
-    {file = "zeebe_grpc-1.2.3.tar.gz", hash = "sha256:514745aec5a3b06fa28cf5738d62aa78f87c7cde7301d884964c3c747d52e601"},
+    {file = "zeebe_grpc-1.3.5-py3-none-any.whl", hash = "sha256:a6a9008ab87ce421eacf5b29f5047dd624533f0dd8d94d8c024cccc6b2feee1f"},
+    {file = "zeebe_grpc-1.3.5.tar.gz", hash = "sha256:4c11f2a73856ec07dffd4fe0ae358463c8936f4d9aedb055acf5155155f5f9c0"},
 ]
 zipp = [
     {file = "zipp-3.6.0-py3-none-any.whl", hash = "sha256:9fe5ea21568a0a70e50f273397638d39b03353731e6cbbb3fd8502a33fec40bc"},
