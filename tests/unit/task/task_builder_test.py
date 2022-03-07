@@ -80,6 +80,17 @@ class TestBuildJobHandler:
         assert job.variables.pop("x") == 1
 
     @pytest.mark.asyncio
+    async def test_job_variables_are_not_overridden(
+        self, original_task_function: Callable, task_config: TaskConfig, mocked_job_with_adapter: Job
+    ):
+        mocked_job_with_adapter.variables = {"x": 1}
+        job_handler = task_builder.build_job_handler(original_task_function, task_config)
+
+        job = await job_handler(mocked_job_with_adapter)
+
+        assert job.variables.pop("x") == 1
+
+    @pytest.mark.asyncio
     async def test_complete_job_called(
         self, original_task_function: Callable, task_config: TaskConfig, mocked_job_with_adapter: Job
     ):
