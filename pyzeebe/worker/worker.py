@@ -7,6 +7,7 @@ import grpc
 
 from pyzeebe import TaskDecorator
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
+from pyzeebe.task import task_builder
 from pyzeebe.worker.job_executor import JobExecutor
 from pyzeebe.worker.job_poller import JobPoller
 from pyzeebe.worker.task_router import ZeebeTaskRouter
@@ -117,5 +118,6 @@ class ZeebeWorker(ZeebeTaskRouter):
         """
         for router in routers:
             for task in router.tasks:
-                task.config = self._add_decorators_to_config(task.config)
+                config_with_decorators = self._add_decorators_to_config(task.config)
+                task = task_builder.build_task(task.original_function, config_with_decorators)
                 self._add_task(task)
