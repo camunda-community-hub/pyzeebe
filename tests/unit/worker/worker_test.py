@@ -100,6 +100,28 @@ class TestIncludeRouter:
 
         decorator.assert_called_once()
 
+    @pytest.mark.asyncio
+    async def test_worker_with_before_decorator(
+        self, zeebe_worker: ZeebeWorker, router: ZeebeTaskRouter, decorator: TaskDecorator, mocked_job_with_adapter: Job
+    ):
+        zeebe_worker.before(decorator)
+        task = self.include_router_with_task(zeebe_worker, router)
+
+        await task.job_handler(mocked_job_with_adapter)
+
+        decorator.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_worker_with_after_decorator(
+        self, zeebe_worker: ZeebeWorker, router: ZeebeTaskRouter, decorator: TaskDecorator, mocked_job_with_adapter: Job
+    ):
+        zeebe_worker.after(decorator)
+        task = self.include_router_with_task(zeebe_worker, router)
+
+        await task.job_handler(mocked_job_with_adapter)
+
+        decorator.assert_called_once()
+
     @staticmethod
     def include_router_with_task(zeebe_worker: ZeebeWorker, router: ZeebeTaskRouter, task_type: str = None) -> Task:
         task_type = task_type or str(uuid4())
