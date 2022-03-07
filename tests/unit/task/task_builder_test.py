@@ -30,6 +30,18 @@ class TestBuildTask:
         assert job.variables.pop("y") == 1
 
     @pytest.mark.asyncio
+    async def test_no_additional_variables_are_added_to_result(
+        self, single_value_task_config: TaskConfig, mocked_job_with_adapter: Job
+    ):
+        mocked_job_with_adapter.variables = {"x": 1}
+
+        task = task_builder.build_task(lambda x: x, single_value_task_config)
+        job = await task.job_handler(mocked_job_with_adapter)
+
+        assert len(job.variables.keys()) == 2
+        assert set(job.variables.keys()) == {"x", "y"}
+
+    @pytest.mark.asyncio
     async def test_job_parameter_is_injected_in_task(self, task_config: TaskConfig, mocked_job_with_adapter: Job):
         def function_with_job_parameter(job: Job):
             return {"job": job}
