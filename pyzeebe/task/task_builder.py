@@ -1,9 +1,9 @@
 import functools
 import logging
-from typing import Awaitable, Callable, Dict, Sequence, Tuple
+from typing import Dict, Sequence, Tuple
 
 from pyzeebe import Job
-from pyzeebe.function_tools import AsyncFunction, DictFunction, Function
+from pyzeebe.function_tools import DictFunction, Function
 from pyzeebe.function_tools.async_tools import asyncify, is_async_function
 from pyzeebe.function_tools.dict_tools import convert_to_dict_function
 from pyzeebe.function_tools.parameter_tools import get_job_parameter_name
