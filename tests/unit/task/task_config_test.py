@@ -1,6 +1,3 @@
-from typing import Callable, List
-
-from pyzeebe.function_tools import async_tools
 from pyzeebe.job.job import Job
 from pyzeebe.task.task_config import TaskConfig
 from tests.unit.utils.function_tools import functions_are_all_async
