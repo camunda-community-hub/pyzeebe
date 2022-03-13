@@ -51,6 +51,7 @@ class Job(object):
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
+        self.status = JobStatus.Completed
         if self.zeebe_adapter:
             await self.zeebe_adapter.complete_job(job_key=self.key, variables=self.variables)
         else:
@@ -71,6 +72,7 @@ class Job(object):
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
+        self.status = JobStatus.Failed
         if self.zeebe_adapter:
             await self.zeebe_adapter.fail_job(job_key=self.key, retries=self.retries - 1, message=message)
         else:
@@ -93,6 +95,7 @@ class Job(object):
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
+        self.status = JobStatus.ErrorThrown
         if self.zeebe_adapter:
             await self.zeebe_adapter.throw_error(job_key=self.key, message=message, error_code=error_code)
         else:
