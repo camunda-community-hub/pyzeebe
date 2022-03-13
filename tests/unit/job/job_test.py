@@ -3,7 +3,7 @@ from uuid import uuid4
 import pytest
 from mock import AsyncMock
 
-from pyzeebe import Job
+from pyzeebe import Job, JobStatus
 from pyzeebe.errors import NoZeebeAdapterError
 
 
@@ -15,6 +15,7 @@ async def test_success(job_with_adapter):
     await job_with_adapter.set_success_status()
 
     complete_job_mock.assert_called_with(job_key=job_with_adapter.key, variables=job_with_adapter.variables)
+    assert job_with_adapter.status == JobStatus.Completed
 
 
 @pytest.mark.asyncio
@@ -32,6 +33,7 @@ async def test_error(job_with_adapter):
     await job_with_adapter.set_error_status(message)
 
     throw_error_mock.assert_called_with(job_key=job_with_adapter.key, message=message, error_code="")
+    assert job_with_adapter.status == JobStatus.ErrorThrown
 
 
 @pytest.mark.asyncio
@@ -44,6 +46,7 @@ async def test_error_with_code(job_with_adapter):
     await job_with_adapter.set_error_status(message, error_code)
 
     throw_error_mock.assert_called_with(job_key=job_with_adapter.key, message=message, error_code=error_code)
+    assert job_with_adapter.status == JobStatus.ErrorThrown
 
 
 @pytest.mark.asyncio
@@ -64,6 +67,7 @@ async def test_failure(job_with_adapter):
     fail_job_mock.assert_called_with(
         job_key=job_with_adapter.key, retries=job_with_adapter.retries - 1, message=message
     )
+    assert job_with_adapter.status == JobStatus.Failed
 
 
 @pytest.mark.asyncio
