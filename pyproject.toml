@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyzeebe"
-version = "3.0.2"
+version = "3.0.3"
 description = "Zeebe client api"
 authors = ["Jonatan Martens <jonatanmartenstav@gmail.com>"]
 license = "MIT"
