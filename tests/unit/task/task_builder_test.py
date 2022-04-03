@@ -44,12 +44,12 @@ class TestBuildTask:
     @pytest.mark.asyncio
     async def test_job_parameter_is_injected_in_task(self, task_config: TaskConfig, mocked_job_with_adapter: Job):
         def function_with_job_parameter(job: Job):
-            return {"job": job}
+            return {"received_job": job}
 
         task = task_builder.build_task(function_with_job_parameter, task_config)
         job = await task.job_handler(mocked_job_with_adapter)
 
-        assert job.variables["job"] == mocked_job_with_adapter
+        assert job.variables["received_job"] == mocked_job_with_adapter
 
     @pytest.mark.asyncio
     async def test_job_parameter_is_removed_after_job_handler_call(
