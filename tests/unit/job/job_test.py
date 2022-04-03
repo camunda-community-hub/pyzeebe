@@ -3,7 +3,7 @@ from uuid import uuid4
 import pytest
 from mock import AsyncMock
 
-from pyzeebe import Job, JobStatus
+from pyzeebe import JobStatus
 from pyzeebe.errors import NoZeebeAdapterError
 
 
