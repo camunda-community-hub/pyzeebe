@@ -6,7 +6,6 @@ from mock import AsyncMock
 
 from pyzeebe import SyncZeebeClient
 from pyzeebe.errors import ProcessDefinitionNotFoundError
-from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 
 # Pytest doesn't play well with loop.run_until_complete unless the test has a
 # running asyncio loop

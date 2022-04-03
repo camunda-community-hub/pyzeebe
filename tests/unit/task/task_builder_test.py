@@ -38,8 +38,8 @@ class TestBuildTask:
         task = task_builder.build_task(lambda x: x, single_value_task_config)
         job = await task.job_handler(mocked_job_with_adapter)
 
-        assert len(job.variables.keys()) == 1
-        assert set(job.variables.keys()) == {"y"}
+        assert len(job.variables.keys()) == 2
+        assert set(job.variables.keys()) == {"x", "y"}
 
     @pytest.mark.asyncio
     async def test_job_parameter_is_injected_in_task(self, task_config: TaskConfig, mocked_job_with_adapter: Job):
@@ -85,6 +85,17 @@ class TestBuildJobHandler:
         self, original_task_function: Callable, task_config: TaskConfig, mocked_job_with_adapter: Job
     ):
         original_task_function.return_value = {"x": 1}
+        job_handler = task_builder.build_job_handler(original_task_function, task_config)
+
+        job = await job_handler(mocked_job_with_adapter)
+
+        assert job.variables.pop("x") == 1
+
+    @pytest.mark.asyncio
+    async def test_job_variables_are_not_overridden(
+        self, original_task_function: Callable, task_config: TaskConfig, mocked_job_with_adapter: Job
+    ):
+        mocked_job_with_adapter.variables = {"x": 1}
         job_handler = task_builder.build_job_handler(original_task_function, task_config)
 
         job = await job_handler(mocked_job_with_adapter)

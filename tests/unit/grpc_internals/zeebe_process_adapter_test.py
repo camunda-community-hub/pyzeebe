@@ -1,4 +1,3 @@
-from io import BytesIO
 from random import randint
 from uuid import uuid4
 
@@ -16,7 +15,6 @@ from pyzeebe.errors import (
 )
 from pyzeebe.grpc_internals.zeebe_process_adapter import ZeebeProcessAdapter
 from tests.unit.utils.gateway_mock import GatewayMock
-from tests.unit.utils.grpc_utils import GRPCStatusCode
 from tests.unit.utils.random_utils import RANDOM_RANGE
 
 
