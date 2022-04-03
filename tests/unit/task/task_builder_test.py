@@ -205,7 +205,7 @@ class TestBuildJobHandler:
         job_handler = task_builder.build_job_handler(self.function_with_job_parameter, task_config)
         job = await job_handler(mocked_job_with_adapter)
 
-        assert job.variables["job"] == mocked_job_with_adapter
+        assert job.variables["received_job"] == mocked_job_with_adapter
 
     @pytest.mark.asyncio
     async def test_job_parameter_retains_variables(self, task_config: TaskConfig, mocked_job_with_adapter: Job):
@@ -215,7 +215,7 @@ class TestBuildJobHandler:
         job_handler = task_builder.build_job_handler(self.function_with_job_parameter, task_config)
         job = await job_handler(mocked_job_with_adapter)
 
-        assert job.variables["job"].variables == expected_variables
+        assert job.variables["received_job"].variables == expected_variables
 
     def function_with_job_parameter(x: int, job: Job):
-        return {"job": job}
+        return {"received_job": job}
