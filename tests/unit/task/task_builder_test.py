@@ -31,7 +31,7 @@ class TestBuildTask:
 
     @pytest.mark.asyncio
     async def test_no_additional_variables_are_added_to_result(
-        self, single_value_task_config: TaskConfig, mocked_job_with_adapter: Job
+            self, single_value_task_config: TaskConfig, mocked_job_with_adapter: Job
     ):
         mocked_job_with_adapter.variables = {"x": 1}
 
@@ -51,6 +51,18 @@ class TestBuildTask:
 
         assert job.variables["job"] == mocked_job_with_adapter
 
+    @pytest.mark.asyncio
+    async def test_job_parameter_is_removed_after_job_handler_call(
+            self, task_config: TaskConfig, mocked_job_with_adapter: Job
+    ):
+        def function_with_job_parameter(job: Job):
+            return {"job": job}
+
+        task = task_builder.build_task(function_with_job_parameter, task_config)
+        job = await task.job_handler(mocked_job_with_adapter)
+
+        assert "job" not in job.variables
+
 
 class TestBuildJobHandler:
     def test_returned_task_is_callable(self, original_task_function: Callable, task_config: TaskConfig):
@@ -59,7 +71,7 @@ class TestBuildJobHandler:
 
     @pytest.mark.asyncio
     async def test_exception_handler_called(
-        self, original_task_function: Callable, task_config: TaskConfig, mocked_job_with_adapter: Job
+            self, original_task_function: Callable, task_config: TaskConfig, mocked_job_with_adapter: Job
     ):
         exception = Exception()
         original_task_function.side_effect = exception
@@ -71,7 +83,7 @@ class TestBuildJobHandler:
 
     @pytest.mark.asyncio
     async def test_parameters_are_provided_to_task(
-        self, original_task_function: Callable, task_config: TaskConfig, mocked_job_with_adapter: Job
+            self, original_task_function: Callable, task_config: TaskConfig, mocked_job_with_adapter: Job
     ):
         mocked_job_with_adapter.variables = {"x": 1}
         job_handler = task_builder.build_job_handler(original_task_function, task_config)
@@ -82,7 +94,7 @@ class TestBuildJobHandler:
 
     @pytest.mark.asyncio
     async def test_variables_are_added_to_result(
-        self, original_task_function: Callable, task_config: TaskConfig, mocked_job_with_adapter: Job
+            self, original_task_function: Callable, task_config: TaskConfig, mocked_job_with_adapter: Job
     ):
         original_task_function.return_value = {"x": 1}
         job_handler = task_builder.build_job_handler(original_task_function, task_config)
@@ -93,7 +105,7 @@ class TestBuildJobHandler:
 
     @pytest.mark.asyncio
     async def test_job_variables_are_not_overridden(
-        self, original_task_function: Callable, task_config: TaskConfig, mocked_job_with_adapter: Job
+            self, original_task_function: Callable, task_config: TaskConfig, mocked_job_with_adapter: Job
     ):
         mocked_job_with_adapter.variables = {"x": 1}
         job_handler = task_builder.build_job_handler(original_task_function, task_config)
@@ -104,7 +116,7 @@ class TestBuildJobHandler:
 
     @pytest.mark.asyncio
     async def test_complete_job_called(
-        self, original_task_function: Callable, task_config: TaskConfig, mocked_job_with_adapter: Job
+            self, original_task_function: Callable, task_config: TaskConfig, mocked_job_with_adapter: Job
     ):
         job_handler = task_builder.build_job_handler(original_task_function, task_config)
 
@@ -114,7 +126,7 @@ class TestBuildJobHandler:
 
     @pytest.mark.asyncio
     async def test_returned_task_runs_original_function(
-        self, original_task_function: Callable, task_config: TaskConfig, mocked_job_with_adapter: Job
+            self, original_task_function: Callable, task_config: TaskConfig, mocked_job_with_adapter: Job
     ):
         job_handler = task_builder.build_job_handler(original_task_function, task_config)
 
@@ -124,11 +136,11 @@ class TestBuildJobHandler:
 
     @pytest.mark.asyncio
     async def test_before_decorator_called(
-        self,
-        original_task_function: Callable,
-        decorator: TaskDecorator,
-        task_config: TaskConfig,
-        mocked_job_with_adapter: Job,
+            self,
+            original_task_function: Callable,
+            decorator: TaskDecorator,
+            task_config: TaskConfig,
+            mocked_job_with_adapter: Job,
     ):
         task_config.before.append(decorator)
         job_handler = task_builder.build_job_handler(original_task_function, task_config)
@@ -139,11 +151,11 @@ class TestBuildJobHandler:
 
     @pytest.mark.asyncio
     async def test_after_decorator_called(
-        self,
-        original_task_function: Callable,
-        decorator: TaskDecorator,
-        task_config: TaskConfig,
-        mocked_job_with_adapter: Job,
+            self,
+            original_task_function: Callable,
+            decorator: TaskDecorator,
+            task_config: TaskConfig,
+            mocked_job_with_adapter: Job,
     ):
         task_config.after.append(decorator)
         job_handler = task_builder.build_job_handler(original_task_function, task_config)
@@ -154,11 +166,11 @@ class TestBuildJobHandler:
 
     @pytest.mark.asyncio
     async def test_failing_decorator_continues(
-        self,
-        original_task_function: Callable,
-        decorator: TaskDecorator,
-        task_config: TaskConfig,
-        mocked_job_with_adapter: Job,
+            self,
+            original_task_function: Callable,
+            decorator: TaskDecorator,
+            task_config: TaskConfig,
+            mocked_job_with_adapter: Job,
     ):
         decorator.side_effect = Exception()
         task_config.before.append(decorator)
@@ -171,11 +183,11 @@ class TestBuildJobHandler:
 
     @pytest.mark.asyncio
     async def test_decorator_variables_are_added(
-        self,
-        original_task_function: Callable,
-        decorator: TaskDecorator,
-        task_config: TaskConfig,
-        mocked_job_with_adapter: Job,
+            self,
+            original_task_function: Callable,
+            decorator: TaskDecorator,
+            task_config: TaskConfig,
+            mocked_job_with_adapter: Job,
     ):
         mocked_job_with_adapter.variables = {"x": 2}
         decorator_return_value = mocked_job_with_adapter
