@@ -35,7 +35,7 @@ For full documentation please visit: https://pyzeebe.readthedocs.io/en/stable/
 
 ### Worker
 
-The `ZeebeWorker` class uses threading to get and run jobs.
+The `ZeebeWorker` class gets jobs from the gateway and runs them.
 
 ```python
 import asyncio
