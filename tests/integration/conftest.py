@@ -59,3 +59,13 @@ def start_worker(event_loop: asyncio.AbstractEventLoop, zeebe_worker: ZeebeWorke
     event_loop.create_task(zeebe_worker.work())
     yield
     event_loop.create_task(zeebe_worker.stop())
+
+
+@pytest.fixture(scope="module")
+def process_name() -> str:
+    return "test"
+
+
+@pytest.fixture
+def process_variables() -> Dict:
+    return {"input": str(uuid4()), "should_throw": False}
