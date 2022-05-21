@@ -6,7 +6,7 @@ import pytest
 
 from pyzeebe import ZeebeClient
 from pyzeebe.errors import ProcessDefinitionNotFoundError
-from tests.integration.utils import ProcessStats
+from tests.integration.utils import ProcessStats, wait_for_process
 
 
 @pytest.mark.asyncio
@@ -15,8 +15,8 @@ async def test_run_process(
 ):
     initial_amount_of_processes = process_stats.get_process_runs()
 
-    await zeebe_client.run_process(process_name, process_variables)
-    await sleep(0.2)  # Wait for process to finish
+    process_instance_key = await zeebe_client.run_process(process_name, process_variables)
+    await wait_for_process(process_instance_key, process_stats)
 
     assert process_stats.get_process_runs() == initial_amount_of_processes + 1
 

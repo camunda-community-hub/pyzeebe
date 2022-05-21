@@ -7,7 +7,7 @@ import grpc
 import pytest
 
 from pyzeebe import Job, ZeebeClient, ZeebeWorker, create_insecure_channel
-from tests.integration.utils import ProcessStats
+from tests.integration.utils import ProcessRun, ProcessStats
 
 
 @pytest.fixture(scope="module")
@@ -38,8 +38,8 @@ def task(zeebe_worker: ZeebeWorker, process_stats: ProcessStats):
         await job.set_error_status(f"Failed to run task {job.type}. Reason: {exc}")
 
     @zeebe_worker.task("test", exception_handler)
-    async def task_handler(should_throw: bool, input: str) -> Dict:
-        process_stats.add_process_run({"should_throw": should_throw, "input": input})
+    async def task_handler(should_throw: bool, input: str, job: Job) -> Dict:
+        process_stats.add_process_run(ProcessRun(job.process_instance_key, job.variables))
         if should_throw:
             raise Exception("Error thrown")
         else:
