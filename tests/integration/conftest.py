@@ -7,7 +7,7 @@ import grpc
 import pytest
 
 from pyzeebe import Job, ZeebeClient, ZeebeWorker, create_insecure_channel
-from tests.integration.utils.process_stats import ProcessStats
+from tests.integration.utils import ProcessStats
 
 
 @pytest.fixture(scope="module")
