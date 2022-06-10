@@ -4,6 +4,7 @@ from typing import Callable
 import pytest
 
 from pyzeebe import Job, TaskDecorator
+from pyzeebe.job.job_status import JobStatus
 from pyzeebe.task import task_builder
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_config import TaskConfig
@@ -197,6 +198,17 @@ class TestBuildJobHandler:
         job = await job_handler(mocked_job_with_adapter)
 
         assert "x" in job.variables
+
+    @pytest.mark.asyncio
+    async def test_job_status_is_updated(
+        self,
+        task_config: TaskConfig,
+        mocked_job_with_adapter: Job,
+    ):
+        job_handler = task_builder.build_job_handler(self.function_with_job_parameter, task_config)
+        job = await job_handler(mocked_job_with_adapter)
+
+        assert job.status == JobStatus.RunningAfterDecorators
 
     @pytest.mark.asyncio
     async def test_job_parameter_is_injected(self, task_config: TaskConfig, mocked_job_with_adapter: Job):
