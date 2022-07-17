@@ -26,7 +26,7 @@ copyright = "2020, Jonatan Martens"
 author = "Jonatan Martens"
 
 # The full version, including alpha/beta/rc tags
-release = "3.0.5"
+release = "3.0.6"
 
 # -- General configuration ---------------------------------------------------
 
@@ -55,6 +55,6 @@ html_theme = "sphinx_rtd_theme"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-version = "3.0.5"
+version = "3.0.6"
 
 master_doc = "index"
