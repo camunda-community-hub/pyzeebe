@@ -36,6 +36,7 @@ class JobPoller:
 
     async def poll(self):
         while self.should_poll():
+            logger.info(f"pool self = {str(self)}")
             await self.activate_max_jobs()
 
     async def activate_max_jobs(self):
@@ -73,12 +74,26 @@ class JobPoller:
             await asyncio.sleep(5)
 
     def should_poll(self) -> bool:
-        return not self.stop_event.is_set() and (self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection)
+        stop_event = self.stop_event.is_set()
+        zeebe_adapter_connected = self.zeebe_adapter.connected
+        zeebe_adapter_retrying_connection = self.zeebe_adapter.retrying_connection
+        logger.info(
+            f"should_poll stop_event = {stop_event} , zeebe_adapter_connected = {zeebe_adapter_connected} , zeebe_adapter_retrying_connection = {zeebe_adapter_retrying_connection}"
+        )
+        return not stop_event and (zeebe_adapter_connected or zeebe_adapter_retrying_connection)
 
     def calculate_max_jobs_to_activate(self) -> int:
         worker_max_jobs = self.task.config.max_running_jobs - self.task_state.count_active()
         return min(worker_max_jobs, self.task.config.max_jobs_to_activate)
 
     async def stop(self):
+        logger.info(f"JobPoller stop event {self}")
         self.stop_event.set()
         await self.queue.join()
+
+    def __repr__(self):
+        return "<JobPoller(zeebe_adapter='{}', task='{}', queue='{}'" \
+               ", worker_name='{}', request_timeout='{}', task_state='{}', poll_retry_delay='{}'" \
+               ", stop_event='{}')>" \
+            .format(self.zeebe_adapter, self.task, self.queue, self.worker_name, self.request_timeout, self.task_state,
+                    self.poll_retry_delay, self.stop_event)

@@ -25,6 +25,9 @@ class ZeebeAdapterBase:
         self._current_connection_retries = 0
 
     def _should_retry(self):
+        logger.info(
+            f"_should_retry  self._max_connection_retries = {self._max_connection_retries} , self"
+            f"._current_connection_retries = {self._current_connection_retries}")
         return self._max_connection_retries == -1 or self._current_connection_retries < self._max_connection_retries
 
     async def _handle_grpc_error(self, grpc_error: grpc.aio.AioRpcError):

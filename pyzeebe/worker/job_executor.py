@@ -39,6 +39,7 @@ class JobExecutor:
         return not self.stop_event.is_set()
 
     async def stop(self) -> None:
+        logger.info(f"JobExecutor stop event {self}")
         self.stop_event.set()
         await self.jobs.join()
 
