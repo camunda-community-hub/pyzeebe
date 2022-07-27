@@ -1,5 +1,7 @@
 import asyncio
+import datetime
 import logging
+from datetime import datetime
 
 from pyzeebe.errors import (
     ActivateJobsRequestInvalidError,
@@ -15,6 +17,8 @@ logger = logging.getLogger(__name__)
 
 
 class JobPoller:
+    last_poll_time: datetime.datetime = datetime.datetime.now()
+
     def __init__(
         self,
         zeebe_adapter: ZeebeJobAdapter,
@@ -80,6 +84,7 @@ class JobPoller:
         logger.info(
             f"should_poll stop_event = {stop_event} , zeebe_adapter_connected = {zeebe_adapter_connected} , zeebe_adapter_retrying_connection = {zeebe_adapter_retrying_connection}"
         )
+        JobPoller.last_poll_time = datetime.datetime.now()
         return not stop_event and (zeebe_adapter_connected or zeebe_adapter_retrying_connection)
 
     def calculate_max_jobs_to_activate(self) -> int:
