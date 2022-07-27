@@ -1,7 +1,6 @@
 import asyncio
 import datetime
 import logging
-from datetime import datetime
 
 from pyzeebe.errors import (
     ActivateJobsRequestInvalidError,
