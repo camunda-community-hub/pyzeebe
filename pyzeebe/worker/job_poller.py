@@ -39,7 +39,6 @@ class JobPoller:
 
     async def poll(self):
         while self.should_poll():
-            logger.info(f"pool self = {str(self)}")
             await self.activate_max_jobs()
 
     async def activate_max_jobs(self):
@@ -77,14 +76,8 @@ class JobPoller:
             await asyncio.sleep(5)
 
     def should_poll(self) -> bool:
-        stop_event = self.stop_event.is_set()
-        zeebe_adapter_connected = self.zeebe_adapter.connected
-        zeebe_adapter_retrying_connection = self.zeebe_adapter.retrying_connection
-        logger.info(
-            f"should_poll stop_event = {stop_event} , zeebe_adapter_connected = {zeebe_adapter_connected} , zeebe_adapter_retrying_connection = {zeebe_adapter_retrying_connection}"
-        )
         JobPoller.last_poll_time = datetime.datetime.now()
-        return not stop_event and (zeebe_adapter_connected or zeebe_adapter_retrying_connection)
+        return not self.stop_event.is_set() and (self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection)
 
     def calculate_max_jobs_to_activate(self) -> int:
         worker_max_jobs = self.task.config.max_running_jobs - self.task_state.count_active()
