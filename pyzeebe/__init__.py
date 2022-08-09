@@ -1,4 +1,4 @@
-__version__ = "3.0.13"
+__version__ = "3.0.14"
 
 from pyzeebe import errors
 from pyzeebe.channel import *
