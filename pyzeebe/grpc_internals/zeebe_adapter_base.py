@@ -35,8 +35,7 @@ class ZeebeAdapterBase:
             self._current_connection_retries += 1
             if not self._should_retry():
                 await self._close()
-            if not isinstance(pyzeebe_error, ZeebeDeadlineExceeded):
-                raise
+            raise
 
     async def _close(self):
         try:
@@ -53,6 +52,5 @@ def _create_pyzeebe_error_from_grpc_error(grpc_error: grpc.aio.AioRpcError) -> P
     elif is_error_status(grpc_error, grpc.StatusCode.INTERNAL):
         return ZeebeInternalError()
     elif is_error_status(grpc_error, grpc.StatusCode.DEADLINE_EXCEEDED):
-        logger.warning("grpc deadline exceeded error occurred")
         return ZeebeDeadlineExceeded()
     return UnkownGrpcStatusCodeError(grpc_error)
