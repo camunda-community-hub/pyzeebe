@@ -84,13 +84,5 @@ class JobPoller:
         return min(worker_max_jobs, self.task.config.max_jobs_to_activate)
 
     async def stop(self):
-        logger.info(f"JobPoller stop event {self}")
         self.stop_event.set()
         await self.queue.join()
-
-    def __repr__(self):
-        return "<JobPoller(zeebe_adapter='{}', task='{}', queue='{}'" \
-               ", worker_name='{}', request_timeout='{}', task_state='{}', poll_retry_delay='{}'" \
-               ", stop_event='{}')>" \
-            .format(self.zeebe_adapter, self.task, self.queue, self.worker_name, self.request_timeout, self.task_state,
-                    self.poll_retry_delay, self.stop_event)

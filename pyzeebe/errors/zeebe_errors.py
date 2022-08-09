@@ -14,6 +14,9 @@ class ZeebeGatewayUnavailableError(PyZeebeError):
 class ZeebeInternalError(PyZeebeError):
     pass
 
+class ZeebeDeadlineExceeded(PyZeebeError):
+    pass
+
 
 class UnkownGrpcStatusCodeError(PyZeebeError):
     def __init__(self, grpc_error: grpc.aio.AioRpcError):

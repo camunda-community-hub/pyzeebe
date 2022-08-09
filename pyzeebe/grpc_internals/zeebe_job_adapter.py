@@ -36,6 +36,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
         request_timeout: int,
     ) -> AsyncGenerator[Job, None]:
         try:
+            logger.info("start AsyncGenerator")
             async for response in self._gateway_stub.ActivateJobs(
                 ActivateJobsRequest(
                     type=task_type,
@@ -44,14 +45,15 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
                     maxJobsToActivate=max_jobs_to_activate,
                     fetchVariable=variables_to_fetch,
                     requestTimeout=request_timeout,
-                )
+                ),
+                timeout=timeout*2
             ):
                 for raw_job in response.jobs:
                     job = self._create_job_from_raw_job(raw_job)
                     logger.debug("Got job: %s from zeebe", job)
                     yield job
+            logger.info("end AsyncGenerator")
         except grpc.aio.AioRpcError as grpc_error:
-            logger.info(f"grpc_error = {grpc_error}")
             if is_error_status(grpc_error, grpc.StatusCode.INVALID_ARGUMENT):
                 raise ActivateJobsRequestInvalidError(task_type, worker, timeout, max_jobs_to_activate) from grpc_error
             await self._handle_grpc_error(grpc_error)
@@ -109,12 +111,3 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
             elif is_error_status(grpc_error, grpc.StatusCode.FAILED_PRECONDITION):
                 raise JobAlreadyDeactivatedError(job_key=job_key) from grpc_error
             await self._handle_grpc_error(grpc_error)
-
-    def __repr__(self):
-        return "<ZeebeJobAdapter(_channel='{}', _gateway_stub='{}', connected='{}'" \
-               ", retrying_connection='{}', _max_connection_retries='{}', _current_connection_retries='{}'" \
-               ", _channel.get_state='{}')>" \
-            .format(self._channel, self._gateway_stub, self.connected, self.retrying_connection
-                    , self._max_connection_retries
-                    , self._current_connection_retries
-                    , self._channel.get_state())

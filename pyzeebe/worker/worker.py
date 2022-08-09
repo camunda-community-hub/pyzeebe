@@ -99,7 +99,6 @@ class ZeebeWorker(ZeebeTaskRouter):
         """
         Stop the worker. This will emit a signal asking tasks to complete the current task and stop polling for new.
         """
-        logger.info(f"ZeebeWorker stop {self}")
         if self._work_task is not None:
             self._work_task.cancel()
 
