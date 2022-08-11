@@ -143,7 +143,7 @@ class TestDeployProcess:
     async def test_raises_on_invalid_process(self, zeebe_adapter: ZeebeProcessAdapter):
         error = grpc.aio.AioRpcError(grpc.StatusCode.INVALID_ARGUMENT, None, None)
 
-        zeebe_adapter._gateway_stub.DeployProcess = AsyncMock(side_effect=error)
+        zeebe_adapter._gateway_stub.DeployResource = AsyncMock(side_effect=error)
 
         with pytest.raises(ProcessInvalidError):
             await zeebe_adapter.deploy_process()
