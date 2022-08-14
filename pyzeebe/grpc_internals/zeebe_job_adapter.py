@@ -36,7 +36,9 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
         request_timeout: int,
     ) -> AsyncGenerator[Job, None]:
         try:
-            logger.info("start AsyncGenerator")
+            logger.info(f"start AsyncGenerator timeout = {timeout}, request_timeout = {request_timeout}")
+            grpc_request_timeout = request_timeout / 1000 * 2 if request_timeout > 0 else 20
+            logger.info(f"grpc_request_timeout = {grpc_request_timeout}")
             async for response in self._gateway_stub.ActivateJobs(
                 ActivateJobsRequest(
                     type=task_type,
@@ -46,7 +48,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
                     fetchVariable=variables_to_fetch,
                     requestTimeout=request_timeout,
                 ),
-                timeout=timeout*2
+                timeout=grpc_request_timeout
             ):
                 for raw_job in response.jobs:
                     job = self._create_job_from_raw_job(raw_job)
