@@ -7,7 +7,8 @@ from pyzeebe.errors import (
     UnkownGrpcStatusCodeError,
     ZeebeBackPressureError,
     ZeebeGatewayUnavailableError,
-    ZeebeInternalError, ZeebeDeadlineExceeded,
+    ZeebeInternalError,
+    ZeebeDeadlineExceeded,
 )
 from pyzeebe.errors.pyzeebe_errors import PyZeebeError
 from pyzeebe.grpc_internals.grpc_utils import is_error_status
