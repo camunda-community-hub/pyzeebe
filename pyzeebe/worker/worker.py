@@ -92,6 +92,7 @@ class ZeebeWorker(ZeebeTaskRouter):
         try:
             await self._work_task
         except asyncio.CancelledError:
+            logger.info("Zeebe worker was stopped")
             return
 
     async def stop(self) -> None:
