@@ -4,7 +4,7 @@ import grpc
 from zeebe_grpc.gateway_pb2_grpc import GatewayStub
 
 from pyzeebe.errors import (
-    UnkownGrpcStatusCodeError,
+    UnknownGrpcStatusCodeError,
     ZeebeBackPressureError,
     ZeebeGatewayUnavailableError,
     ZeebeInternalError,
@@ -51,4 +51,4 @@ def _create_pyzeebe_error_from_grpc_error(grpc_error: grpc.aio.AioRpcError) -> P
         return ZeebeGatewayUnavailableError()
     elif is_error_status(grpc_error, grpc.StatusCode.INTERNAL):
         return ZeebeInternalError()
-    return UnkownGrpcStatusCodeError(grpc_error)
+    return UnknownGrpcStatusCodeError(grpc_error)
