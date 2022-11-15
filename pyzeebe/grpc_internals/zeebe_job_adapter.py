@@ -46,7 +46,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
                     fetchVariable=variables_to_fetch,
                     requestTimeout=request_timeout,
                 ),
-                timeout=grpc_request_timeout
+                timeout=grpc_request_timeout,
             ):
                 for raw_job in response.jobs:
                     job = self._create_job_from_raw_job(raw_job)

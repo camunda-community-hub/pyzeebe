@@ -14,6 +14,7 @@ class ZeebeGatewayUnavailableError(PyZeebeError):
 class ZeebeInternalError(PyZeebeError):
     pass
 
+
 class ZeebeDeadlineExceeded(PyZeebeError):
     pass
 
