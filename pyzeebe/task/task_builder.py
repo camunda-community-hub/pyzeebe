@@ -82,5 +82,5 @@ async def run_decorator(decorator: AsyncTaskDecorator, job: Job) -> Job:
     try:
         return await decorator(job)
     except Exception as e:
-        logger.warning("Failed to run decorator %s. Exception: %s", decorator, e)
+        logger.warning("Failed to run decorator %s. Exception: %s", decorator, e, exc_info=True)
         return job
