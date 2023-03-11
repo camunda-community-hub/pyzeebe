@@ -44,7 +44,7 @@ class JobExecutor:
 
 
 def create_job_callback(job_executor: JobExecutor, job: Job) -> AsyncTaskCallback:
-    def callback(future: asyncio.Future):
+    def callback(_):
         job_executor.jobs.task_done()
         job_executor.task_state.remove(job)
 

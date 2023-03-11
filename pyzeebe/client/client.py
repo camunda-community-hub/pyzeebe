@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import grpc
 
@@ -17,7 +17,7 @@ class ZeebeClient(object):
 
         self.zeebe_adapter = ZeebeAdapter(grpc_channel, max_connection_retries)
 
-    async def run_process(self, bpmn_process_id: str, variables: Dict = None, version: int = -1) -> int:
+    async def run_process(self, bpmn_process_id: str, variables: Optional[Dict] = None, version: int = -1) -> int:
         """
         Run process
 
@@ -46,10 +46,10 @@ class ZeebeClient(object):
     async def run_process_with_result(
         self,
         bpmn_process_id: str,
-        variables: Dict = None,
+        variables: Optional[Dict] = None,
         version: int = -1,
         timeout: int = 0,
-        variables_to_fetch: List[str] = None,
+        variables_to_fetch: Optional[List[str]] = None,
     ) -> Tuple[int, Dict]:
         """
         Run process and wait for the result.
@@ -125,9 +125,9 @@ class ZeebeClient(object):
         self,
         name: str,
         correlation_key: str,
-        variables: Dict = None,
+        variables: Optional[Dict] = None,
         time_to_live_in_milliseconds: int = 60000,
-        message_id: str = None,
+        message_id: Optional[str] = None,
     ) -> None:
         """
         Publish a message
