@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 import grpc
 from oauthlib import oauth2
@@ -17,7 +17,7 @@ def create_camunda_cloud_channel(
     client_secret: str,
     cluster_id: str,
     region: str = "bru-2",
-    channel_options: Optional[Dict] = None,
+    channel_options: Optional[Dict[str, Any]] = None,
 ) -> grpc.aio.Channel:
     """
     Create channel connected to a Camunda Cloud cluster
@@ -40,7 +40,7 @@ def create_camunda_cloud_channel(
     return grpc.aio.secure_channel(
         f"{cluster_id}.{region}.zeebe.camunda.io:443",
         channel_credentials,
-        options=get_channel_options(channel_options),
+        options=get_channel_options(channel_options or {}),
     )
 
 
