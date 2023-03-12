@@ -8,9 +8,9 @@ from zeebe_grpc.gateway_pb2 import (
     CancelProcessInstanceRequest,
     CreateProcessInstanceRequest,
     CreateProcessInstanceWithResultRequest,
-    DeployProcessRequest,
-    DeployProcessResponse,
-    ProcessRequestObject,
+    DeployResourceRequest,
+    DeployResourceResponse,
+    Resource,
 )
 
 from pyzeebe.errors import (
@@ -79,11 +79,11 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
                 raise ProcessInstanceNotFoundError(process_instance_key=process_instance_key) from grpc_error
             await self._handle_grpc_error(grpc_error)
 
-    async def deploy_process(self, *process_file_path: str) -> DeployProcessResponse:
+    async def deploy_process(self, *process_file_path: str) -> DeployResourceResponse:
         try:
-            return await self._gateway_stub.DeployProcess(
-                DeployProcessRequest(
-                    processes=[await result for result in map(_create_process_request, process_file_path)]
+            return await self._gateway_stub.DeployResource(
+                DeployResourceRequest(
+                    resources=[await result for result in map(_create_process_request, process_file_path)]
                 )
             )
         except grpc.aio.AioRpcError as grpc_error:
@@ -92,6 +92,6 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
             await self._handle_grpc_error(grpc_error)
 
 
-async def _create_process_request(process_file_path: str) -> ProcessRequestObject:
+async def _create_process_request(process_file_path: str) -> Resource:
     async with aiofiles.open(process_file_path, "rb") as file:
-        return ProcessRequestObject(name=os.path.basename(process_file_path), definition=await file.read())
+        return Resource(name=os.path.basename(process_file_path), content=await file.read())

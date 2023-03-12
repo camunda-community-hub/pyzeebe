@@ -76,7 +76,7 @@ class TestSetFailureStatus:
         await job_with_adapter.set_failure_status(message)
 
         fail_job_mock.assert_called_with(
-            job_key=job_with_adapter.key, retries=job_with_adapter.retries - 1, message=message
+            job_key=job_with_adapter.key, retries=job_with_adapter.retries - 1, message=message, retry_backoff=None
         )
 
     async def test_status_is_set(self, job_with_adapter):

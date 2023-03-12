@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        zeebe-version: ["1.2.1"]
+        zeebe-version: ["8.0.5"]
 
     container: python:3.7
 

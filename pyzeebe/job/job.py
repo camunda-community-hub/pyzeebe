@@ -73,7 +73,7 @@ class Job(object):
         else:
             raise NoZeebeAdapterError()
 
-    async def set_failure_status(self, message: str) -> None:
+    async def set_failure_status(self, message: str, retry_backoff: int = None) -> None:
         """
         Failure status means a technical error has occurred. If retried the job may succeed.
         For example: connection to DB lost
@@ -90,7 +90,9 @@ class Job(object):
         """
         if self.zeebe_adapter:
             self.status = JobStatus.Failed
-            await self.zeebe_adapter.fail_job(job_key=self.key, retries=self.retries - 1, message=message)
+            await self.zeebe_adapter.fail_job(
+                job_key=self.key, retries=self.retries - 1, message=message, retry_backoff=retry_backoff
+            )
         else:
             raise NoZeebeAdapterError()
 
