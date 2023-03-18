@@ -22,7 +22,7 @@ class Job:
     deadline: int
     variables: Dict
     status: JobStatus = JobStatus.Running
-    zeebe_adapter: Optional["ZeebeAdapter"] = None
+    zeebe_adapter: Optional["ZeebeAdapter"] = None  # type: ignore
 
     async def set_running_after_decorators_status(self) -> None:
         """
