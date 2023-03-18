@@ -17,7 +17,7 @@ def random_job(
     zeebe_adapter: ZeebeAdapter = None,
 ) -> Job:
     return Job(
-        _type=task.type,
+        type=task.type,
         key=randint(0, RANDOM_RANGE),
         worker=str(uuid4()),
         retries=randint(0, 10),
