@@ -3,7 +3,6 @@ from typing import Callable, List
 import pytest
 
 from pyzeebe.function_tools import parameter_tools
-from pyzeebe.job.job import Job
 from tests.unit.utils import dummy_functions
 
 

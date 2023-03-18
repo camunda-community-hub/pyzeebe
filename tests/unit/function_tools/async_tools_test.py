@@ -1,5 +1,4 @@
 import inspect
-from typing import Callable, List
 
 import pytest
 

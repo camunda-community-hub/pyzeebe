@@ -24,6 +24,22 @@ class Job:
     status: JobStatus = JobStatus.Running
     zeebe_adapter: Optional["ZeebeAdapter"] = None
 
+    async def set_running_after_decorators_status(self) -> None:
+        """
+        RunningAfterDecorators status means that the task has been completed as intended and the after decorators will now run.
+
+        Raises:
+            NoZeebeAdapterError: If the job does not have a configured ZeebeAdapter
+            ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
+            ZeebeInternalError: If Zeebe experiences an internal error
+
+        """
+        if self.zeebe_adapter:
+            self.status = JobStatus.RunningAfterDecorators
+        else:
+            raise NoZeebeAdapterError()
+
     async def set_success_status(self) -> None:
         """
         Success status means that the job has been completed as intended.
@@ -36,6 +52,7 @@ class Job:
 
         """
         if self.zeebe_adapter:
+            self.status = JobStatus.Completed
             await self.zeebe_adapter.complete_job(job_key=self.key, variables=self.variables)
         else:
             raise NoZeebeAdapterError()
@@ -56,6 +73,7 @@ class Job:
 
         """
         if self.zeebe_adapter:
+            self.status = JobStatus.Failed
             await self.zeebe_adapter.fail_job(job_key=self.key, retries=self.retries - 1, message=message)
         else:
             raise NoZeebeAdapterError()
@@ -78,6 +96,7 @@ class Job:
 
         """
         if self.zeebe_adapter:
+            self.status = JobStatus.ErrorThrown
             await self.zeebe_adapter.throw_error(job_key=self.key, message=message, error_code=error_code)
         else:
             raise NoZeebeAdapterError()

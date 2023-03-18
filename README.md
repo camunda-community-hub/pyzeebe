@@ -1,5 +1,6 @@
 [![](https://img.shields.io/badge/Community%20Extension-An%20open%20source%20community%20maintained%20project-FF4700)](https://github.com/camunda-community-hub/community)
 [![](https://img.shields.io/badge/Lifecycle-Stable-brightgreen)](https://github.com/Camunda-Community-Hub/community/blob/main/extension-lifecycle.md#stable-)
+![Compatible with: Camunda Platform 8](https://img.shields.io/badge/Compatible%20with-Camunda%20Platform%208-0072Ce)
 
 [![Coverage Status](https://coveralls.io/repos/github/JonatanMartens/pyzeebe/badge.svg?branch=master)](https://coveralls.io/github/JonatanMartens/pyzeebe?branch=master)
 ![Test pyzeebe](https://github.com/camunda-community-hub/pyzeebe/workflows/Test%20pyzeebe/badge.svg)
@@ -35,7 +36,7 @@ For full documentation please visit: https://pyzeebe.readthedocs.io/en/stable/
 
 ### Worker
 
-The `ZeebeWorker` class uses threading to get and run jobs.
+The `ZeebeWorker` class gets jobs from the gateway and runs them.
 
 ```python
 import asyncio

@@ -4,6 +4,7 @@ from typing import Callable
 import pytest
 
 from pyzeebe import Job, TaskDecorator
+from pyzeebe.job.job_status import JobStatus
 from pyzeebe.task import task_builder
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_config import TaskConfig
@@ -38,18 +39,30 @@ class TestBuildTask:
         task = task_builder.build_task(lambda x: x, single_value_task_config)
         job = await task.job_handler(mocked_job_with_adapter)
 
-        assert len(job.variables.keys()) == 1
-        assert set(job.variables.keys()) == {"y"}
+        assert len(job.variables.keys()) == 2
+        assert set(job.variables.keys()) == {"x", "y"}
 
     @pytest.mark.asyncio
     async def test_job_parameter_is_injected_in_task(self, task_config: TaskConfig, mocked_job_with_adapter: Job):
+        def function_with_job_parameter(job: Job):
+            return {"received_job": job}
+
+        task = task_builder.build_task(function_with_job_parameter, task_config)
+        job = await task.job_handler(mocked_job_with_adapter)
+
+        assert job.variables["received_job"] == mocked_job_with_adapter
+
+    @pytest.mark.asyncio
+    async def test_job_parameter_is_removed_after_job_handler_call(
+        self, task_config: TaskConfig, mocked_job_with_adapter: Job
+    ):
         def function_with_job_parameter(job: Job):
             return {"job": job}
 
         task = task_builder.build_task(function_with_job_parameter, task_config)
         job = await task.job_handler(mocked_job_with_adapter)
 
-        assert job.variables["job"] == mocked_job_with_adapter
+        assert "job" not in job.variables
 
 
 class TestBuildJobHandler:
@@ -85,6 +98,17 @@ class TestBuildJobHandler:
         self, original_task_function: Callable, task_config: TaskConfig, mocked_job_with_adapter: Job
     ):
         original_task_function.return_value = {"x": 1}
+        job_handler = task_builder.build_job_handler(original_task_function, task_config)
+
+        job = await job_handler(mocked_job_with_adapter)
+
+        assert job.variables.pop("x") == 1
+
+    @pytest.mark.asyncio
+    async def test_job_variables_are_not_overridden(
+        self, original_task_function: Callable, task_config: TaskConfig, mocked_job_with_adapter: Job
+    ):
+        mocked_job_with_adapter.variables = {"x": 1}
         job_handler = task_builder.build_job_handler(original_task_function, task_config)
 
         job = await job_handler(mocked_job_with_adapter)
@@ -176,13 +200,24 @@ class TestBuildJobHandler:
         assert "x" in job.variables
 
     @pytest.mark.asyncio
+    async def test_job_status_is_updated(
+        self,
+        task_config: TaskConfig,
+        mocked_job_with_adapter: Job,
+    ):
+        job_handler = task_builder.build_job_handler(self.function_with_job_parameter, task_config)
+        job = await job_handler(mocked_job_with_adapter)
+
+        assert job.status == JobStatus.RunningAfterDecorators
+
+    @pytest.mark.asyncio
     async def test_job_parameter_is_injected(self, task_config: TaskConfig, mocked_job_with_adapter: Job):
         task_config.job_parameter_name = "job"
 
         job_handler = task_builder.build_job_handler(self.function_with_job_parameter, task_config)
         job = await job_handler(mocked_job_with_adapter)
 
-        assert job.variables["job"] == mocked_job_with_adapter
+        assert job.variables["received_job"] == mocked_job_with_adapter
 
     @pytest.mark.asyncio
     async def test_job_parameter_retains_variables(self, task_config: TaskConfig, mocked_job_with_adapter: Job):
@@ -192,7 +227,7 @@ class TestBuildJobHandler:
         job_handler = task_builder.build_job_handler(self.function_with_job_parameter, task_config)
         job = await job_handler(mocked_job_with_adapter)
 
-        assert job.variables["job"].variables == expected_variables
+        assert job.variables["received_job"].variables == expected_variables
 
     def function_with_job_parameter(x: int, job: Job):
-        return {"job": job}
+        return {"received_job": job}

@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 class TaskState:
     def __init__(self):
-        self._active_jobs = list()
+        self._active_jobs = []
 
     def remove(self, job: Job) -> None:
         try:

@@ -1,9 +1,9 @@
 import functools
 import logging
-from typing import Awaitable, Callable, Dict, Sequence, Tuple
+from typing import Dict, Sequence, Tuple
 
 from pyzeebe import Job
-from pyzeebe.function_tools import AsyncFunction, DictFunction, Function
+from pyzeebe.function_tools import DictFunction, Function
 from pyzeebe.function_tools.async_tools import asyncify, is_async_function
 from pyzeebe.function_tools.dict_tools import convert_to_dict_function
 from pyzeebe.function_tools.parameter_tools import get_job_parameter_name
@@ -32,7 +32,10 @@ def build_job_handler(task_function: Function, task_config: TaskConfig) -> JobHa
             job.variables[task_config.job_parameter_name] = create_copy(job)
 
         job = await before_decorator_runner(job)
-        job.variables, succeeded = await run_original_task_function(prepared_task_function, task_config, job)
+        original_return_value, succeeded = await run_original_task_function(prepared_task_function, task_config, job)
+        job.variables.update(original_return_value)
+        job.variables.pop(task_config.job_parameter_name, None)
+        await job.set_running_after_decorators_status()
         job = await after_decorator_runner(job)
         if succeeded:
             await job.set_success_status()
@@ -54,7 +57,12 @@ async def run_original_task_function(
     task_function: DictFunction, task_config: TaskConfig, job: Job
 ) -> Tuple[Dict, bool]:
     try:
-        return await task_function(**job.variables), True  # type: ignore
+        returned_value = await task_function(**job.variables)  # type: ignore
+
+        if returned_value is None:
+            returned_value = {}
+
+        return returned_value, True
     except Exception as e:
         logger.debug("Failed job: %s. Error: %s.", job, e)
         await task_config.exception_handler(e, job)
@@ -74,5 +82,5 @@ async def run_decorator(decorator: AsyncTaskDecorator, job: Job) -> Job:
     try:
         return await decorator(job)
     except Exception as e:
-        logger.warning("Failed to run decorator %s. Exception: %s", decorator, e)
+        logger.warning("Failed to run decorator %s. Exception: %s", decorator, e, exc_info=True)
         return job
