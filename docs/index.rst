@@ -38,11 +38,12 @@ Creating a client
 
    channel = create_insecure_channel()
    client = ZeebeClient(channel)
-
-   await client.run_process("my_process")
+   async run_process:
+      await client.run_process("my_process")
 
    # Run process with variables:
-   await client.run_process("my_process", variables={"x": 0})
+   async run_process_with_variables:
+      await client.run_process("my_process", variables={"x": 0})
 
 
 Dependencies
