@@ -18,12 +18,11 @@ class JobExecutor:
         self.jobs = jobs
         self.task_state = task_state
         self.stop_event = asyncio.Event()
-        self.loop = asyncio.get_event_loop()
 
     async def execute(self) -> None:
         while self.should_execute():
             job = await self.get_next_job()
-            task = self.loop.create_task(self.execute_one_job(job))
+            task = asyncio.create_task(self.execute_one_job(job))
             task.add_done_callback(create_job_callback(self, job))
 
     async def get_next_job(self) -> Job:
@@ -44,7 +43,7 @@ class JobExecutor:
 
 
 def create_job_callback(job_executor: JobExecutor, job: Job) -> AsyncTaskCallback:
-    def callback(future: asyncio.Future):
+    def callback(_):
         job_executor.jobs.task_done()
         job_executor.task_state.remove(job)
 

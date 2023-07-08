@@ -1,3 +1,6 @@
+from typing import Optional
+
+
 class PyZeebeError(Exception):
     pass
 
@@ -32,7 +35,7 @@ class BusinessError(PyZeebeError):
     to be caught later by an error event in the Zeebe process
     """
 
-    def __init__(self, error_code: str, msg: str = None) -> None:
+    def __init__(self, error_code: str, msg: Optional[str] = None) -> None:
         if msg is None:
             msg = f"Business error with code {error_code}"
         super().__init__(msg)

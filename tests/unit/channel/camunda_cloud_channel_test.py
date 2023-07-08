@@ -10,7 +10,7 @@ from pyzeebe.errors import InvalidCamundaCloudCredentialsError
 
 
 @pytest.fixture
-def mocked_responses() -> responses.RequestsMock:
+def mocked_responses():
     with responses.RequestsMock() as response_mock:
         yield response_mock
 
@@ -52,7 +52,7 @@ def mock_access_token_response(mocked_responses: responses.RequestsMock, url: st
 
 class TestCamundaCloudChannel:
     @pytest.fixture(autouse=True)
-    def secure_channel_mock(self, aio_grpc_channel: grpc.aio.Channel) -> Mock:
+    def secure_channel_mock(self, aio_grpc_channel: grpc.aio.Channel):
         with patch("grpc.aio.secure_channel", return_value=aio_grpc_channel) as mock:
             yield mock
 
