@@ -1,4 +1,5 @@
 from random import randint
+from typing import List
 from uuid import uuid4
 
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
@@ -27,8 +28,15 @@ def random_job(
         process_definition_key=randint(0, RANDOM_RANGE),
         element_id=str(uuid4()),
         element_instance_key=randint(0, RANDOM_RANGE),
-        variables={},
+        variables=task.config.variables_to_fetch or _build_dict_from_list(list(str(uuid4()))),
         custom_headers={},
         deadline=randint(0, RANDOM_RANGE),
         zeebe_adapter=zeebe_adapter,
     )
+
+
+def _build_dict_from_list(keys: List[str], *values):
+    if not values:
+        return dict(zip(keys, keys))
+    assert len(keys) == len(values)
+    return dict(zip(keys, values))

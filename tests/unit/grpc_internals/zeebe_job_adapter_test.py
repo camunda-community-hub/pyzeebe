@@ -79,6 +79,15 @@ class TestActivateJobs:
             jobs = self.activate_jobs(max_jobs_to_activate=0)
             await jobs.__anext__()
 
+    async def test_returns_no_variables_when_none_requested(self, grpc_servicer: GatewayMock, task: Task):
+        job = random_job(task)
+        grpc_servicer.active_jobs[job.key] = job
+
+        jobs = self.activate_jobs(task_type=task.type)
+        result = await jobs.__anext__()
+        
+        assert result.variables == dict()
+
 
 @pytest.mark.asyncio
 class TestCompleteJob:
