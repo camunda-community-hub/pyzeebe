@@ -45,11 +45,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: Init python poetry action
+        uses: abatilo/actions-poetry@v2.1.3
+        with:
+          poetry-version: 1.5.1
       - name: Install dependencies
-        run: |
-          pip install poetry
-          poetry install
-
+        run: poetry install
       - name: Sleep for 30 seconds
         uses: jakejarvis/wait-action@master
         with:
