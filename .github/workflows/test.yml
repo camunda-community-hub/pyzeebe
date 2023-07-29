@@ -20,7 +20,7 @@ jobs:
         run: poetry install
       - name: Test with pytest
         run: |
-          poetry run coverage run --source=pyzeebe -m py.test tests/unit
+          poetry run coverage run --source=pyzeebe -m pytest tests/unit
       - name: Upload to coveralls
         run: |
           poetry run coveralls --service=github
