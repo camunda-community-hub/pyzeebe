@@ -2,13 +2,13 @@
 
 [[package]]
 name = "aiofiles"
-version = "0.8.0"
+version = "23.1.0"
 description = "File support for asyncio."
 optional = false
-python-versions = ">=3.6,<4.0"
+python-versions = ">=3.7,<4.0"
 files = [
-    {file = "aiofiles-0.8.0-py3-none-any.whl", hash = "sha256:7a973fc22b29e9962d0897805ace5856e6a566ab1f0c8e5c91ff6c866519c937"},
-    {file = "aiofiles-0.8.0.tar.gz", hash = "sha256:8334f23235248a3b2e83b2c3a78a22674f39969b96397126cc93664d9a901e59"},
+    {file = "aiofiles-23.1.0-py3-none-any.whl", hash = "sha256:9312414ae06472eb6f1d163f555e466a23aed1c8f60c30cccf7121dba2e53eb2"},
+    {file = "aiofiles-23.1.0.tar.gz", hash = "sha256:edd247df9a19e0db16534d4baaf536d6609a43e1de5401d7a4c1c148753a1635"},
 ]
 
 [[package]]
@@ -1385,4 +1385,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "5e436f5565485bf6710de8cc72e3afd2e680bf11debc3c31c21d3caf2ace68e8"
+content-hash = "30429fec3bcf54d03ab6162078b80c6ee87650657f4b6519378b57e966a07e68"
