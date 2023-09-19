@@ -48,9 +48,9 @@ class ZeebeAdapterBase:
 def _create_pyzeebe_error_from_grpc_error(grpc_error: grpc.aio.AioRpcError) -> PyZeebeError:
     if is_error_status(grpc_error, grpc.StatusCode.RESOURCE_EXHAUSTED):
         return ZeebeBackPressureError()
-    elif is_error_status(grpc_error, grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.CANCELLED):
+    if is_error_status(grpc_error, grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.CANCELLED):
         return ZeebeGatewayUnavailableError()
-    elif is_error_status(grpc_error, grpc.StatusCode.INTERNAL):
+    if is_error_status(grpc_error, grpc.StatusCode.INTERNAL):
         return ZeebeInternalError()
     elif is_error_status(grpc_error, grpc.StatusCode.DEADLINE_EXCEEDED):
         return ZeebeDeadlineExceeded()

@@ -7,18 +7,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     container: python:${{ matrix.python-version }}
     steps:
       - uses: actions/checkout@v2
+      - name: Init python poetry action
+        uses: abatilo/actions-poetry@v2.1.3
+        with:
+          poetry-version: 1.5.1
       - name: Install dependencies
-        run: |
-          pip install poetry
-          poetry install
+        run: poetry install
       - name: Test with pytest
         run: |
-          poetry run coverage run --source=pyzeebe -m py.test tests/unit
+          poetry run coverage run --source=pyzeebe -m pytest tests/unit
       - name: Upload to coveralls
         run: |
           poetry run coveralls --service=github
@@ -31,9 +33,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        zeebe-version: ["1.2.1"]
+        zeebe-version: ["1.3.14", "8.2.10"]
 
-    container: python:3.7
+    container: python:3.11
 
     services:
       zeebe:
@@ -43,11 +45,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: Init python poetry action
+        uses: abatilo/actions-poetry@v2.1.3
+        with:
+          poetry-version: 1.5.1
       - name: Install dependencies
-        run: |
-          pip install poetry
-          poetry install
-
+        run: poetry install
       - name: Sleep for 30 seconds
         uses: jakejarvis/wait-action@master
         with:
