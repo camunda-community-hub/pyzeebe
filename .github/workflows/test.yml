@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Init python poetry action
-        uses: abatilo/actions-poetry@v2.1.3
+        uses: abatilo/actions-poetry@v2.3.0
         with:
           poetry-version: 1.5.1
       - name: Install dependencies
@@ -46,7 +46,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Init python poetry action
-        uses: abatilo/actions-poetry@v2.1.3
+        uses: abatilo/actions-poetry@v2.3.0
         with:
           poetry-version: 1.5.1
       - name: Install dependencies
