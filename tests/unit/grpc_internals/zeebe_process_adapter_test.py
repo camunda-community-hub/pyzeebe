@@ -66,7 +66,7 @@ class TestCreateProcessWithResult:
         grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
 
         process_instance_key, _ = await zeebe_adapter.create_process_instance_with_result(
-            bpmn_process_id=bpmn_process_id, variables={}, version=version, timeout=0, variables_to_fetch=[]
+            bpmn_process_id=bpmn_process_id, variables={}, version=version, timeout=0, tenant_id=None
         )
 
         assert isinstance(process_instance_key, int)
@@ -77,7 +77,7 @@ class TestCreateProcessWithResult:
         grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
 
         _, response = await zeebe_adapter.create_process_instance_with_result(
-            bpmn_process_id=bpmn_process_id, variables={}, version=version, timeout=0, variables_to_fetch=[]
+            bpmn_process_id=bpmn_process_id, variables={}, version=version, timeout=0, tenant_id=None
         )
 
         assert isinstance(response, dict)
@@ -96,7 +96,7 @@ class TestCreateProcessWithResult:
                 variables={},
                 version=version,
                 timeout=0,
-                variables_to_fetch=[],
+                tenant_id=None,
             )
 
 
@@ -152,5 +152,36 @@ class TestDeployProcess:
         file_path = str(uuid4())
 
         await zeebe_adapter.deploy_process(file_path)
+
+        self.open_mock.assert_called_with(file_path, "rb")
+
+
+@pytest.mark.asyncio
+class TestDeployResource:
+    open_mock: MagicMock
+
+    @pytest.fixture(autouse=True)
+    def mocked_aiofiles_open(self):
+        read_mock = AsyncMock(return_value=bytes())
+
+        file_mock = AsyncMock()
+        file_mock.__aenter__.return_value.read = read_mock
+
+        with patch("pyzeebe.grpc_internals.zeebe_process_adapter.aiofiles.open", return_value=file_mock) as open_mock:
+            self.open_mock = open_mock
+            yield
+
+    async def test_raises_on_invalid_process(self, zeebe_adapter: ZeebeProcessAdapter):
+        error = grpc.aio.AioRpcError(grpc.StatusCode.INVALID_ARGUMENT, None, None)
+
+        zeebe_adapter._gateway_stub.DeployResource = AsyncMock(side_effect=error)
+
+        with pytest.raises(ProcessInvalidError):
+            await zeebe_adapter.deploy_resource()
+
+    async def test_calls_open_in_rb_mode(self, zeebe_adapter: ZeebeProcessAdapter):
+        file_path = str(uuid4())
+
+        await zeebe_adapter.deploy_resource(file_path)
 
         self.open_mock.assert_called_with(file_path, "rb")

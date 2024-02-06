@@ -1,16 +1,20 @@
 import json
 import os
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 
 import aiofiles
 import grpc
+from typing_extensions import deprecated
 from zeebe_grpc.gateway_pb2 import (
     CancelProcessInstanceRequest,
     CreateProcessInstanceRequest,
     CreateProcessInstanceWithResultRequest,
     DeployProcessRequest,
     DeployProcessResponse,
+    DeployResourceRequest,
+    DeployResourceResponse,
     ProcessRequestObject,
+    Resource,
 )
 
 from pyzeebe.errors import (
@@ -26,11 +30,20 @@ from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 
 
 class ZeebeProcessAdapter(ZeebeAdapterBase):
-    async def create_process_instance(self, bpmn_process_id: str, version: int, variables: Dict) -> int:
+    async def create_process_instance(
+        self,
+        bpmn_process_id: str,
+        version: int,
+        variables: Dict,
+        tenant_id: Optional[str] = None,
+    ) -> int:
         try:
             response = await self._gateway_stub.CreateProcessInstance(
                 CreateProcessInstanceRequest(
-                    bpmnProcessId=bpmn_process_id, version=version, variables=json.dumps(variables)
+                    bpmnProcessId=bpmn_process_id,
+                    version=version,
+                    variables=json.dumps(variables),
+                    tenantId=tenant_id,
                 )
             )
         except grpc.aio.AioRpcError as grpc_error:
@@ -38,16 +51,23 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
         return response.processInstanceKey
 
     async def create_process_instance_with_result(
-        self, bpmn_process_id: str, version: int, variables: Dict, timeout: int, variables_to_fetch
+        self,
+        bpmn_process_id: str,
+        version: int,
+        variables: Dict,
+        timeout: int,
+        tenant_id: Optional[str] = None,
     ) -> Tuple[int, Dict]:
         try:
             response = await self._gateway_stub.CreateProcessInstanceWithResult(
                 CreateProcessInstanceWithResultRequest(
                     request=CreateProcessInstanceRequest(
-                        bpmnProcessId=bpmn_process_id, version=version, variables=json.dumps(variables)
+                        bpmnProcessId=bpmn_process_id,
+                        version=version,
+                        variables=json.dumps(variables),
+                        tenantId=tenant_id,
                     ),
                     requestTimeout=timeout,
-                    fetchVariables=variables_to_fetch,
                 )
             )
         except grpc.aio.AioRpcError as grpc_error:
@@ -79,6 +99,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
                 raise ProcessInstanceNotFoundError(process_instance_key=process_instance_key) from grpc_error
             await self._handle_grpc_error(grpc_error)
 
+    @deprecated("Deprecated since Zeebe 8.0. Use deploy_resource instead")
     async def deploy_process(self, *process_file_path: str) -> DeployProcessResponse:
         try:
             return await self._gateway_stub.DeployProcess(
@@ -91,7 +112,27 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
                 raise ProcessInvalidError() from grpc_error
             await self._handle_grpc_error(grpc_error)
 
+    async def deploy_resource(
+        self, *resource_file_path: str, tenant_id: Optional[str] = None
+    ) -> DeployResourceResponse:
+        try:
+            return await self._gateway_stub.DeployResource(
+                DeployResourceRequest(
+                    resources=[await result for result in map(_create_resource_request, resource_file_path)],
+                    tenantId=tenant_id,
+                )
+            )
+        except grpc.aio.AioRpcError as grpc_error:
+            if is_error_status(grpc_error, grpc.StatusCode.INVALID_ARGUMENT):
+                raise ProcessInvalidError() from grpc_error
+            await self._handle_grpc_error(grpc_error)
+
 
 async def _create_process_request(process_file_path: str) -> ProcessRequestObject:
     async with aiofiles.open(process_file_path, "rb") as file:
         return ProcessRequestObject(name=os.path.basename(process_file_path), definition=await file.read())
+
+
+async def _create_resource_request(resource_file_path: str) -> Resource:
+    async with aiofiles.open(resource_file_path, "rb") as file:
+        return Resource(name=os.path.basename(resource_file_path), content=await file.read())

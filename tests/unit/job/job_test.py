@@ -39,7 +39,7 @@ class TestSetErrorStatus:
 
         await job_with_adapter.set_error_status(message)
 
-        throw_error_mock.assert_called_with(job_key=job_with_adapter.key, message=message, error_code="")
+        throw_error_mock.assert_called_with(job_key=job_with_adapter.key, message=message, error_code="", variables={})
 
     async def test_updates_job_in_zeebe_with_code(self, job_with_adapter):
         throw_error_mock = AsyncMock()
@@ -49,7 +49,9 @@ class TestSetErrorStatus:
 
         await job_with_adapter.set_error_status(message, error_code)
 
-        throw_error_mock.assert_called_with(job_key=job_with_adapter.key, message=message, error_code=error_code)
+        throw_error_mock.assert_called_with(
+            job_key=job_with_adapter.key, message=message, error_code=error_code, variables={}
+        )
 
     async def test_status_is_set(self, job_with_adapter):
         throw_error_mock = AsyncMock()
@@ -76,7 +78,11 @@ class TestSetFailureStatus:
         await job_with_adapter.set_failure_status(message)
 
         fail_job_mock.assert_called_with(
-            job_key=job_with_adapter.key, retries=job_with_adapter.retries - 1, message=message
+            job_key=job_with_adapter.key,
+            retries=job_with_adapter.retries - 1,
+            message=message,
+            retry_back_off_ms=0,
+            variables={},
         )
 
     async def test_status_is_set(self, job_with_adapter):
