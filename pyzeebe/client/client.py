@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import grpc
 from typing_extensions import deprecated
@@ -53,6 +53,7 @@ class ZeebeClient(object):
         variables: Optional[Dict] = None,
         version: int = -1,
         timeout: int = 0,
+        variables_to_fetch: Optional[List[str]] = None,
         tenant_id: Optional[str] = None,
     ) -> Tuple[int, Dict]:
         """
@@ -63,6 +64,7 @@ class ZeebeClient(object):
             variables (dict): A dictionary containing all the starting variables the process needs. Must be JSONable.
             version (int): The version of the process. Default: -1 (latest)
             timeout (int): How long to wait until a timeout occurs. Default: 0 (Zeebe default timeout)
+            variables_to_fetch (List[str]): Which variables to get from the finished process
             tenant_id (str): The tenant ID of the process definition. New in Zeebe 8.3.
 
         Returns:
@@ -84,6 +86,7 @@ class ZeebeClient(object):
             variables=variables or {},
             version=version,
             timeout=timeout,
+            variables_to_fetch=variables_to_fetch or [],
             tenant_id=tenant_id,
         )
 

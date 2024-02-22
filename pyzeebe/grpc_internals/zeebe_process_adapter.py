@@ -56,6 +56,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
         version: int,
         variables: Dict,
         timeout: int,
+        variables_to_fetch,
         tenant_id: Optional[str] = None,
     ) -> Tuple[int, Dict]:
         try:
@@ -68,6 +69,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
                         tenantId=tenant_id,
                     ),
                     requestTimeout=timeout,
+                    fetchVariables=variables_to_fetch,
                 )
             )
         except grpc.aio.AioRpcError as grpc_error:

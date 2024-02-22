@@ -66,7 +66,12 @@ class TestCreateProcessWithResult:
         grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
 
         process_instance_key, _ = await zeebe_adapter.create_process_instance_with_result(
-            bpmn_process_id=bpmn_process_id, variables={}, version=version, timeout=0, tenant_id=None
+            bpmn_process_id=bpmn_process_id,
+            variables={},
+            version=version,
+            timeout=0,
+            variables_to_fetch=[],
+            tenant_id=None,
         )
 
         assert isinstance(process_instance_key, int)
@@ -77,7 +82,12 @@ class TestCreateProcessWithResult:
         grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
 
         _, response = await zeebe_adapter.create_process_instance_with_result(
-            bpmn_process_id=bpmn_process_id, variables={}, version=version, timeout=0, tenant_id=None
+            bpmn_process_id=bpmn_process_id,
+            variables={},
+            version=version,
+            timeout=0,
+            variables_to_fetch=[],
+            tenant_id=None,
         )
 
         assert isinstance(response, dict)
@@ -96,6 +106,7 @@ class TestCreateProcessWithResult:
                 variables={},
                 version=version,
                 timeout=0,
+                variables_to_fetch=[],
                 tenant_id=None,
             )
 

@@ -1,5 +1,5 @@
 import asyncio
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import grpc
 from typing_extensions import deprecated
@@ -27,10 +27,13 @@ class SyncZeebeClient:
         variables: Optional[Dict] = None,
         version: int = -1,
         timeout: int = 0,
+        variables_to_fetch: Optional[List[str]] = None,
         tenant_id: Optional[str] = None,
     ) -> Tuple[int, Dict]:
         return self.loop.run_until_complete(
-            self.client.run_process_with_result(bpmn_process_id, variables, version, timeout, tenant_id)
+            self.client.run_process_with_result(
+                bpmn_process_id, variables, version, timeout, variables_to_fetch, tenant_id
+            )
         )
 
     def cancel_process_instance(self, process_instance_key: int) -> int:
