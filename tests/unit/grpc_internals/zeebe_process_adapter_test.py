@@ -18,7 +18,7 @@ from tests.unit.utils.gateway_mock import GatewayMock
 from tests.unit.utils.random_utils import RANDOM_RANGE
 
 
-@pytest.fixture()
+@pytest.fixture(autouse=True)
 def mocked_aiofiles_open():
     read_mock = AsyncMock(return_value=bytes())
 
