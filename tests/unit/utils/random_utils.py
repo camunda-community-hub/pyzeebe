@@ -28,7 +28,7 @@ def random_job(
         process_definition_key=randint(0, RANDOM_RANGE),
         element_id=str(uuid4()),
         element_instance_key=randint(0, RANDOM_RANGE),
-        variables=task.config.variables_to_fetch,
+        variables=task.config.variables_to_fetch or {},
         custom_headers={},
         deadline=randint(0, RANDOM_RANGE),
         zeebe_adapter=zeebe_adapter,
