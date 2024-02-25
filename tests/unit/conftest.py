@@ -4,6 +4,7 @@ from uuid import uuid4
 
 import grpc
 import pytest
+import pytest_asyncio
 from mock import AsyncMock, MagicMock, patch
 
 from pyzeebe import Job, ZeebeClient, ZeebeWorker
@@ -168,8 +169,7 @@ def aio_create_grpc_channel(request, grpc_addr, grpc_server):
     return grpc.aio.insecure_channel(grpc_addr)
 
 
-@pytest.mark.asyncio
-@pytest.fixture
+@pytest_asyncio.fixture
 async def aio_grpc_channel(aio_create_grpc_channel):
     async with aio_create_grpc_channel as channel:
         yield channel
