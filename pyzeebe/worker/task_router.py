@@ -22,13 +22,12 @@ async def default_exception_handler(e: Exception, job: Job) -> None:
 
 
 class ZeebeTaskRouter:
-    def __init__(self, before: Optional[List[TaskDecorator]] = None, after: Optional[List[TaskDecorator]] = None, exception_handler: ExceptionHandler = default_exception_handler):
+    def __init__(self, before: Optional[List[TaskDecorator]] = None, after: Optional[List[TaskDecorator]] = None):
         """
         Args:
             before (List[TaskDecorator]): Decorators to be performed before each task
             after (List[TaskDecorator]): Decorators to be performed after each task
         """
-        self._default_exception_handler = exception_handler
         self._before: List[TaskDecorator] = before or []
         self._after: List[TaskDecorator] = after or []
         self.tasks: List[Task] = []
@@ -36,7 +35,7 @@ class ZeebeTaskRouter:
     def task(
         self,
         task_type: str,
-        exception_handler: Optional[ExceptionHandler] = None,
+        exception_handler: Optional[ExceptionHandler] = default_exception_handler,
         variables_to_fetch: Optional[List[str]] = None,
         timeout_ms: int = 10000,
         max_jobs_to_activate: int = 32,
@@ -72,7 +71,7 @@ class ZeebeTaskRouter:
         def task_wrapper(task_function: Callable):
             config = TaskConfig(
                 task_type,
-                exception_handler or self._default_exception_handler,
+                exception_handler,
                 timeout_ms,
                 max_jobs_to_activate,
                 max_running_jobs,
