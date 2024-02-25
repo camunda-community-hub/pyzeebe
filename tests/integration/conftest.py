@@ -46,7 +46,6 @@ def task(zeebe_worker: ZeebeWorker, process_stats: ProcessStats):
             return {"output": input + str(uuid4())}
 
 
-@pytest.mark.asyncio
 @pytest.fixture(autouse=True, scope="module")
 async def deploy_process(zeebe_client: ZeebeClient):
     try:
