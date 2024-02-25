@@ -35,7 +35,7 @@ def random_job(
     )
 
 
-def _build_dict_from_list(keys: List[str], *values):
+def _build_dict_from_list(keys: List[str], *values) -> dict:
     if not values:
         return dict(zip(keys, keys))
     assert len(keys) == len(values)
