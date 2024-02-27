@@ -35,7 +35,7 @@ class ZeebeTaskRouter:
     def task(
         self,
         task_type: str,
-        exception_handler: Optional[ExceptionHandler] = default_exception_handler,
+        exception_handler: ExceptionHandler = default_exception_handler,
         variables_to_fetch: Optional[List[str]] = None,
         timeout_ms: int = 10000,
         max_jobs_to_activate: int = 32,
