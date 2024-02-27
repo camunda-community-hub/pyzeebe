@@ -19,6 +19,16 @@ def test_get_task(router: ZeebeTaskRouter, task: Task):
     assert found_task == task
 
 
+def test_task_inherits_exception_handler(router: ZeebeTaskRouter, task: Task):
+    router._default_exception_handler = str
+    router.task(task.type)(task.original_function)
+
+    found_task = router.get_task(task.type)
+    found_handler = found_task.default_exception_handler
+
+    assert found_handler == str
+
+
 def test_get_fake_task(router: ZeebeTaskRouter):
     with pytest.raises(TaskNotFoundError):
         router.get_task(str(uuid4()))
