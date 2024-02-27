@@ -47,7 +47,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
                 )
             ):
                 for raw_job in response.jobs:
-                    job = self._create_job_from_raw_job(raw_job, bool(variables_to_fetch))
+                    job = self._create_job_from_raw_job(raw_job)
                     logger.debug("Got job: %s from zeebe", job)
                     yield job
         except grpc.aio.AioRpcError as grpc_error:
@@ -55,7 +55,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
                 raise ActivateJobsRequestInvalidError(task_type, worker, timeout, max_jobs_to_activate) from grpc_error
             await self._handle_grpc_error(grpc_error)
 
-    def _create_job_from_raw_job(self, response, include_variables: bool) -> Job:
+    def _create_job_from_raw_job(self, response) -> Job:
         return Job(
             key=response.key,
             type=response.type,
@@ -69,7 +69,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
             worker=response.worker,
             retries=response.retries,
             deadline=response.deadline,
-            variables=json.loads(response.variables) if include_variables else dict(),
+            variables=json.loads(response.variables),
             zeebe_adapter=self,
         )
 
