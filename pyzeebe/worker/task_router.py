@@ -73,12 +73,12 @@ class ZeebeTaskRouter:
             DuplicateTaskTypeError: If a task from the router already exists in the worker
             NoVariableNameGivenError: When single_value is set, but no variable_name is given
         """
-        exception_handler = exception_handler or self._default_exception_handler
+        _exception_handler = exception_handler or self._default_exception_handler
 
         def task_wrapper(task_function: Callable):
             config = TaskConfig(
                 task_type,
-                exception_handler,
+                _exception_handler,
                 timeout_ms,
                 max_jobs_to_activate,
                 max_running_jobs,
