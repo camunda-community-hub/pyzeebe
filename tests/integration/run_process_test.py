@@ -7,7 +7,6 @@ from pyzeebe import ZeebeClient
 from pyzeebe.errors import ProcessDefinitionNotFoundError
 from tests.integration.utils import ProcessStats, wait_for_process
 
-
 PROCESS_TIMEOUT_IN_MS = 60_000
 
 
