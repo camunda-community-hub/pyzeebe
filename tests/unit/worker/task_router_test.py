@@ -24,7 +24,7 @@ def test_task_inherits_exception_handler(router: ZeebeTaskRouter, task: Task):
     router.task(task.type)(task.original_function)
 
     found_task = router.get_task(task.type)
-    found_handler = found_task.default_exception_handler
+    found_handler = found_task.config.exception_handler
 
     assert found_handler == str
 
