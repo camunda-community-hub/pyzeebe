@@ -22,7 +22,12 @@ async def default_exception_handler(e: Exception, job: Job) -> None:
 
 
 class ZeebeTaskRouter:
-    def __init__(self, before: Optional[List[TaskDecorator]] = None, after: Optional[List[TaskDecorator]] = None, exception_handler: ExceptionHandler = default_exception_handler):
+    def __init__(
+        self,
+        before: Optional[List[TaskDecorator]] = None,
+        after: Optional[List[TaskDecorator]] = None,
+        exception_handler: ExceptionHandler = default_exception_handler,
+    ):
         """
         Args:
             before (List[TaskDecorator]): Decorators to be performed before each task
