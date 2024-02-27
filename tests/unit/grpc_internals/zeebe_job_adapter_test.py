@@ -85,7 +85,7 @@ class TestActivateJobs:
 
         jobs = self.activate_jobs(task_type=task.type)
         result = await jobs.__anext__()
-        
+
         assert result.variables == dict()
 
 
