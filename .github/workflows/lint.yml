@@ -2,45 +2,61 @@ name: Lint pyzeebe
 
 on: [push, pull_request]
 
+
 jobs:
   type-checking:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
 
-    container: python:3.8
+    container: python:${{ matrix.python-version }}
     steps:
       - uses: actions/checkout@v2
+      - name: Init python poetry action
+        uses: abatilo/actions-poetry@v2.1.3
+        with:
+          poetry-version: 1.5.1
       - name: Install dependencies
-        run: |
-          pip install poetry
-          poetry install
+        run: poetry install
       - name: Lint with mypy
         run: |
           poetry run mypy pyzeebe
 
   import-checking:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
 
-    container: python:3.8
+    container: python:${{ matrix.python-version }}
     steps:
       - uses: actions/checkout@v2
+      - name: Init python poetry action
+        uses: abatilo/actions-poetry@v2.1.3
+        with:
+          poetry-version: 1.5.1
       - name: Install dependencies
-        run: |
-          pip install poetry
-          poetry install
+        run: poetry install
       - name: Check imports
         run: |
           poetry run isort . --check --diff
 
   format-checking:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
 
-    container: python:3.8
+    container: python:${{ matrix.python-version }}
     steps:
       - uses: actions/checkout@v2
+      - name: Init python poetry action
+        uses: abatilo/actions-poetry@v2.1.3
+        with:
+          poetry-version: 1.5.1
       - name: Install dependencies
-        run: |
-          pip install poetry
-          poetry install
+        run: poetry install
       - name: Check imports
         run: |
           poetry run black --check .

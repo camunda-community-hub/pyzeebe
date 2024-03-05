@@ -7,12 +7,12 @@ Time between keepalive pings. Following the official Zeebe Java/Go client, sendi
 
 https://docs.camunda.io/docs/product-manuals/zeebe/deployment-guide/operations/setting-up-a-cluster/#keep-alive-intervals
 """
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 GRPC_CHANNEL_OPTIONS = {"grpc.keepalive_time_ms": 45_000}
 
 
-def get_channel_options(options: Dict[str, Any] = None) -> Tuple[Tuple[str, Any], ...]:
+def get_channel_options(options: Optional[Dict[str, Any]] = None) -> Tuple[Tuple[str, Any], ...]:
     """
     Convert options dict to tuple in expected format for creating the gRPC channel
 

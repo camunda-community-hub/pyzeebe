@@ -61,7 +61,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
     def _create_job_from_raw_job(self, response) -> Job:
         return Job(
             key=response.key,
-            _type=response.type,
+            type=response.type,
             process_instance_key=response.processInstanceKey,
             bpmn_process_id=response.bpmnProcessId,
             process_definition_version=response.processDefinitionVersion,

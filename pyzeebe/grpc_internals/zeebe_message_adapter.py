@@ -1,5 +1,5 @@
 import json
-from typing import Dict
+from typing import Dict, Optional
 
 import grpc
 from zeebe_grpc.gateway_pb2 import PublishMessageRequest, PublishMessageResponse
@@ -16,7 +16,7 @@ class ZeebeMessageAdapter(ZeebeAdapterBase):
         correlation_key: str,
         time_to_live_in_milliseconds: int,
         variables: Dict,
-        message_id: str = None,
+        message_id: Optional[str] = None,
     ) -> PublishMessageResponse:
         try:
             return await self._gateway_stub.PublishMessage(

@@ -67,21 +67,21 @@ class TestCancelProcessInstance:
 
 
 class TestDeployProcess:
-    def test_calls_deploy_process_of_zeebe_adapter(self, sync_zeebe_client: SyncZeebeClient):
-        sync_zeebe_client.zeebe_adapter.deploy_process = AsyncMock()
+    def test_calls_deploy_process_of_zeebe_client(self, sync_zeebe_client: SyncZeebeClient):
+        sync_zeebe_client.client.deploy_process = AsyncMock()
         file_path = str(uuid4())
 
         sync_zeebe_client.deploy_process(file_path)
 
-        sync_zeebe_client.zeebe_adapter.deploy_process.assert_called_with(file_path)
+        sync_zeebe_client.client.deploy_process.assert_called_with(file_path)
 
 
 class TestPublishMessage:
-    def test_calls_publish_message_of_zeebe_adapter(self, sync_zeebe_client: SyncZeebeClient):
-        sync_zeebe_client.zeebe_adapter.publish_message = AsyncMock()
+    def test_calls_publish_message_of_zeebe_client(self, sync_zeebe_client: SyncZeebeClient):
+        sync_zeebe_client.client.publish_message = AsyncMock()
         name = str(uuid4())
         correlation_key = str(uuid4())
 
         sync_zeebe_client.publish_message(name, correlation_key)
 
-        sync_zeebe_client.zeebe_adapter.publish_message.assert_called_once()
+        sync_zeebe_client.client.publish_message.assert_called_once()
