@@ -24,6 +24,7 @@ from pyzeebe.job.job import Job
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_GRPC_REQUEST_TIMEOUT = 20  # This constant represents the fallback timeout value
 
 class ZeebeJobAdapter(ZeebeAdapterBase):
     async def activate_jobs(
@@ -36,7 +37,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
         request_timeout: int,
     ) -> AsyncGenerator[Job, None]:
         try:
-            grpc_request_timeout = request_timeout / 1000 * 2 if request_timeout > 0 else 20
+            grpc_request_timeout = request_timeout / 1000 * 2 if request_timeout > 0 else DEFAULT_GRPC_REQUEST_TIMEOUT
             async for response in self._gateway_stub.ActivateJobs(
                 ActivateJobsRequest(
                     type=task_type,
