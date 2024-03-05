@@ -6,6 +6,7 @@ from pyzeebe.errors import (
     ZeebeBackPressureError,
     ZeebeGatewayUnavailableError,
     ZeebeInternalError,
+    ZeebeDeadlineExceeded,
 )
 from pyzeebe.grpc_internals.zeebe_job_adapter import ZeebeJobAdapter
 from pyzeebe.task.task import Task
@@ -65,7 +66,12 @@ class JobPoller:
         except ActivateJobsRequestInvalidError:
             logger.warning("Activate job requests was invalid for task %s", self.task.type)
             raise
-        except (ZeebeBackPressureError, ZeebeGatewayUnavailableError, ZeebeInternalError) as error:
+        except (
+            ZeebeBackPressureError,
+            ZeebeGatewayUnavailableError,
+            ZeebeInternalError,
+            ZeebeDeadlineExceeded,
+        ) as error:
             logger.warning(
                 "Failed to activate jobs from the gateway. Exception: %s. Retrying in 5 seconds...",
                 repr(error),
