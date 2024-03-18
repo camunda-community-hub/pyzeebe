@@ -23,6 +23,8 @@ class JobExecutor:
         while self.should_execute():
             job = await self.get_next_job()
             task = asyncio.create_task(self.execute_one_job(job))
+            if job.stream_job:
+                continue
             task.add_done_callback(create_job_callback(self, job))
 
     async def get_next_job(self) -> Job:

@@ -87,7 +87,7 @@ class ZeebeWorker(ZeebeTaskRouter):
             self._job_pollers.append(poller)
             self._job_executors.append(executor)
 
-        coroutines = [poller.poll() for poller in self._job_pollers] + [
+        coroutines = [poller.openStream() if poller.task.config.stream else poller.poll() for poller in self._job_pollers] + [
             executor.execute() for executor in self._job_executors
         ]
 

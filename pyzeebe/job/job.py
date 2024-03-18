@@ -24,6 +24,7 @@ class Job:
     tenant_id: Optional[str] = None
     status: JobStatus = JobStatus.Running
     zeebe_adapter: Optional["ZeebeAdapter"] = None  # type: ignore
+    stream_job: Optional[bool] = False
 
     async def set_running_after_decorators_status(self) -> None:
         """

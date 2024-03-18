@@ -22,6 +22,7 @@ class TaskConfig:
         variable_name: str,
         before: List[TaskDecorator],
         after: List[TaskDecorator],
+        stream: Optional[bool] = False,
     ):
         if single_value and not variable_name:
             raise NoVariableNameGivenError(type)
@@ -34,6 +35,7 @@ class TaskConfig:
         self.variables_to_fetch = variables_to_fetch
         self.single_value = single_value
         self.variable_name = variable_name
+        self.stream = stream
         self.before = async_tools.asyncify_all_functions(before)
         self.after = async_tools.asyncify_all_functions(after)
         self.job_parameter_name: Optional[str] = None

@@ -41,6 +41,26 @@ class JobPoller:
         while self.should_poll():
             await self.activate_max_jobs()
 
+    async def openStream(self):
+        try:
+            await self.zeebe_adapter.openStream(
+                task_type=self.task.type,
+                worker=self.worker_name,
+                timeout=self.task.config.timeout_ms,
+                variables_to_fetch=self.task.config.variables_to_fetch,
+                queue=self.queue,
+                tenant_ids=self.tenant_ids,
+            )
+        except ActivateJobsRequestInvalidError:
+            logger.warning("Activate job requests was invalid for task %s", self.task.type)
+            raise
+        except (ZeebeBackPressureError, ZeebeGatewayUnavailableError, ZeebeInternalError) as error:
+            logger.warning(
+                "Failed to activate jobs from the gateway. Exception: %s. Retrying in 5 seconds...",
+                repr(error),
+            )
+            await asyncio.sleep(5)
+
     async def activate_max_jobs(self):
         if self.calculate_max_jobs_to_activate() > 0:
             await self.poll_once()
