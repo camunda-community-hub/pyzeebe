@@ -21,6 +21,7 @@ class Job:
     retries: int
     deadline: int
     variables: Dict
+    tenant_id: Optional[str] = None
     status: JobStatus = JobStatus.Running
     zeebe_adapter: Optional["ZeebeAdapter"] = None  # type: ignore
 
@@ -57,13 +58,21 @@ class Job:
         else:
             raise NoZeebeAdapterError()
 
-    async def set_failure_status(self, message: str) -> None:
+    async def set_failure_status(
+        self,
+        message: str,
+        retry_back_off_ms: int = 0,
+        variables: Optional[Dict] = None,
+    ) -> None:
         """
         Failure status means a technical error has occurred. If retried the job may succeed.
         For example: connection to DB lost
 
         Args:
             message (str): The failure message that Zeebe will receive
+            retry_back_off_ms (int): The backoff timeout (in ms) for the next retry. New in Zeebe 8.1.
+            variables (dict): A dictionary containing variables that will instantiate the variables at
+                the local scope of the job's associated task. Must be JSONable. New in Zeebe 8.2.
 
         Raises:
             NoZeebeAdapterError: If the job does not have a configured ZeebeAdapter
@@ -74,11 +83,22 @@ class Job:
         """
         if self.zeebe_adapter:
             self.status = JobStatus.Failed
-            await self.zeebe_adapter.fail_job(job_key=self.key, retries=self.retries - 1, message=message)
+            await self.zeebe_adapter.fail_job(
+                job_key=self.key,
+                retries=self.retries - 1,
+                message=message,
+                retry_back_off_ms=retry_back_off_ms,
+                variables=variables or {},
+            )
         else:
             raise NoZeebeAdapterError()
 
-    async def set_error_status(self, message: str, error_code: str = "") -> None:
+    async def set_error_status(
+        self,
+        message: str,
+        error_code: str = "",
+        variables: Optional[Dict] = None,
+    ) -> None:
         """
         Error status means that the job could not be completed because of a business error and won't ever be able to be completed.
         For example: a required parameter was not given
@@ -87,6 +107,8 @@ class Job:
         Args:
             message (str): The error message
             error_code (str): The error code that Zeebe will receive
+            variables (dict): A dictionary containing variables that will instantiate the variables at
+                the local scope of the job's associated task. Must be JSONable. New in Zeebe 8.2.
 
         Raises:
             NoZeebeAdapterError: If the job does not have a configured ZeebeAdapter
@@ -97,7 +119,9 @@ class Job:
         """
         if self.zeebe_adapter:
             self.status = JobStatus.ErrorThrown
-            await self.zeebe_adapter.throw_error(job_key=self.key, message=message, error_code=error_code)
+            await self.zeebe_adapter.throw_error(
+                job_key=self.key, message=message, error_code=error_code, variables=variables or {}
+            )
         else:
             raise NoZeebeAdapterError()
 
@@ -122,6 +146,7 @@ def create_copy(job: Job) -> Job:
         job.retries,
         job.deadline,
         copy.deepcopy(job.variables),
+        job.tenant_id,
         job.status,
         job.zeebe_adapter,
     )

@@ -63,6 +63,7 @@ class GatewayMock(GatewayServicer):
                         retries=active_job.retries,
                         deadline=active_job.deadline,
                         variables=json.dumps(active_job.variables),
+                        tenantId=active_job.tenant_id,
                     )
                 )
         yield ActivateJobsResponse(jobs=jobs)
@@ -115,6 +116,7 @@ class GatewayMock(GatewayServicer):
                 bpmnProcessId=request.bpmnProcessId,
                 version=request.version,
                 processInstanceKey=process_instance_key,
+                tenantId=request.tenantId,
             )
         else:
             context.set_code(grpc.StatusCode.NOT_FOUND)
@@ -131,6 +133,7 @@ class GatewayMock(GatewayServicer):
                 bpmnProcessId=request.request.bpmnProcessId,
                 version=randint(0, 10),
                 variables=request.request.variables,
+                tenantId=request.request.tenantId,
             )
         else:
             context.set_code(grpc.StatusCode.NOT_FOUND)
@@ -156,6 +159,22 @@ class GatewayMock(GatewayServicer):
             processes.append(process_metadata)
 
         return DeployProcessResponse(key=randint(0, RANDOM_RANGE), processes=processes)
+
+    def DeployResource(self, request, context):
+        resources = []
+        for resource in request.resources:
+            process_metadata = Deployment(
+                process=ProcessMetadata(
+                    bpmnProcessId=str(uuid4()),
+                    version=randint(0, 10),
+                    processDefinitionKey=randint(0, RANDOM_RANGE),
+                    resourceName=resource.name,
+                    tenantId=request.tenantId,
+                )
+            )
+            resources.append(process_metadata)
+
+        return DeployResourceResponse(key=randint(0, RANDOM_RANGE), deployments=resources, tenantId=request.tenantId)
 
     def PublishMessage(self, request, context):
         if request.messageId in self.messages.keys():

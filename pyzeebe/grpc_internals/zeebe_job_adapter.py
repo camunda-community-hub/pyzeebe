@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import AsyncGenerator, Dict, List
+from typing import AsyncGenerator, Dict, List, Optional
 
 import grpc
 from zeebe_grpc.gateway_pb2 import (
@@ -34,6 +34,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
         max_jobs_to_activate: int,
         variables_to_fetch: List[str],
         request_timeout: int,
+        tenant_ids: Optional[List[str]] = None,
     ) -> AsyncGenerator[Job, None]:
         try:
             async for response in self._gateway_stub.ActivateJobs(
@@ -44,6 +45,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
                     maxJobsToActivate=max_jobs_to_activate,
                     fetchVariable=variables_to_fetch,
                     requestTimeout=request_timeout,
+                    tenantIds=tenant_ids,
                 )
             ):
                 for raw_job in response.jobs:
@@ -70,6 +72,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
             retries=response.retries,
             deadline=response.deadline,
             variables=json.loads(response.variables),
+            tenant_id=response.tenantId,
             zeebe_adapter=self,
         )
 
@@ -85,10 +88,18 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
                 raise JobAlreadyDeactivatedError(job_key=job_key) from grpc_error
             await self._handle_grpc_error(grpc_error)
 
-    async def fail_job(self, job_key: int, retries: int, message: str) -> FailJobResponse:
+    async def fail_job(
+        self, job_key: int, retries: int, message: str, retry_back_off_ms: int, variables: Dict
+    ) -> FailJobResponse:
         try:
             return await self._gateway_stub.FailJob(
-                FailJobRequest(jobKey=job_key, retries=retries, errorMessage=message)
+                FailJobRequest(
+                    jobKey=job_key,
+                    retries=retries,
+                    errorMessage=message,
+                    retryBackOff=retry_back_off_ms,
+                    variables=json.dumps(variables),
+                )
             )
         except grpc.aio.AioRpcError as grpc_error:
             if is_error_status(grpc_error, grpc.StatusCode.NOT_FOUND):
@@ -97,10 +108,17 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
                 raise JobAlreadyDeactivatedError(job_key=job_key) from grpc_error
             await self._handle_grpc_error(grpc_error)
 
-    async def throw_error(self, job_key: int, message: str, error_code: str = "") -> ThrowErrorResponse:
+    async def throw_error(
+        self, job_key: int, message: str, variables: Dict, error_code: str = ""
+    ) -> ThrowErrorResponse:
         try:
             return await self._gateway_stub.ThrowError(
-                ThrowErrorRequest(jobKey=job_key, errorMessage=message, errorCode=error_code)
+                ThrowErrorRequest(
+                    jobKey=job_key,
+                    errorMessage=message,
+                    errorCode=error_code,
+                    variables=json.dumps(variables),
+                )
             )
         except grpc.aio.AioRpcError as grpc_error:
             if is_error_status(grpc_error, grpc.StatusCode.NOT_FOUND):

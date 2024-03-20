@@ -44,6 +44,14 @@ async def test_deploy_process(zeebe_client):
 
 
 @pytest.mark.asyncio
+async def test_deploy_resource(zeebe_client):
+    zeebe_client.zeebe_adapter.deploy_resource = AsyncMock()
+    file_path = str(uuid4())
+    await zeebe_client.deploy_resource(file_path)
+    zeebe_client.zeebe_adapter.deploy_resource.assert_called_with(file_path, tenant_id=None)
+
+
+@pytest.mark.asyncio
 async def test_run_non_existent_process(zeebe_client):
     with pytest.raises(ProcessDefinitionNotFoundError):
         await zeebe_client.run_process(bpmn_process_id=str(uuid4()))

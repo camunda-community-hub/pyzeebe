@@ -76,6 +76,16 @@ class TestDeployProcess:
         sync_zeebe_client.client.deploy_process.assert_called_with(file_path)
 
 
+class TestDeployResource:
+    def test_calls_deploy_resource_of_zeebe_client(self, sync_zeebe_client: SyncZeebeClient):
+        sync_zeebe_client.client.deploy_resource = AsyncMock()
+        file_path = str(uuid4())
+
+        sync_zeebe_client.deploy_resource(file_path)
+
+        sync_zeebe_client.client.deploy_resource.assert_called_with(file_path, tenant_id=None)
+
+
 class TestPublishMessage:
     def test_calls_publish_message_of_zeebe_client(self, sync_zeebe_client: SyncZeebeClient):
         sync_zeebe_client.client.publish_message = AsyncMock()

@@ -14,7 +14,7 @@ from tests.unit.utils.random_utils import random_job
 
 @pytest.fixture
 def job_poller(zeebe_adapter: ZeebeAdapter, task: Task, queue: asyncio.Queue, task_state: TaskState) -> JobPoller:
-    return JobPoller(zeebe_adapter, task, queue, "test_worker", 100, task_state, 0)
+    return JobPoller(zeebe_adapter, task, queue, "test_worker", 100, task_state, 0, None)
 
 
 @pytest.mark.asyncio

@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from typing import List, Optional
 
 from pyzeebe.errors import (
     ActivateJobsRequestInvalidError,
@@ -24,6 +25,7 @@ class JobPoller:
         request_timeout: int,
         task_state: TaskState,
         poll_retry_delay: int,
+        tenant_ids: Optional[List[str]],
     ):
         self.zeebe_adapter = zeebe_adapter
         self.task = task
@@ -32,6 +34,7 @@ class JobPoller:
         self.request_timeout = request_timeout
         self.task_state = task_state
         self.poll_retry_delay = poll_retry_delay
+        self.tenant_ids = tenant_ids
         self.stop_event = asyncio.Event()
 
     async def poll(self):
@@ -58,6 +61,7 @@ class JobPoller:
                 max_jobs_to_activate=self.calculate_max_jobs_to_activate(),
                 variables_to_fetch=self.task.config.variables_to_fetch,
                 request_timeout=self.request_timeout,
+                tenant_ids=self.tenant_ids,
             )
             async for job in jobs:
                 self.task_state.add(job)

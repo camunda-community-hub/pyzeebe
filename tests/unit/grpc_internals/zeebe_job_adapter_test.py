@@ -1,4 +1,5 @@
 from random import randint
+from typing import Dict
 from uuid import uuid4
 
 import pytest
@@ -28,6 +29,14 @@ def random_message() -> str:
     return str(uuid4())
 
 
+def random_variables() -> Dict:
+    return {str(uuid4()): str(uuid4())}
+
+
+def random_retry_back_off_ms() -> int:
+    return randint(0, RANDOM_RANGE)
+
+
 @pytest.mark.asyncio
 class TestActivateJobs:
     zeebe_job_adapter: ZeebeJobAdapter
@@ -44,9 +53,10 @@ class TestActivateJobs:
         request_timeout=100,
         max_jobs_to_activate=1,
         variables_to_fetch=[],
+        tenant_ids=None,
     ):
         return self.zeebe_job_adapter.activate_jobs(
-            task_type, worker, timeout, max_jobs_to_activate, variables_to_fetch, request_timeout
+            task_type, worker, timeout, max_jobs_to_activate, variables_to_fetch, request_timeout, tenant_ids
         )
 
     async def test_returns_correct_amount_of_jobs(self, grpc_servicer: GatewayMock, task: Task):
@@ -101,34 +111,54 @@ class TestCompleteJob:
 @pytest.mark.asyncio
 class TestFailJob:
     async def test_response_is_of_correct_type(self, zeebe_adapter: ZeebeJobAdapter, first_active_job: Job):
-        response = await zeebe_adapter.fail_job(first_active_job.key, first_active_job.retries, random_message())
+        response = await zeebe_adapter.fail_job(
+            first_active_job.key,
+            first_active_job.retries,
+            random_message(),
+            random_retry_back_off_ms(),
+            random_variables(),
+        )
 
         assert isinstance(response, FailJobResponse)
 
     async def test_raises_on_fake_job(self, zeebe_adapter: ZeebeJobAdapter):
         with pytest.raises(JobNotFoundError):
-            await zeebe_adapter.fail_job(random_job_key(), 1, random_message())
+            await zeebe_adapter.fail_job(
+                random_job_key(), 1, random_message(), random_retry_back_off_ms(), random_variables()
+            )
 
     async def test_raises_on_deactivated_job(self, zeebe_adapter: ZeebeJobAdapter, first_active_job: Job):
-        await zeebe_adapter.fail_job(first_active_job.key, first_active_job.retries, random_message())
+        await zeebe_adapter.fail_job(
+            first_active_job.key,
+            first_active_job.retries,
+            random_message(),
+            random_retry_back_off_ms(),
+            random_variables(),
+        )
 
         with pytest.raises(JobAlreadyDeactivatedError):
-            await zeebe_adapter.fail_job(first_active_job.key, first_active_job.retries, random_message())
+            await zeebe_adapter.fail_job(
+                first_active_job.key,
+                first_active_job.retries,
+                random_message(),
+                random_retry_back_off_ms(),
+                random_variables(),
+            )
 
 
 @pytest.mark.asyncio
 class TestThrowError:
     async def test_response_is_of_correct_type(self, zeebe_adapter: ZeebeJobAdapter, first_active_job: Job):
-        response = await zeebe_adapter.throw_error(first_active_job.key, random_message())
+        response = await zeebe_adapter.throw_error(first_active_job.key, random_message(), random_variables())
 
         assert isinstance(response, ThrowErrorResponse)
 
     async def test_raises_on_fake_job(self, zeebe_adapter: ZeebeJobAdapter):
         with pytest.raises(JobNotFoundError):
-            await zeebe_adapter.throw_error(random_job_key(), random_message())
+            await zeebe_adapter.throw_error(random_job_key(), random_message(), random_variables())
 
     async def test_raises_on_deactivated_job(self, zeebe_adapter: ZeebeJobAdapter, first_active_job: Job):
-        await zeebe_adapter.throw_error(first_active_job.key, random_message())
+        await zeebe_adapter.throw_error(first_active_job.key, random_message(), random_variables())
 
         with pytest.raises(JobAlreadyDeactivatedError):
-            await zeebe_adapter.throw_error(first_active_job.key, random_message())
+            await zeebe_adapter.throw_error(first_active_job.key, random_message(), random_variables())
