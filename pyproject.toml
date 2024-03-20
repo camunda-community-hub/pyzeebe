@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "byted-pyzeebe"
-version = "3.0.4.2"
+name = "pyzeebe"
+version = "3.0.4"
 description = "Zeebe client api"
 authors = ["Jonatan Martens <jonatanmartenstav@gmail.com>"]
 license = "MIT"
