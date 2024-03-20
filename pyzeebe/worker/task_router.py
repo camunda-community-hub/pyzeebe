@@ -44,7 +44,6 @@ class ZeebeTaskRouter:
         after: Optional[List[TaskDecorator]] = None,
         single_value: bool = False,
         variable_name: Optional[str] = None,
-        stream: Optional[bool] = False,
     ):
         """
         Decorator to create a task
@@ -81,7 +80,6 @@ class ZeebeTaskRouter:
                 variable_name or "",
                 before or [],
                 after or [],
-                stream
             )
             config_with_decorators = self._add_decorators_to_config(config)
 
@@ -105,7 +103,6 @@ class ZeebeTaskRouter:
             variables_to_fetch=config.variables_to_fetch,
             single_value=config.single_value,
             variable_name=config.variable_name,
-            stream=config.stream,
             before=self._before + config.before,  # type: ignore
             after=config.after + self._after,  # type: ignore
         )
