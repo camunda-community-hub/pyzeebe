@@ -1,4 +1,5 @@
 import logging
+from typing import NoReturn
 
 import grpc
 from zeebe_grpc.gateway_pb2_grpc import GatewayStub
@@ -24,10 +25,10 @@ class ZeebeAdapterBase:
         self._max_connection_retries = max_connection_retries
         self._current_connection_retries = 0
 
-    def _should_retry(self):
+    def _should_retry(self) -> bool:
         return self._max_connection_retries == -1 or self._current_connection_retries < self._max_connection_retries
 
-    async def _handle_grpc_error(self, grpc_error: grpc.aio.AioRpcError):
+    async def _handle_grpc_error(self, grpc_error: grpc.aio.AioRpcError) -> NoReturn:
         try:
             pyzeebe_error = _create_pyzeebe_error_from_grpc_error(grpc_error)
             raise pyzeebe_error
@@ -37,7 +38,7 @@ class ZeebeAdapterBase:
                 await self._close()
             raise
 
-    async def _close(self):
+    async def _close(self) -> None:
         try:
             await self._channel.close()
         except Exception as exception:

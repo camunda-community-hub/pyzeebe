@@ -6,7 +6,7 @@ from pyzeebe.job.job import Job
 
 logger = logging.getLogger(__name__)
 
-ExceptionHandler = Callable[[Exception, Job], Awaitable]
+ExceptionHandler = Callable[[Exception, Job], Awaitable[None]]
 
 
 async def default_exception_handler(e: Exception, job: Job) -> None:

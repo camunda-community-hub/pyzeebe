@@ -1,9 +1,13 @@
 import copy
 from dataclasses import dataclass
-from typing import Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from pyzeebe.errors import NoZeebeAdapterError
 from pyzeebe.job.job_status import JobStatus
+from pyzeebe.types import Variables
+
+if TYPE_CHECKING:
+    from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 
 
 @dataclass
@@ -16,14 +20,14 @@ class Job:
     process_definition_key: int
     element_id: str
     element_instance_key: int
-    custom_headers: Dict
+    custom_headers: Dict[str, Any]
     worker: str
     retries: int
     deadline: int
-    variables: Dict
+    variables: Variables
     tenant_id: Optional[str] = None
     status: JobStatus = JobStatus.Running
-    zeebe_adapter: Optional["ZeebeAdapter"] = None  # type: ignore
+    zeebe_adapter: Optional["ZeebeAdapter"] = None
 
     async def set_running_after_decorators_status(self) -> None:
         """
@@ -62,7 +66,7 @@ class Job:
         self,
         message: str,
         retry_back_off_ms: int = 0,
-        variables: Optional[Dict] = None,
+        variables: Optional[Variables] = None,
     ) -> None:
         """
         Failure status means a technical error has occurred. If retried the job may succeed.
@@ -97,7 +101,7 @@ class Job:
         self,
         message: str,
         error_code: str = "",
-        variables: Optional[Dict] = None,
+        variables: Optional[Variables] = None,
     ) -> None:
         """
         Error status means that the job could not be completed because of a business error and won't ever be able to be completed.
