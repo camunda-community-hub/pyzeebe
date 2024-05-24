@@ -1,8 +1,8 @@
 from typing import List
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import grpc
-from mock import AsyncMock
 import pytest
 
 from pyzeebe import ExceptionHandler, TaskDecorator, ZeebeTaskRouter
