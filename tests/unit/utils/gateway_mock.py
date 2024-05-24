@@ -1,10 +1,10 @@
 import json
 from random import randint
 from typing import Dict, List
+from unittest.mock import patch
 from uuid import uuid4
 
 import grpc
-from mock import patch
 from zeebe_grpc.gateway_pb2 import *
 from zeebe_grpc.gateway_pb2_grpc import GatewayServicer
 

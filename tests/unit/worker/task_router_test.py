@@ -1,6 +1,6 @@
+from unittest import mock
 from uuid import uuid4
 
-import mock
 import pytest
 
 from pyzeebe import TaskDecorator
