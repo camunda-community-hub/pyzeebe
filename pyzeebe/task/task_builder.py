@@ -58,7 +58,15 @@ async def run_original_task_function(
     task_function: DictFunction, task_config: TaskConfig, job: Job
 ) -> Tuple[Dict, bool]:
     try:
-        returned_value = await task_function(**job.variables)  # type: ignore
+        if task_config.variables_to_fetch is None:
+            variables = {}
+        else:
+            variables = {
+                k: v
+                for k, v in job.variables.items()
+                if k in task_config.variables_to_fetch or k == task_config.job_parameter_name
+            }
+        returned_value = await task_function(**variables)  # type: ignore
 
         if returned_value is None:
             returned_value = {}

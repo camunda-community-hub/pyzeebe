@@ -1,7 +1,7 @@
-from typing import List, Optional
+from typing import List, Optional, Type, Union
 
 from pyzeebe.errors import NoVariableNameGivenError
-from pyzeebe.function_tools import async_tools
+from pyzeebe.function_tools import async_tools, parameter_tools
 from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.task.types import AsyncTaskDecorator, TaskDecorator
 
@@ -17,7 +17,7 @@ class TaskConfig:
         timeout_ms: int,
         max_jobs_to_activate: int,
         max_running_jobs: int,
-        variables_to_fetch: List[str],
+        variables_to_fetch: Optional[List[str]],
         single_value: bool,
         variable_name: str,
         before: List[TaskDecorator],

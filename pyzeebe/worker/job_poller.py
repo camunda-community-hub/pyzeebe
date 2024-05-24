@@ -59,7 +59,7 @@ class JobPoller:
                 worker=self.worker_name,
                 timeout=self.task.config.timeout_ms,
                 max_jobs_to_activate=self.calculate_max_jobs_to_activate(),
-                variables_to_fetch=self.task.config.variables_to_fetch,
+                variables_to_fetch=self.task.config.variables_to_fetch or [],
                 request_timeout=self.request_timeout,
                 tenant_ids=self.tenant_ids,
             )
