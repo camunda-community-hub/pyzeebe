@@ -2,6 +2,7 @@ from typing import List
 from uuid import uuid4
 
 import grpc
+from mock import AsyncMock
 import pytest
 
 from pyzeebe import ExceptionHandler, TaskDecorator, ZeebeTaskRouter
@@ -161,6 +162,24 @@ class TestIncludeRouter:
         await task.job_handler(mocked_job_with_adapter)
 
         exception_handler.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_worker_and_router_with_exception_handler(
+        self,
+        zeebe_worker: ZeebeWorker,
+        router: ZeebeTaskRouter,
+        mocked_job_with_adapter: Job,
+    ):
+        exception_handler_router = AsyncMock()
+        exception_handler_worker = AsyncMock()
+        router.exception_handler(exception_handler_router)
+        zeebe_worker.exception_handler(exception_handler_worker)
+        task = self.include_router_with_task_error(zeebe_worker, router)
+
+        await task.job_handler(mocked_job_with_adapter)
+
+        exception_handler_router.assert_called_once()
+        exception_handler_worker.assert_not_called()
 
     @staticmethod
     def include_router_with_task(zeebe_worker: ZeebeWorker, router: ZeebeTaskRouter, task_type: str = None) -> Task:
