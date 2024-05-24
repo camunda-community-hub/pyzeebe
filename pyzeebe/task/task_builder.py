@@ -8,6 +8,7 @@ from pyzeebe.function_tools.async_tools import asyncify, is_async_function
 from pyzeebe.function_tools.dict_tools import convert_to_dict_function
 from pyzeebe.function_tools.parameter_tools import get_job_parameter_name
 from pyzeebe.job.job import create_copy
+from pyzeebe.task.exception_handler import default_exception_handler
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_config import TaskConfig
 from pyzeebe.task.types import AsyncTaskDecorator, DecoratorRunner, JobHandler
@@ -65,7 +66,8 @@ async def run_original_task_function(
         return returned_value, True
     except Exception as e:
         logger.debug("Failed job: %s. Error: %s.", job, e)
-        await task_config.exception_handler(e, job)
+        exception_handler = task_config.exception_handler or default_exception_handler
+        await exception_handler(e, job)
         return job.variables, False
 
 
