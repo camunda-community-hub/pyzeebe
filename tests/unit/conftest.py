@@ -145,6 +145,14 @@ def decorator():
     return AsyncMock(wraps=simple_decorator)
 
 
+@pytest.fixture
+def exception_handler():
+    async def simple_exception_handler(e: Exception, job: Job) -> None:
+        return None
+
+    return AsyncMock(wraps=simple_exception_handler)
+
+
 @pytest.fixture(scope="module")
 def grpc_add_to_server():
     from zeebe_grpc.gateway_pb2_grpc import add_GatewayServicer_to_server

@@ -1,10 +1,11 @@
 from typing import List
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import grpc
 import pytest
 
-from pyzeebe import TaskDecorator, ZeebeTaskRouter
+from pyzeebe import ExceptionHandler, TaskDecorator, ZeebeTaskRouter
 from pyzeebe.errors import DuplicateTaskTypeError
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
@@ -55,6 +56,10 @@ class TestDecorator:
         assert len(zeebe_worker._after) == 1
         assert decorator in zeebe_worker._after
 
+    def test_set_exception_handler(self, zeebe_worker: ZeebeWorker, exception_handler: ExceptionHandler):
+        zeebe_worker.exception_handler(exception_handler)
+        assert exception_handler is zeebe_worker._exception_handler
+
     def test_add_constructor_before_decorator(self, aio_grpc_channel: grpc.aio.Channel, decorator: TaskDecorator):
         zeebe_worker = ZeebeWorker(aio_grpc_channel, before=[decorator])
         assert len(zeebe_worker._before) == 1
@@ -64,6 +69,12 @@ class TestDecorator:
         zeebe_worker = ZeebeWorker(aio_grpc_channel, after=[decorator])
         assert len(zeebe_worker._after) == 1
         assert decorator in zeebe_worker._after
+
+    def test_set_constructor_exception_handler(
+        self, aio_grpc_channel: grpc.aio.Channel, exception_handler: ExceptionHandler
+    ):
+        zeebe_worker = ZeebeWorker(aio_grpc_channel, exception_handler=exception_handler)
+        assert exception_handler is zeebe_worker._exception_handler
 
 
 class TestIncludeRouter:
@@ -101,6 +112,21 @@ class TestIncludeRouter:
         decorator.assert_called_once()
 
     @pytest.mark.asyncio
+    async def test_router_with_exception_handler(
+        self,
+        zeebe_worker: ZeebeWorker,
+        router: ZeebeTaskRouter,
+        exception_handler: ExceptionHandler,
+        mocked_job_with_adapter: Job,
+    ):
+        router.exception_handler(exception_handler)
+        task = self.include_router_with_task_error(zeebe_worker, router)
+
+        await task.job_handler(mocked_job_with_adapter)
+
+        exception_handler.assert_called_once()
+
+    @pytest.mark.asyncio
     async def test_worker_with_before_decorator(
         self, zeebe_worker: ZeebeWorker, router: ZeebeTaskRouter, decorator: TaskDecorator, mocked_job_with_adapter: Job
     ):
@@ -122,6 +148,39 @@ class TestIncludeRouter:
 
         decorator.assert_called_once()
 
+    @pytest.mark.asyncio
+    async def test_worker_with_exception_handler(
+        self,
+        zeebe_worker: ZeebeWorker,
+        router: ZeebeTaskRouter,
+        exception_handler: ExceptionHandler,
+        mocked_job_with_adapter: Job,
+    ):
+        zeebe_worker.exception_handler(exception_handler)
+        task = self.include_router_with_task_error(zeebe_worker, router)
+
+        await task.job_handler(mocked_job_with_adapter)
+
+        exception_handler.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_worker_and_router_with_exception_handler(
+        self,
+        zeebe_worker: ZeebeWorker,
+        router: ZeebeTaskRouter,
+        mocked_job_with_adapter: Job,
+    ):
+        exception_handler_router = AsyncMock()
+        exception_handler_worker = AsyncMock()
+        router.exception_handler(exception_handler_router)
+        zeebe_worker.exception_handler(exception_handler_worker)
+        task = self.include_router_with_task_error(zeebe_worker, router)
+
+        await task.job_handler(mocked_job_with_adapter)
+
+        exception_handler_router.assert_called_once()
+        exception_handler_worker.assert_not_called()
+
     @staticmethod
     def include_router_with_task(zeebe_worker: ZeebeWorker, router: ZeebeTaskRouter, task_type: str = None) -> Task:
         task_type = task_type or str(uuid4())
@@ -129,6 +188,19 @@ class TestIncludeRouter:
         @router.task(task_type)
         def dummy_function():
             return {}
+
+        zeebe_worker.include_router(router)
+        return zeebe_worker.get_task(task_type)
+
+    @staticmethod
+    def include_router_with_task_error(
+        zeebe_worker: ZeebeWorker, router: ZeebeTaskRouter, task_type: str = None
+    ) -> Task:
+        task_type = task_type or str(uuid4())
+
+        @router.task(task_type)
+        def dummy_function():
+            raise Exception()
 
         zeebe_worker.include_router(router)
         return zeebe_worker.get_task(task_type)
