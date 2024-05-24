@@ -17,6 +17,7 @@ class ZeebeMessageAdapter(ZeebeAdapterBase):
         time_to_live_in_milliseconds: int,
         variables: Dict,
         message_id: Optional[str] = None,
+        tenant_id: Optional[str] = None,
     ) -> PublishMessageResponse:
         try:
             return await self._gateway_stub.PublishMessage(
@@ -26,6 +27,7 @@ class ZeebeMessageAdapter(ZeebeAdapterBase):
                     messageId=message_id,
                     timeToLive=time_to_live_in_milliseconds,
                     variables=json.dumps(variables),
+                    tenantId=tenant_id,
                 )
             )
         except grpc.aio.AioRpcError as grpc_error:
