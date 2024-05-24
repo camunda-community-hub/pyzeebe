@@ -1,9 +1,9 @@
+from unittest.mock import Mock, patch
 from uuid import uuid4
 
 import grpc
 import pytest
 import responses
-from mock import Mock, patch
 
 from pyzeebe import create_camunda_cloud_channel
 from pyzeebe.errors import InvalidCamundaCloudCredentialsError
