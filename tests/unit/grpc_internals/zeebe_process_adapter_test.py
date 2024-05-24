@@ -1,9 +1,9 @@
 from random import randint
+from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
 import grpc
 import pytest
-from mock import AsyncMock, patch
 
 from pyzeebe.errors import (
     InvalidJSONError,

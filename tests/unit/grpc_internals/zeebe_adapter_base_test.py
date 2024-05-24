@@ -1,6 +1,7 @@
+from unittest.mock import AsyncMock
+
 import grpc
 import pytest
-from mock import AsyncMock
 
 from pyzeebe.errors import (
     ZeebeBackPressureError,

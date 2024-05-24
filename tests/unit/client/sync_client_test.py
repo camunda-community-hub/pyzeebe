@@ -1,8 +1,8 @@
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import grpc
 import pytest
-from mock import AsyncMock
 
 from pyzeebe import SyncZeebeClient
 from pyzeebe.errors import ProcessDefinitionNotFoundError

@@ -1,11 +1,11 @@
 from random import randint
 from threading import Event
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import grpc
 import pytest
 import pytest_asyncio
-from mock import AsyncMock, MagicMock, patch
 
 from pyzeebe import Job, ZeebeClient, ZeebeWorker
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
