@@ -1,8 +1,8 @@
 from random import randint
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
-from mock import AsyncMock
 
 from pyzeebe.errors import ProcessDefinitionNotFoundError
 
@@ -41,6 +41,14 @@ async def test_deploy_process(zeebe_client):
     file_path = str(uuid4())
     await zeebe_client.deploy_process(file_path)
     zeebe_client.zeebe_adapter.deploy_process.assert_called_with(file_path)
+
+
+@pytest.mark.asyncio
+async def test_deploy_resource(zeebe_client):
+    zeebe_client.zeebe_adapter.deploy_resource = AsyncMock()
+    file_path = str(uuid4())
+    await zeebe_client.deploy_resource(file_path)
+    zeebe_client.zeebe_adapter.deploy_resource.assert_called_with(file_path, tenant_id=None)
 
 
 @pytest.mark.asyncio

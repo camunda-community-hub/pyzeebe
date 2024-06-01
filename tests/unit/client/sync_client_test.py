@@ -1,8 +1,8 @@
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import grpc
 import pytest
-from mock import AsyncMock
 
 from pyzeebe import SyncZeebeClient
 from pyzeebe.errors import ProcessDefinitionNotFoundError
@@ -74,6 +74,16 @@ class TestDeployProcess:
         sync_zeebe_client.deploy_process(file_path)
 
         sync_zeebe_client.client.deploy_process.assert_called_with(file_path)
+
+
+class TestDeployResource:
+    def test_calls_deploy_resource_of_zeebe_client(self, sync_zeebe_client: SyncZeebeClient):
+        sync_zeebe_client.client.deploy_resource = AsyncMock()
+        file_path = str(uuid4())
+
+        sync_zeebe_client.deploy_resource(file_path)
+
+        sync_zeebe_client.client.deploy_resource.assert_called_with(file_path, tenant_id=None)
 
 
 class TestPublishMessage:

@@ -13,7 +13,7 @@ class TaskConfig:
     def __init__(
         self,
         type: str,
-        exception_handler: ExceptionHandler,
+        exception_handler: Optional[ExceptionHandler],
         timeout_ms: int,
         max_jobs_to_activate: int,
         max_running_jobs: int,

@@ -1,11 +1,11 @@
 from random import randint
 from threading import Event
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import grpc
 import pytest
 import pytest_asyncio
-from mock import AsyncMock, MagicMock, patch
 
 from pyzeebe import Job, ZeebeClient, ZeebeWorker
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
@@ -143,6 +143,14 @@ def decorator():
         return job
 
     return AsyncMock(wraps=simple_decorator)
+
+
+@pytest.fixture
+def exception_handler():
+    async def simple_exception_handler(e: Exception, job: Job) -> None:
+        return None
+
+    return AsyncMock(wraps=simple_exception_handler)
 
 
 @pytest.fixture(scope="module")

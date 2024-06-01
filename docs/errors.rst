@@ -43,3 +43,10 @@ All ``pyzeebe`` errors inherit from :py:class:`PyZeebeError`
 .. autoexception:: pyzeebe.errors.InvalidOAuthCredentialsError
 
 .. autoexception:: pyzeebe.errors.InvalidCamundaCloudCredentialsError
+
+
+=================
+Exception Handler
+=================
+
+.. autofunction:: pyzeebe.default_exception_handler

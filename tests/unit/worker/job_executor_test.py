@@ -1,7 +1,7 @@
 import asyncio
+from unittest.mock import AsyncMock, Mock
 
 import pytest
-from mock import AsyncMock, Mock
 
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
