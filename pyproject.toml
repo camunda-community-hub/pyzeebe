@@ -39,7 +39,7 @@ responses = ">=0.23.2,<0.26.0"
 bump2version = "^1.0.1"
 sphinx-rtd-theme = "^1.2.2"
 sphinx = "^6"
-importlib-metadata = "^6.8.0"
+importlib-metadata = ">=6.8,<8.0"
 
 [tool.poetry.group.stubs.dependencies]
 types-aiofiles = ">=0.7,<24"
