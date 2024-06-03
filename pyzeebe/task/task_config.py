@@ -17,7 +17,7 @@ class TaskConfig:
         timeout_ms: int,
         max_jobs_to_activate: int,
         max_running_jobs: int,
-        variables_to_fetch: List[str],
+        variables_to_fetch: Optional[List[str]],
         single_value: bool,
         variable_name: str,
         before: List[TaskDecorator],

@@ -35,6 +35,7 @@ class TestBuildTask:
         self, single_value_task_config: TaskConfig, mocked_job_with_adapter: Job
     ):
         mocked_job_with_adapter.variables = {"x": 1}
+        single_value_task_config.variables_to_fetch = ["x"]
 
         task = task_builder.build_task(lambda x: x, single_value_task_config)
         job = await task.job_handler(mocked_job_with_adapter)
@@ -87,11 +88,41 @@ class TestBuildJobHandler:
         self, original_task_function: Callable, task_config: TaskConfig, mocked_job_with_adapter: Job
     ):
         mocked_job_with_adapter.variables = {"x": 1}
+        task_config.variables_to_fetch = ["x"]
+
         job_handler = task_builder.build_job_handler(original_task_function, task_config)
 
         await job_handler(mocked_job_with_adapter)
 
         original_task_function.assert_called_with(x=1)
+
+    @pytest.mark.asyncio
+    async def test_parameters_are_provided_to_task_with_only_job(
+        self, original_task_function: Callable, task_config: TaskConfig, mocked_job_with_adapter: Job
+    ):
+        mocked_job_with_adapter.variables = {"x": 1}
+        task_config.job_parameter_name = "job"
+        task_config.variables_to_fetch = []
+
+        job_handler = task_builder.build_job_handler(original_task_function, task_config)
+
+        await job_handler(mocked_job_with_adapter)
+
+        original_task_function.assert_called_with(job=mocked_job_with_adapter)
+
+    @pytest.mark.asyncio
+    async def test_parameters_are_provided_to_task_with_arg_and_job(
+        self, original_task_function: Callable, task_config: TaskConfig, mocked_job_with_adapter: Job
+    ):
+        mocked_job_with_adapter.variables = {"x": 1}
+        task_config.job_parameter_name = "job"
+        task_config.variables_to_fetch = ["x"]
+
+        job_handler = task_builder.build_job_handler(original_task_function, task_config)
+
+        await job_handler(mocked_job_with_adapter)
+
+        original_task_function.assert_called_with(job=mocked_job_with_adapter, x=1)
 
     @pytest.mark.asyncio
     async def test_variables_are_added_to_result(

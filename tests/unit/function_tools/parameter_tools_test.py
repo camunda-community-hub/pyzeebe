@@ -1,4 +1,4 @@
-from typing import Callable, List
+from typing import Callable, List, Optional
 
 import pytest
 
@@ -10,7 +10,7 @@ class TestGetFunctionParameters:
     @pytest.mark.parametrize(
         "fn,expected",
         [
-            (dummy_functions.no_param, []),
+            (dummy_functions.no_param, None),
             (dummy_functions.one_param, ["x"]),
             (dummy_functions.multiple_params, ["x", "y", "z"]),
             (dummy_functions.one_keyword_param, ["x"]),
@@ -19,7 +19,10 @@ class TestGetFunctionParameters:
             (dummy_functions.args_param, []),
             (dummy_functions.kwargs_param, []),
             (dummy_functions.standard_named_params, ["args", "kwargs"]),
-            (dummy_functions.lambda_no_params, []),
+            (dummy_functions.with_job_parameter, []),
+            (dummy_functions.with_job_parameter_and_param, ["x"]),
+            (dummy_functions.with_multiple_job_parameters, []),
+            (dummy_functions.lambda_no_params, None),
             (dummy_functions.lambda_one_param, ["x"]),
             (dummy_functions.lambda_multiple_params, ["x", "y", "z"]),
             (dummy_functions.lambda_one_keyword_param, ["x"]),
@@ -27,7 +30,7 @@ class TestGetFunctionParameters:
             (dummy_functions.lambda_positional_and_keyword_params, ["x", "y"]),
         ],
     )
-    def test_get_params(self, fn: Callable, expected: List[str]):
+    def test_get_params(self, fn: Callable, expected: Optional[List[str]]):
         assert parameter_tools.get_parameters_from_function(fn) == expected
 
 
