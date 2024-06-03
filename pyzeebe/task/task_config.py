@@ -1,7 +1,7 @@
-from typing import List, Optional, Type, Union
+from typing import List, Optional
 
 from pyzeebe.errors import NoVariableNameGivenError
-from pyzeebe.function_tools import async_tools, parameter_tools
+from pyzeebe.function_tools import async_tools
 from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.task.types import AsyncTaskDecorator, TaskDecorator
 
