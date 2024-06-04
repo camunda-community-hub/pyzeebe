@@ -7,7 +7,7 @@ from pyzeebe.credentials.typing import AuthMetadata
 
 
 class AuthMetadataPlugin(grpc.AuthMetadataPlugin):
-    def __init__(self, credentials: Credentials) -> None:
+    def __init__(self, *, credentials: Credentials) -> None:
         super().__init__()
         self._credentials = credentials
 
