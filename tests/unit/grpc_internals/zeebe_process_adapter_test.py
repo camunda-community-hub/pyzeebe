@@ -20,7 +20,7 @@ from tests.unit.utils.random_utils import RANDOM_RANGE
 
 @pytest.fixture(autouse=True)
 def mocked_aiofiles_open():
-    read_mock = AsyncMock(return_value=bytes())
+    read_mock = AsyncMock(return_value=b"")
 
     file_mock = AsyncMock()
     file_mock.__aenter__.return_value.read = read_mock
