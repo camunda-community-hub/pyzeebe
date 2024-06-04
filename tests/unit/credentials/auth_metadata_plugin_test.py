@@ -4,7 +4,7 @@ import grpc
 import pytest
 
 from pyzeebe import AuthMetadataPlugin
-from pyzeebe.credentials.base import Credentials
+from pyzeebe.credentials.base import CredentialsABC
 from pyzeebe.credentials.typing import CallContext
 from pyzeebe.errors.credentials_errors import InvalidOAuthCredentialsError
 
@@ -12,7 +12,7 @@ from pyzeebe.errors.credentials_errors import InvalidOAuthCredentialsError
 class TestAuthMetadataPlugin:
     @pytest.fixture()
     def credentials_mock(self) -> Mock:
-        return Mock(spec_set=Credentials)
+        return Mock(spec_set=CredentialsABC)
 
     @pytest.fixture()
     def callback_mock(self) -> Mock:

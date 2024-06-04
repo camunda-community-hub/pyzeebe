@@ -1,4 +1,4 @@
-from typing import Protocol, Tuple, Union, final
+from typing import Protocol, Tuple, Union
 
 AuthMetadata = Tuple[Tuple[str, Union[str, bytes]], ...]
 

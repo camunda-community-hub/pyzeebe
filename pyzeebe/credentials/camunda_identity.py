@@ -4,12 +4,22 @@ from typing import Any, Dict, Optional
 
 import requests
 
-from pyzeebe.credentials.base import Credentials
+from pyzeebe.credentials.base import CredentialsABC
 from pyzeebe.credentials.typing import AuthMetadata, CallContext
 from pyzeebe.errors import InvalidOAuthCredentialsError
 
 
-class CamundaIdentityCredentials(Credentials):
+class CamundaIdentityCredentials(CredentialsABC):
+    """Credentials client for Camunda Platform.
+
+    Args:
+        oauth_url (str): The Keycloak auth endpoint url.
+        client_id (str): The client id provided by Camunda Platform
+        client_secret (str): The client secret provided by Camunda Platform
+        audience (str):
+        refresh_threshold_seconds (int):
+    """
+
     def __init__(
         self,
         *,
@@ -30,14 +40,14 @@ class CamundaIdentityCredentials(Credentials):
         self._token: Optional[Dict[str, Any]] = None
         self._expires_in: Optional[datetime.datetime] = None
 
-    def expired(self) -> bool:
+    def _expired(self) -> bool:
         return (
             self._token is None
             or self._expires_in is None
             or (self._expires_in - self._refresh_threshold) < datetime.datetime.now(datetime.timezone.utc)
         )
 
-    def refresh(self) -> None:
+    def _refresh(self) -> None:
         try:
             response = requests.post(
                 self.oauth_url,
@@ -60,7 +70,17 @@ class CamundaIdentityCredentials(Credentials):
             ) from http_error
 
     def get_auth_metadata(self, context: CallContext) -> AuthMetadata:
+        """
+        Args:
+            context (grpc.AuthMetadataContext): Provides information to call credentials metadata plugins.
+
+        Returns:
+            Tuple[Tuple[str, Union[str, bytes]], ...]: The `metadata` used to construct the grpc.CallCredentials.
+
+        Raises:
+            InvalidOAuthCredentialsError: One of the provided camunda credentials is not correct
+        """
         with self._lock:
-            if self.expired() is True:
-                self.refresh()
+            if self._expired() is True:
+                self._refresh()
             return (("authorization", "Bearer {}".format(self._token)),)
