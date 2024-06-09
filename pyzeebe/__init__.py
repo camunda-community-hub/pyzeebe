@@ -3,7 +3,7 @@ __version__ = "3.0.4"
 from pyzeebe import errors
 from pyzeebe.channel import *
 from pyzeebe.client.client import ZeebeClient
-from pyzeebe.client.sync_client import SyncZeebeClient  # type: ignore
+from pyzeebe.client.sync_client import SyncZeebeClient
 from pyzeebe.credentials.base import CredentialsABC
 from pyzeebe.credentials.camunda_identity import CamundaIdentityCredentials
 from pyzeebe.credentials.plugins import AuthMetadataPlugin
@@ -14,3 +14,23 @@ from pyzeebe.task.task_config import TaskConfig
 from pyzeebe.task.types import TaskDecorator
 from pyzeebe.worker.task_router import ZeebeTaskRouter
 from pyzeebe.worker.worker import ZeebeWorker
+
+__all__ = (
+    "errors",
+    "create_camunda_cloud_channel",
+    "create_insecure_channel",
+    "create_secure_channel",
+    "ZeebeClient",
+    "SyncZeebeClient",
+    "Job",
+    "JobStatus",
+    "ExceptionHandler",
+    "TaskConfig",
+    "TaskDecorator",
+    "ZeebeTaskRouter",
+    "default_exception_handler",
+    "ZeebeWorker",
+    "CredentialsABC",
+    "CamundaIdentityCredentials",
+    "AuthMetadataPlugin",
+)

@@ -3,7 +3,7 @@ import grpc
 from pyzeebe.credentials.base import CredentialsABC
 
 
-class AuthMetadataPlugin(grpc.AuthMetadataPlugin):
+class AuthMetadataPlugin(grpc.AuthMetadataPlugin):  # type: ignore[misc]
     """Custom authentication plugin with exception catching.
 
     Args:

@@ -73,7 +73,9 @@ def _get_access_token(url: str, client_id: str, client_secret: str, audience: st
                 },
             )
             response.raise_for_status()
-            return response.json()["access_token"]
+            access_token = response.json()["access_token"]
+            assert isinstance(access_token, str)
+            return access_token
     except HTTPError as http_error:
         raise InvalidOAuthCredentialsError(url=url, client_id=client_id, audience=audience) from http_error
 

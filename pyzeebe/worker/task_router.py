@@ -1,13 +1,31 @@
 import logging
-from typing import Callable, List, Optional, Tuple
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Literal,
+    Optional,
+    Tuple,
+    TypeVar,
+    overload,
+)
 
-from pyzeebe.errors import DuplicateTaskTypeError, TaskNotFoundError
-from pyzeebe.function_tools import parameter_tools
+from typing_extensions import ParamSpec
+
+from pyzeebe.errors import BusinessError, DuplicateTaskTypeError, TaskNotFoundError
+from pyzeebe.function_tools import DictFunction, Function, parameter_tools
+from pyzeebe.job.job import Job
 from pyzeebe.task import task_builder
 from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_config import TaskConfig
 from pyzeebe.task.types import TaskDecorator
+
+P = ParamSpec("P")
+R = TypeVar("R")
+RD = TypeVar("RD", bound=Optional[Dict[str, Any]])
 
 logger = logging.getLogger(__name__)
 
@@ -30,11 +48,44 @@ class ZeebeTaskRouter:
         self._after: List[TaskDecorator] = after or []
         self.tasks: List[Task] = []
 
+    @overload
     def task(
         self,
         task_type: str,
         exception_handler: Optional[ExceptionHandler] = None,
-        variables_to_fetch: Optional[List[str]] = None,
+        variables_to_fetch: Optional[Iterable[str]] = None,
+        timeout_ms: int = 10000,
+        max_jobs_to_activate: int = 32,
+        max_running_jobs: int = 32,
+        before: Optional[List[TaskDecorator]] = None,
+        after: Optional[List[TaskDecorator]] = None,
+        *,
+        single_value: Literal[False] = False,
+    ) -> Callable[[Function[P, RD]], Function[P, RD]]:
+        ...
+
+    @overload
+    def task(
+        self,
+        task_type: str,
+        exception_handler: Optional[ExceptionHandler] = None,
+        variables_to_fetch: Optional[Iterable[str]] = None,
+        timeout_ms: int = 10000,
+        max_jobs_to_activate: int = 32,
+        max_running_jobs: int = 32,
+        before: Optional[List[TaskDecorator]] = None,
+        after: Optional[List[TaskDecorator]] = None,
+        *,
+        single_value: Literal[True],
+        variable_name: str,
+    ) -> Callable[[Function[P, R]], Function[P, R]]:
+        ...
+
+    def task(
+        self,
+        task_type: str,
+        exception_handler: Optional[ExceptionHandler] = None,
+        variables_to_fetch: Optional[Iterable[str]] = None,
         timeout_ms: int = 10000,
         max_jobs_to_activate: int = 32,
         max_running_jobs: int = 32,
@@ -42,14 +93,14 @@ class ZeebeTaskRouter:
         after: Optional[List[TaskDecorator]] = None,
         single_value: bool = False,
         variable_name: Optional[str] = None,
-    ):
+    ) -> Callable[[Function[P, R]], Function[P, R]]:
         """
         Decorator to create a task
 
         Args:
             task_type (str): The task type
             exception_handler (ExceptionHandler): Handler that will be called when a job fails.
-            variables_to_fetch (Optional[List[str]]): The variables to request from Zeebe when activating jobs.
+            variables_to_fetch (Optional[Iterable[str]]): The variables to request from Zeebe when activating jobs.
             timeout_ms (int): Maximum duration of the task in milliseconds. If the timeout is surpassed Zeebe will give up
                                 on the worker and retry it. Default: 10000 (10 seconds).
             max_jobs_to_activate (int):  Maximum amount of jobs the worker will activate in one request to the Zeebe gateway. Default: 32
@@ -67,7 +118,7 @@ class ZeebeTaskRouter:
         """
         _exception_handler = exception_handler or self._exception_handler
 
-        def task_wrapper(task_function: Callable):
+        def task_wrapper(task_function: Function[P, R]) -> Function[P, R]:
             config = TaskConfig(
                 task_type,
                 _exception_handler,
@@ -88,7 +139,7 @@ class ZeebeTaskRouter:
 
         return task_wrapper
 
-    def _add_task(self, task: Task):
+    def _add_task(self, task: Task) -> None:
         self._is_task_duplicate(task.type)
         self.tasks.append(task)
 

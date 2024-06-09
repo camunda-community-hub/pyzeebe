@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 import grpc
 
@@ -9,7 +9,7 @@ from pyzeebe.channel.utils import create_address
 def create_secure_channel(
     hostname: Optional[str] = None,
     port: Optional[int] = None,
-    channel_options: Optional[Dict] = None,
+    channel_options: Optional[Dict[str, Any]] = None,
     channel_credentials: Optional[grpc.ChannelCredentials] = None,
 ) -> grpc.aio.Channel:
     """

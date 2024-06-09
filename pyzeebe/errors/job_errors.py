@@ -2,7 +2,7 @@ from pyzeebe.errors.pyzeebe_errors import PyZeebeError
 
 
 class ActivateJobsRequestInvalidError(PyZeebeError):
-    def __init__(self, task_type: str, worker: str, timeout: int, max_jobs_to_activate: int):
+    def __init__(self, task_type: str, worker: str, timeout: int, max_jobs_to_activate: int) -> None:
         msg = "Failed to activate jobs. Reasons:"
         if task_type == "" or task_type is None:
             msg = msg + "task_type is empty, "
@@ -17,12 +17,12 @@ class ActivateJobsRequestInvalidError(PyZeebeError):
 
 
 class JobAlreadyDeactivatedError(PyZeebeError):
-    def __init__(self, job_key: int):
+    def __init__(self, job_key: int) -> None:
         super().__init__(f"Job {job_key} was already stopped (Completed/Failed/Error)")
         self.job_key = job_key
 
 
 class JobNotFoundError(PyZeebeError):
-    def __init__(self, job_key: int):
+    def __init__(self, job_key: int) -> None:
         super().__init__(f"Job {job_key} not found")
         self.job_key = job_key
