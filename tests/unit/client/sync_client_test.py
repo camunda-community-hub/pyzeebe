@@ -1,19 +1,17 @@
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import grpc
 import pytest
-from mock import AsyncMock
 
 from pyzeebe import SyncZeebeClient
 from pyzeebe.errors import ProcessDefinitionNotFoundError
 
-# Pytest doesn't play well with loop.run_until_complete unless the test has a
-# running asyncio loop
-pytestmark = pytest.mark.asyncio
-
 
 @pytest.fixture
-def sync_zeebe_client(aio_grpc_channel: grpc.aio.Channel) -> SyncZeebeClient:
+def sync_zeebe_client(event_loop, aio_grpc_channel: grpc.aio.Channel) -> SyncZeebeClient:
+    # NOTE: event_loop: pytest doesn't play well with loop.run_until_complete unless the test has a
+    # running asyncio loop
     client = SyncZeebeClient(aio_grpc_channel)
     return client
 
@@ -74,6 +72,16 @@ class TestDeployProcess:
         sync_zeebe_client.deploy_process(file_path)
 
         sync_zeebe_client.client.deploy_process.assert_called_with(file_path)
+
+
+class TestDeployResource:
+    def test_calls_deploy_resource_of_zeebe_client(self, sync_zeebe_client: SyncZeebeClient):
+        sync_zeebe_client.client.deploy_resource = AsyncMock()
+        file_path = str(uuid4())
+
+        sync_zeebe_client.deploy_resource(file_path)
+
+        sync_zeebe_client.client.deploy_resource.assert_called_with(file_path, tenant_id=None)
 
 
 class TestPublishMessage:

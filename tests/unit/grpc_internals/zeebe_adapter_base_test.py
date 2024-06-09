@@ -1,13 +1,14 @@
+from unittest.mock import AsyncMock
+
 import grpc
 import pytest
-from mock import AsyncMock
 
 from pyzeebe.errors import (
     ZeebeBackPressureError,
     ZeebeGatewayUnavailableError,
     ZeebeInternalError,
 )
-from pyzeebe.errors.zeebe_errors import UnkownGrpcStatusCodeError
+from pyzeebe.errors.zeebe_errors import UnknownGrpcStatusCodeError
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 
 
@@ -56,7 +57,7 @@ class TestHandleRpcError:
         zeebe_adapter: ZeebeAdapterBase,
     ):
         error = grpc.aio.AioRpcError("FakeGrpcStatus", None, None)
-        with pytest.raises(UnkownGrpcStatusCodeError):
+        with pytest.raises(UnknownGrpcStatusCodeError):
             await zeebe_adapter._handle_grpc_error(error)
 
     async def test_closes_after_retries_exceeded(self, zeebe_adapter: ZeebeAdapterBase):

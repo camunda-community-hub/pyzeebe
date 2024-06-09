@@ -6,11 +6,8 @@ on: [push, pull_request]
 jobs:
   type-checking:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
 
-    container: python:${{ matrix.python-version }}
+    container: python:3.8
     steps:
       - uses: actions/checkout@v2
       - name: Init python poetry action
@@ -25,11 +22,8 @@ jobs:
 
   import-checking:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
 
-    container: python:${{ matrix.python-version }}
+    container: python:3.8
     steps:
       - uses: actions/checkout@v2
       - name: Init python poetry action
@@ -44,11 +38,8 @@ jobs:
 
   format-checking:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
 
-    container: python:${{ matrix.python-version }}
+    container: python:3.8
     steps:
       - uses: actions/checkout@v2
       - name: Init python poetry action

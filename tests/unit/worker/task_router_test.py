@@ -1,13 +1,14 @@
+from unittest import mock
 from uuid import uuid4
 
-import mock
 import pytest
 
 from pyzeebe import TaskDecorator
 from pyzeebe.errors import BusinessError, DuplicateTaskTypeError, TaskNotFoundError
 from pyzeebe.job.job import Job
+from pyzeebe.task.exception_handler import ExceptionHandler, default_exception_handler
 from pyzeebe.task.task import Task
-from pyzeebe.worker.task_router import ZeebeTaskRouter, default_exception_handler
+from pyzeebe.worker.task_router import ZeebeTaskRouter
 from tests.unit.utils.random_utils import randint
 
 
@@ -17,6 +18,16 @@ def test_get_task(router: ZeebeTaskRouter, task: Task):
     found_task = router.get_task(task.type)
 
     assert found_task == task
+
+
+def test_task_inherits_exception_handler(router: ZeebeTaskRouter, task: Task):
+    router._exception_handler = str
+    router.task(task.type)(task.original_function)
+
+    found_task = router.get_task(task.type)
+    found_handler = found_task.config.exception_handler
+
+    assert found_handler == str
 
 
 def test_get_fake_task(router: ZeebeTaskRouter):
@@ -90,6 +101,12 @@ def test_add_after_decorator(router: ZeebeTaskRouter, decorator: TaskDecorator):
     assert len(router._after) == 1
 
 
+def test_set_exception_handler(router: ZeebeTaskRouter, exception_handler: ExceptionHandler):
+    router.exception_handler(exception_handler)
+
+    assert router._exception_handler is exception_handler
+
+
 def test_add_before_decorator_through_constructor(decorator: TaskDecorator):
     router = ZeebeTaskRouter(before=[decorator])
 
@@ -102,9 +119,15 @@ def test_add_after_decorator_through_constructor(decorator: TaskDecorator):
     assert len(router._after) == 1
 
 
+def test_set_exception_handler_through_constructor(exception_handler: ExceptionHandler):
+    router = ZeebeTaskRouter(exception_handler=exception_handler)
+
+    assert router._exception_handler is exception_handler
+
+
 @pytest.mark.asyncio
 async def test_default_exception_handler_logs_a_warning(mocked_job_with_adapter: Job):
-    with mock.patch("pyzeebe.worker.task_router.logger.warning") as logging_mock:
+    with mock.patch("pyzeebe.task.exception_handler.logger.warning") as logging_mock:
         await default_exception_handler(Exception(), mocked_job_with_adapter)
 
         mocked_job_with_adapter.set_failure_status.assert_called()
@@ -122,7 +145,7 @@ async def test_default_exception_handler_uses_business_error(job_without_adapter
 
 @pytest.mark.asyncio
 async def test_default_exception_handler_warns_of_job_failure(job_without_adapter):
-    with mock.patch("pyzeebe.worker.task_router.logger.warning") as logging_mock:
+    with mock.patch("pyzeebe.task.exception_handler.logger.warning") as logging_mock:
         with mock.patch("pyzeebe.job.job.Job.set_error_status"):
             exception = BusinessError("custom-error-code")
             await default_exception_handler(exception, job_without_adapter)

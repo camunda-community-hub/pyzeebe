@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from typing import List, Optional
 
 from pyzeebe.errors import (
     ActivateJobsRequestInvalidError,
@@ -9,6 +10,7 @@ from pyzeebe.errors import (
     ZeebeDeadlineExceeded,
 )
 from pyzeebe.grpc_internals.zeebe_job_adapter import ZeebeJobAdapter
+from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_state import TaskState
 
@@ -20,12 +22,13 @@ class JobPoller:
         self,
         zeebe_adapter: ZeebeJobAdapter,
         task: Task,
-        queue: asyncio.Queue,
+        queue: "asyncio.Queue[Job]",
         worker_name: str,
         request_timeout: int,
         task_state: TaskState,
         poll_retry_delay: int,
-    ):
+        tenant_ids: Optional[List[str]],
+    ) -> None:
         self.zeebe_adapter = zeebe_adapter
         self.task = task
         self.queue = queue
@@ -33,13 +36,14 @@ class JobPoller:
         self.request_timeout = request_timeout
         self.task_state = task_state
         self.poll_retry_delay = poll_retry_delay
+        self.tenant_ids = tenant_ids
         self.stop_event = asyncio.Event()
 
-    async def poll(self):
+    async def poll(self) -> None:
         while self.should_poll():
             await self.activate_max_jobs()
 
-    async def activate_max_jobs(self):
+    async def activate_max_jobs(self) -> None:
         if self.calculate_max_jobs_to_activate() > 0:
             await self.poll_once()
         else:
@@ -50,15 +54,16 @@ class JobPoller:
             )
             await asyncio.sleep(self.poll_retry_delay)
 
-    async def poll_once(self):
+    async def poll_once(self) -> None:
         try:
             jobs = self.zeebe_adapter.activate_jobs(
                 task_type=self.task.type,
                 worker=self.worker_name,
                 timeout=self.task.config.timeout_ms,
                 max_jobs_to_activate=self.calculate_max_jobs_to_activate(),
-                variables_to_fetch=self.task.config.variables_to_fetch,
+                variables_to_fetch=self.task.config.variables_to_fetch or [],
                 request_timeout=self.request_timeout,
+                tenant_ids=self.tenant_ids,
             )
             async for job in jobs:
                 self.task_state.add(job)
@@ -85,6 +90,6 @@ class JobPoller:
         worker_max_jobs = self.task.config.max_running_jobs - self.task_state.count_active()
         return min(worker_max_jobs, self.task.config.max_jobs_to_activate)
 
-    async def stop(self):
+    async def stop(self) -> None:
         self.stop_event.set()
         await self.queue.join()

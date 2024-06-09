@@ -26,14 +26,20 @@ copyright = "2020, Jonatan Martens"
 author = "Jonatan Martens"
 
 # The full version, including alpha/beta/rc tags
-release = "3.0.4"
+release = "4.0.0rc1"
 
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["sphinx_rtd_theme", "sphinx.ext.autodoc", "sphinx.ext.napoleon", "sphinx.ext.autosectionlabel"]
+extensions = [
+    "sphinx_rtd_theme",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.autosectionlabel",
+    "sphinx.ext.intersphinx",
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -55,6 +61,11 @@ html_theme = "sphinx_rtd_theme"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-version = "3.0.4"
+version = "4.0.0rc1"
 
 master_doc = "index"
+
+# Looks for objects in external projects
+intersphinx_mapping = {
+    "grpc": ("https://grpc.github.io/grpc/python/", None),
+}

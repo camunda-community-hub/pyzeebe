@@ -1,8 +1,21 @@
 import logging
-from typing import Callable, List, Optional, Tuple
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Literal,
+    Optional,
+    Tuple,
+    TypeVar,
+    overload,
+)
+
+from typing_extensions import ParamSpec
 
 from pyzeebe.errors import BusinessError, DuplicateTaskTypeError, TaskNotFoundError
-from pyzeebe.function_tools import parameter_tools
+from pyzeebe.function_tools import DictFunction, Function, parameter_tools
 from pyzeebe.job.job import Job
 from pyzeebe.task import task_builder
 from pyzeebe.task.exception_handler import ExceptionHandler
@@ -10,33 +23,69 @@ from pyzeebe.task.task import Task
 from pyzeebe.task.task_config import TaskConfig
 from pyzeebe.task.types import TaskDecorator
 
+P = ParamSpec("P")
+R = TypeVar("R")
+RD = TypeVar("RD", bound=Optional[Dict[str, Any]])
+
 logger = logging.getLogger(__name__)
 
 
-async def default_exception_handler(e: Exception, job: Job) -> None:
-    logger.warning("Task type: %s - failed job %s. Error: %s.", job.type, job, e)
-    if isinstance(e, BusinessError):
-        await job.set_error_status(f"Failed job. Recoverable error: {e}", error_code=e.error_code)
-    else:
-        await job.set_failure_status(f"Failed job. Error: {e}")
-
-
 class ZeebeTaskRouter:
-    def __init__(self, before: Optional[List[TaskDecorator]] = None, after: Optional[List[TaskDecorator]] = None):
+    def __init__(
+        self,
+        before: Optional[List[TaskDecorator]] = None,
+        after: Optional[List[TaskDecorator]] = None,
+        exception_handler: Optional[ExceptionHandler] = None,
+    ):
         """
         Args:
             before (List[TaskDecorator]): Decorators to be performed before each task
             after (List[TaskDecorator]): Decorators to be performed after each task
+            exception_handler (ExceptionHandler): Handler that will be called when a job fails.
         """
+        self._exception_handler = exception_handler
         self._before: List[TaskDecorator] = before or []
         self._after: List[TaskDecorator] = after or []
         self.tasks: List[Task] = []
 
+    @overload
     def task(
         self,
         task_type: str,
-        exception_handler: ExceptionHandler = default_exception_handler,
-        variables_to_fetch: Optional[List[str]] = None,
+        exception_handler: Optional[ExceptionHandler] = None,
+        variables_to_fetch: Optional[Iterable[str]] = None,
+        timeout_ms: int = 10000,
+        max_jobs_to_activate: int = 32,
+        max_running_jobs: int = 32,
+        before: Optional[List[TaskDecorator]] = None,
+        after: Optional[List[TaskDecorator]] = None,
+        *,
+        single_value: Literal[False] = False,
+    ) -> Callable[[Function[P, RD]], Function[P, RD]]:
+        ...
+
+    @overload
+    def task(
+        self,
+        task_type: str,
+        exception_handler: Optional[ExceptionHandler] = None,
+        variables_to_fetch: Optional[Iterable[str]] = None,
+        timeout_ms: int = 10000,
+        max_jobs_to_activate: int = 32,
+        max_running_jobs: int = 32,
+        before: Optional[List[TaskDecorator]] = None,
+        after: Optional[List[TaskDecorator]] = None,
+        *,
+        single_value: Literal[True],
+        variable_name: str,
+    ) -> Callable[[Function[P, R]], Function[P, R]]:
+        ...
+
+    def task(
+        self,
+        task_type: str,
+        exception_handler: Optional[ExceptionHandler] = None,
+        variables_to_fetch: Optional[Iterable[str]] = None,
         timeout_ms: int = 10000,
         max_jobs_to_activate: int = 32,
         max_running_jobs: int = 32,
@@ -44,14 +93,14 @@ class ZeebeTaskRouter:
         after: Optional[List[TaskDecorator]] = None,
         single_value: bool = False,
         variable_name: Optional[str] = None,
-    ):
+    ) -> Callable[[Function[P, R]], Function[P, R]]:
         """
         Decorator to create a task
 
         Args:
             task_type (str): The task type
             exception_handler (ExceptionHandler): Handler that will be called when a job fails.
-            variables_to_fetch (Optional[List[str]]): The variables to request from Zeebe when activating jobs.
+            variables_to_fetch (Optional[Iterable[str]]): The variables to request from Zeebe when activating jobs.
             timeout_ms (int): Maximum duration of the task in milliseconds. If the timeout is surpassed Zeebe will give up
                                 on the worker and retry it. Default: 10000 (10 seconds).
             max_jobs_to_activate (int):  Maximum amount of jobs the worker will activate in one request to the Zeebe gateway. Default: 32
@@ -67,11 +116,12 @@ class ZeebeTaskRouter:
             DuplicateTaskTypeError: If a task from the router already exists in the worker
             NoVariableNameGivenError: When single_value is set, but no variable_name is given
         """
+        _exception_handler = exception_handler or self._exception_handler
 
-        def task_wrapper(task_function: Callable):
+        def task_wrapper(task_function: Function[P, R]) -> Function[P, R]:
             config = TaskConfig(
                 task_type,
-                exception_handler,
+                _exception_handler,
                 timeout_ms,
                 max_jobs_to_activate,
                 max_running_jobs,
@@ -89,14 +139,14 @@ class ZeebeTaskRouter:
 
         return task_wrapper
 
-    def _add_task(self, task: Task):
+    def _add_task(self, task: Task) -> None:
         self._is_task_duplicate(task.type)
         self.tasks.append(task)
 
     def _add_decorators_to_config(self, config: TaskConfig) -> TaskConfig:
         new_task_config = TaskConfig(
             type=config.type,
-            exception_handler=config.exception_handler,
+            exception_handler=config.exception_handler or self._exception_handler,
             timeout_ms=config.timeout_ms,
             max_jobs_to_activate=config.max_jobs_to_activate,
             max_running_jobs=config.max_running_jobs,
@@ -132,6 +182,15 @@ class ZeebeTaskRouter:
             decorators (Iterable[TaskDecorator]): The decorators to be performed after each job is run
         """
         self._after.extend(decorators)
+
+    def exception_handler(self, exception_handler: ExceptionHandler) -> None:
+        """
+        Add exception handler to be called when a job fails
+
+        Args:
+            exception_handler (ExceptionHandler): Handler that will be called when a job fails.
+        """
+        self._exception_handler = exception_handler
 
     def remove_task(self, task_type: str) -> Task:
         """

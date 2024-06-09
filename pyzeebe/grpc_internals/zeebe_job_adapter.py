@@ -1,9 +1,10 @@
 import json
 import logging
-from typing import AsyncGenerator, Dict, List
+from typing import AsyncGenerator, Iterable, Optional
 
 import grpc
 from zeebe_grpc.gateway_pb2 import (
+    ActivatedJob,
     ActivateJobsRequest,
     CompleteJobRequest,
     CompleteJobResponse,
@@ -21,6 +22,7 @@ from pyzeebe.errors import (
 from pyzeebe.grpc_internals.grpc_utils import is_error_status
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 from pyzeebe.job.job import Job
+from pyzeebe.types import Variables
 
 logger = logging.getLogger(__name__)
 
@@ -33,8 +35,9 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
         worker: str,
         timeout: int,
         max_jobs_to_activate: int,
-        variables_to_fetch: List[str],
+        variables_to_fetch: Iterable[str],
         request_timeout: int,
+        tenant_ids: Optional[Iterable[str]] = None,
     ) -> AsyncGenerator[Job, None]:
         try:
             grpc_request_timeout = request_timeout / 1000 * 2 if request_timeout > 0 else DEFAULT_GRPC_REQUEST_TIMEOUT
@@ -46,6 +49,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
                     maxJobsToActivate=max_jobs_to_activate,
                     fetchVariable=variables_to_fetch,
                     requestTimeout=request_timeout,
+                    tenantIds=tenant_ids,
                 ),
                 timeout=grpc_request_timeout,
             ):
@@ -58,7 +62,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
                 raise ActivateJobsRequestInvalidError(task_type, worker, timeout, max_jobs_to_activate) from grpc_error
             await self._handle_grpc_error(grpc_error)
 
-    def _create_job_from_raw_job(self, response) -> Job:
+    def _create_job_from_raw_job(self, response: ActivatedJob) -> Job:
         return Job(
             key=response.key,
             type=response.type,
@@ -73,10 +77,11 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
             retries=response.retries,
             deadline=response.deadline,
             variables=json.loads(response.variables),
-            zeebe_adapter=self,
+            tenant_id=response.tenantId,
+            zeebe_adapter=self,  # type: ignore[arg-type]
         )
 
-    async def complete_job(self, job_key: int, variables: Dict) -> CompleteJobResponse:
+    async def complete_job(self, job_key: int, variables: Variables) -> CompleteJobResponse:
         try:
             return await self._gateway_stub.CompleteJob(
                 CompleteJobRequest(jobKey=job_key, variables=json.dumps(variables))
@@ -88,10 +93,18 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
                 raise JobAlreadyDeactivatedError(job_key=job_key) from grpc_error
             await self._handle_grpc_error(grpc_error)
 
-    async def fail_job(self, job_key: int, retries: int, message: str) -> FailJobResponse:
+    async def fail_job(
+        self, job_key: int, retries: int, message: str, retry_back_off_ms: int, variables: Variables
+    ) -> FailJobResponse:
         try:
             return await self._gateway_stub.FailJob(
-                FailJobRequest(jobKey=job_key, retries=retries, errorMessage=message)
+                FailJobRequest(
+                    jobKey=job_key,
+                    retries=retries,
+                    errorMessage=message,
+                    retryBackOff=retry_back_off_ms,
+                    variables=json.dumps(variables),
+                )
             )
         except grpc.aio.AioRpcError as grpc_error:
             if is_error_status(grpc_error, grpc.StatusCode.NOT_FOUND):
@@ -100,10 +113,17 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
                 raise JobAlreadyDeactivatedError(job_key=job_key) from grpc_error
             await self._handle_grpc_error(grpc_error)
 
-    async def throw_error(self, job_key: int, message: str, error_code: str = "") -> ThrowErrorResponse:
+    async def throw_error(
+        self, job_key: int, message: str, variables: Variables, error_code: str = ""
+    ) -> ThrowErrorResponse:
         try:
             return await self._gateway_stub.ThrowError(
-                ThrowErrorRequest(jobKey=job_key, errorMessage=message, errorCode=error_code)
+                ThrowErrorRequest(
+                    jobKey=job_key,
+                    errorMessage=message,
+                    errorCode=error_code,
+                    variables=json.dumps(variables),
+                )
             )
         except grpc.aio.AioRpcError as grpc_error:
             if is_error_status(grpc_error, grpc.StatusCode.NOT_FOUND):

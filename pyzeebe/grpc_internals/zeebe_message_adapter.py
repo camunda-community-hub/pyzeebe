@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Optional
+from typing import Optional
 
 import grpc
 from zeebe_grpc.gateway_pb2 import PublishMessageRequest, PublishMessageResponse
@@ -7,6 +7,7 @@ from zeebe_grpc.gateway_pb2 import PublishMessageRequest, PublishMessageResponse
 from pyzeebe.errors import MessageAlreadyExistsError
 from pyzeebe.grpc_internals.grpc_utils import is_error_status
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
+from pyzeebe.types import Variables
 
 
 class ZeebeMessageAdapter(ZeebeAdapterBase):
@@ -15,8 +16,9 @@ class ZeebeMessageAdapter(ZeebeAdapterBase):
         name: str,
         correlation_key: str,
         time_to_live_in_milliseconds: int,
-        variables: Dict,
+        variables: Variables,
         message_id: Optional[str] = None,
+        tenant_id: Optional[str] = None,
     ) -> PublishMessageResponse:
         try:
             return await self._gateway_stub.PublishMessage(
@@ -26,6 +28,7 @@ class ZeebeMessageAdapter(ZeebeAdapterBase):
                     messageId=message_id,
                     timeToLive=time_to_live_in_milliseconds,
                     variables=json.dumps(variables),
+                    tenantId=tenant_id,
                 )
             )
         except grpc.aio.AioRpcError as grpc_error:

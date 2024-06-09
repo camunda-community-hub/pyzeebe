@@ -85,6 +85,11 @@ Now every time ``my_task`` is called (and then fails), ``my_exception_handler`` 
 
 This tells Zeebe that the job failed. The job will then be retried (if configured in process definition).
 
+.. note::
+    The exception handler can also be set via :py:class:`pyzeebe.ZeebeWorker` or :py:class:`pyzeebe.ZeebeTaskRouter`.
+    Pyzeebe will try to find the exception handler in the following order: 
+    ``Worker`` -> ``Router`` -> ``Task``  -> :py:func:`pyzeebe.default_exception_handler`
+
 
 Task timeout
 ------------

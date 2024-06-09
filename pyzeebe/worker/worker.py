@@ -7,7 +7,9 @@ import grpc
 
 from pyzeebe import TaskDecorator
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
+from pyzeebe.job.job import Job
 from pyzeebe.task import task_builder
+from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.worker.job_executor import JobExecutor
 from pyzeebe.worker.job_poller import JobPoller
 from pyzeebe.worker.task_router import ZeebeTaskRouter
@@ -29,6 +31,8 @@ class ZeebeWorker(ZeebeTaskRouter):
         max_connection_retries: int = 10,
         watcher_max_errors_factor: int = 3,
         poll_retry_delay: int = 5,
+        tenant_ids: Optional[List[str]] = None,
+        exception_handler: Optional[ExceptionHandler] = None,
     ):
         """
         Args:
@@ -37,18 +41,21 @@ class ZeebeWorker(ZeebeTaskRouter):
             request_timeout (int): Longpolling timeout for getting tasks from zeebe. If 0 default value is used
             before (List[TaskDecorator]): Decorators to be performed before each task
             after (List[TaskDecorator]): Decorators to be performed after each task
+            exception_handler (ExceptionHandler): Handler that will be called when a job fails.
             max_connection_retries (int): Amount of connection retries before worker gives up on connecting to zeebe. To setup with infinite retries use -1
             watcher_max_errors_factor (int): Number of consecutive errors for a task watcher will accept before raising MaxConsecutiveTaskThreadError
             poll_retry_delay (int): The number of seconds to wait before attempting to poll again when reaching max amount of running jobs
+            tenant_ids (List[str]): A list of tenant IDs for which to activate jobs. New in Zeebe 8.3.
         """
-        super().__init__(before, after)
+        super().__init__(before, after, exception_handler)
         self.zeebe_adapter = ZeebeAdapter(grpc_channel, max_connection_retries)
         self.name = name or socket.gethostname()
         self.request_timeout = request_timeout
         self.watcher_max_errors_factor = watcher_max_errors_factor
         self._watcher_thread = None
         self.poll_retry_delay = poll_retry_delay
-        self._work_task: Optional[asyncio.Future] = None
+        self.tenant_ids = tenant_ids
+        self._work_task: "Optional[asyncio.Future[List[None]]]" = None
         self._job_pollers: List[JobPoller] = []
         self._job_executors: List[JobExecutor] = []
 
@@ -61,13 +68,13 @@ class ZeebeWorker(ZeebeTaskRouter):
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
-            UnkownGrpcStatusCodeError: If Zeebe returns an unexpected status code
+            UnknownGrpcStatusCodeError: If Zeebe returns an unexpected status code
 
         """
         self._job_executors, self._job_pollers = [], []
 
         for task in self.tasks:
-            jobs_queue: asyncio.Queue = asyncio.Queue()
+            jobs_queue: "asyncio.Queue[Job]" = asyncio.Queue()
             task_state = TaskState()
 
             poller = JobPoller(
@@ -78,6 +85,7 @@ class ZeebeWorker(ZeebeTaskRouter):
                 self.request_timeout,
                 task_state,
                 self.poll_retry_delay,
+                self.tenant_ids,
             )
             executor = JobExecutor(task, jobs_queue, task_state)
             self._job_pollers.append(poller)

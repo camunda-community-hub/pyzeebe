@@ -9,11 +9,11 @@ from pyzeebe.worker.task_state import TaskState
 
 logger = logging.getLogger(__name__)
 
-AsyncTaskCallback = Callable[[asyncio.Future], None]
+AsyncTaskCallback = Callable[["asyncio.Future[None]"], None]
 
 
 class JobExecutor:
-    def __init__(self, task: Task, jobs: asyncio.Queue, task_state: TaskState):
+    def __init__(self, task: Task, jobs: "asyncio.Queue[Job]", task_state: TaskState):
         self.task = task
         self.jobs = jobs
         self.task_state = task_state
@@ -43,7 +43,7 @@ class JobExecutor:
 
 
 def create_job_callback(job_executor: JobExecutor, job: Job) -> AsyncTaskCallback:
-    def callback(_):
+    def callback(_: "asyncio.Future[None]") -> None:
         job_executor.jobs.task_done()
         job_executor.task_state.remove(job)
 
