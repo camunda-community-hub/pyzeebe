@@ -16,8 +16,8 @@ class CamundaIdentityCredentials(CredentialsABC):
         oauth_url (str): The Keycloak auth endpoint url.
         client_id (str): The client id provided by Camunda Platform
         client_secret (str): The client secret provided by Camunda Platform
-        audience (str):
-        refresh_threshold_seconds (int):
+        audience (str): Audience for Zeebe. Default: zeebe-api
+        refresh_threshold_seconds (int): Will try to refresh token if it expires in this number of seconds or less. Default: 20
     """
 
     def __init__(
@@ -75,7 +75,7 @@ class CamundaIdentityCredentials(CredentialsABC):
             context (grpc.AuthMetadataContext): Provides information to call credentials metadata plugins.
 
         Returns:
-            Tuple[Tuple[str, Union[str, bytes]], ...]: The `metadata` used to construct the grpc.CallCredentials.
+            Tuple[Tuple[str, Union[str, bytes]], ...]: The `metadata` used to construct the :py:class:`grpc.CallCredentials`.
 
         Raises:
             InvalidOAuthCredentialsError: One of the provided camunda credentials is not correct

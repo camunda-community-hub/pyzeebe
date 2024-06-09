@@ -1,16 +1,13 @@
-from typing import Optional
-
 import grpc
 
 from pyzeebe.credentials.base import CredentialsABC
-from pyzeebe.credentials.typing import AuthMetadata
 
 
 class AuthMetadataPlugin(grpc.AuthMetadataPlugin):
-    """TODO.
+    """Custom authentication plugin with exception catching.
 
     Args:
-        credentials (CredentialsABC): TODO
+        credentials (CredentialsABC): A credentials manager.
     """
 
     def __init__(self, *, credentials: CredentialsABC) -> None:
@@ -30,11 +27,6 @@ class AuthMetadataPlugin(grpc.AuthMetadataPlugin):
         try:
             metadata = self._credentials.get_auth_metadata(context)
         except Exception as e:
-            self._sign_request(callback, (), e)
+            callback((), e)
         else:
-            self._sign_request(callback, metadata, None)
-
-    def _sign_request(
-        self, callback: grpc.AuthMetadataPluginCallback, metadata: AuthMetadata, error: Optional[Exception]
-    ) -> None:
-        callback(metadata, error)
+            callback(metadata, None)

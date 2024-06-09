@@ -4,7 +4,7 @@ from pyzeebe.credentials.typing import AuthMetadata, CallContext
 
 
 class CredentialsABC(abc.ABC):
-    """TODO."""
+    """A specification for credentials manager. Passed to :py:class:`AuthMetadataPlugin`."""
 
     @abc.abstractmethod
     def get_auth_metadata(self, context: CallContext) -> AuthMetadata:
@@ -13,6 +13,6 @@ class CredentialsABC(abc.ABC):
             context (grpc.AuthMetadataContext): Provides information to call credentials metadata plugins.
 
         Returns:
-            Tuple[Tuple[str, Union[str, bytes]], ...]: The `metadata` used to construct the grpc.CallCredentials.
+            Tuple[Tuple[str, Union[str, bytes]], ...]: The `metadata` used to construct the :py:class:`grpc.CallCredentials`.
         """
         raise NotImplementedError
