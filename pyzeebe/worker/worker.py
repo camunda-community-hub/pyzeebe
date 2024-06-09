@@ -68,7 +68,7 @@ class ZeebeWorker(ZeebeTaskRouter):
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
-            UnkownGrpcStatusCodeError: If Zeebe returns an unexpected status code
+            UnknownGrpcStatusCodeError: If Zeebe returns an unexpected status code
 
         """
         self._job_executors, self._job_pollers = [], []
