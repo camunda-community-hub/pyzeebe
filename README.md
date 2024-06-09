@@ -20,6 +20,7 @@ Zeebe version support:
 
 | Pyzeebe version | Tested Zeebe versions  |
 | :-------------: | ---------------------- |
+|      4.x.x      | 1.3, 8.1, 8.2, 8.3, 8.4 |
 |      3.x.x      | 1.0.0                  |
 |      2.x.x      | 0.23, 0.24, 0.25, 0.26 |
 |      1.x.x      | 0.23, 0.24             |
