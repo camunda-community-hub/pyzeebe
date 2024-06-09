@@ -44,7 +44,7 @@ All ``pyzeebe`` errors inherit from :py:class:`PyZeebeError`
 
 .. autoexception:: pyzeebe.errors.InvalidCamundaCloudCredentialsError
 
-.. autoexception:: pyzeebe.errors.UnkownGrpcStatusCodeError
+.. autoexception:: pyzeebe.errors.UnknownGrpcStatusCodeError
 
 
 =================
