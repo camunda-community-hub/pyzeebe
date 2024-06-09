@@ -7,6 +7,7 @@ import grpc
 
 from pyzeebe import TaskDecorator
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
+from pyzeebe.job.job import Job
 from pyzeebe.task import task_builder
 from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.worker.job_executor import JobExecutor
@@ -54,7 +55,7 @@ class ZeebeWorker(ZeebeTaskRouter):
         self._watcher_thread = None
         self.poll_retry_delay = poll_retry_delay
         self.tenant_ids = tenant_ids
-        self._work_task: Optional[asyncio.Future] = None
+        self._work_task: "Optional[asyncio.Future[List[None]]]" = None
         self._job_pollers: List[JobPoller] = []
         self._job_executors: List[JobExecutor] = []
 
@@ -67,13 +68,13 @@ class ZeebeWorker(ZeebeTaskRouter):
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
-            UnkownGrpcStatusCodeError: If Zeebe returns an unexpected status code
+            UnknownGrpcStatusCodeError: If Zeebe returns an unexpected status code
 
         """
         self._job_executors, self._job_pollers = [], []
 
         for task in self.tasks:
-            jobs_queue: asyncio.Queue = asyncio.Queue()
+            jobs_queue: "asyncio.Queue[Job]" = asyncio.Queue()
             task_state = TaskState()
 
             poller = JobPoller(

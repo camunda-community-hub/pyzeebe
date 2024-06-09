@@ -44,6 +44,22 @@ Example:
     channel = create_secure_channel(channel_credentials=credentials)
 
 
+Example with oauth2 (like Camunda Identity):
+
+.. code-block:: python
+
+    import grpc
+    from pyzeebe import create_secure_channel
+    from pyzeebe import AuthMetadataPlugin, CamundaIdentityCredentials
+
+
+    credentials = CamundaIdentityCredentials(oauth_url=<...>, client_id=<...>, client_secret=<...>, audience=<...>)
+    call_credentials = grpc.metadata_call_credentials(AuthMetadataPlugin(credentials=credentials))
+    ssl_credentials = grpc.ssl_channel_credentials(root_certificates="<root_certificate>", private_key="<private_key>")
+    channel_credentials = grpc.composite_channel_credentials(ssl_credentials, call_credentials)
+    channel = create_secure_channel(channel_credentials=channel_credentials)
+
+
 Camunda Cloud
 -------------
 
@@ -59,3 +75,19 @@ Example:
 
     
     channel = create_camunda_cloud_channel("client_id", "client_secret", "cluster_id")
+
+
+Credentials
+-----------
+
+.. autoclass:: pyzeebe.AuthMetadataPlugin
+   :members:
+   :undoc-members:
+
+.. autoclass:: pyzeebe.CredentialsABC
+   :members:
+   :undoc-members:
+
+.. autoclass:: pyzeebe.CamundaIdentityCredentials
+   :members:
+   :undoc-members:

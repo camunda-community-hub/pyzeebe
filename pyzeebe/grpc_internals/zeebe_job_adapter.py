@@ -1,9 +1,10 @@
 import json
 import logging
-from typing import AsyncGenerator, Dict, List, Optional
+from typing import AsyncGenerator, Iterable, Optional
 
 import grpc
 from zeebe_grpc.gateway_pb2 import (
+    ActivatedJob,
     ActivateJobsRequest,
     CompleteJobRequest,
     CompleteJobResponse,
@@ -21,6 +22,7 @@ from pyzeebe.errors import (
 from pyzeebe.grpc_internals.grpc_utils import is_error_status
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 from pyzeebe.job.job import Job
+from pyzeebe.types import Variables
 
 logger = logging.getLogger(__name__)
 
@@ -32,9 +34,9 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
         worker: str,
         timeout: int,
         max_jobs_to_activate: int,
-        variables_to_fetch: List[str],
+        variables_to_fetch: Iterable[str],
         request_timeout: int,
-        tenant_ids: Optional[List[str]] = None,
+        tenant_ids: Optional[Iterable[str]] = None,
     ) -> AsyncGenerator[Job, None]:
         try:
             async for response in self._gateway_stub.ActivateJobs(
@@ -57,7 +59,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
                 raise ActivateJobsRequestInvalidError(task_type, worker, timeout, max_jobs_to_activate) from grpc_error
             await self._handle_grpc_error(grpc_error)
 
-    def _create_job_from_raw_job(self, response) -> Job:
+    def _create_job_from_raw_job(self, response: ActivatedJob) -> Job:
         return Job(
             key=response.key,
             type=response.type,
@@ -73,10 +75,10 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
             deadline=response.deadline,
             variables=json.loads(response.variables),
             tenant_id=response.tenantId,
-            zeebe_adapter=self,
+            zeebe_adapter=self,  # type: ignore[arg-type]
         )
 
-    async def complete_job(self, job_key: int, variables: Dict) -> CompleteJobResponse:
+    async def complete_job(self, job_key: int, variables: Variables) -> CompleteJobResponse:
         try:
             return await self._gateway_stub.CompleteJob(
                 CompleteJobRequest(jobKey=job_key, variables=json.dumps(variables))
@@ -89,7 +91,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
             await self._handle_grpc_error(grpc_error)
 
     async def fail_job(
-        self, job_key: int, retries: int, message: str, retry_back_off_ms: int, variables: Dict
+        self, job_key: int, retries: int, message: str, retry_back_off_ms: int, variables: Variables
     ) -> FailJobResponse:
         try:
             return await self._gateway_stub.FailJob(
@@ -109,7 +111,7 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
             await self._handle_grpc_error(grpc_error)
 
     async def throw_error(
-        self, job_key: int, message: str, variables: Dict, error_code: str = ""
+        self, job_key: int, message: str, variables: Variables, error_code: str = ""
     ) -> ThrowErrorResponse:
         try:
             return await self._gateway_stub.ThrowError(

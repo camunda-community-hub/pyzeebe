@@ -1,15 +1,16 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, Iterable, Optional, Tuple
 
 import grpc
 from typing_extensions import deprecated
 
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
+from pyzeebe.types import Variables
 
 
-class ZeebeClient(object):
+class ZeebeClient:
     """A zeebe client that can connect to a zeebe instance and perform actions."""
 
-    def __init__(self, grpc_channel: grpc.aio.Channel, max_connection_retries: int = 10):
+    def __init__(self, grpc_channel: grpc.aio.Channel, max_connection_retries: int = 10) -> None:
         """
         Args:
             grpc_channel (grpc.aio.Channel): GRPC Channel connected to a Zeebe gateway
@@ -19,7 +20,11 @@ class ZeebeClient(object):
         self.zeebe_adapter = ZeebeAdapter(grpc_channel, max_connection_retries)
 
     async def run_process(
-        self, bpmn_process_id: str, variables: Optional[Dict] = None, version: int = -1, tenant_id: Optional[str] = None
+        self,
+        bpmn_process_id: str,
+        variables: Optional[Variables] = None,
+        version: int = -1,
+        tenant_id: Optional[str] = None,
     ) -> int:
         """
         Run process
@@ -40,7 +45,7 @@ class ZeebeClient(object):
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
-            UnkownGrpcStatusCodeError: If Zeebe returns an unexpected status code
+            UnknownGrpcStatusCodeError: If Zeebe returns an unexpected status code
 
         """
         return await self.zeebe_adapter.create_process_instance(
@@ -50,12 +55,12 @@ class ZeebeClient(object):
     async def run_process_with_result(
         self,
         bpmn_process_id: str,
-        variables: Optional[Dict] = None,
+        variables: Optional[Variables] = None,
         version: int = -1,
         timeout: int = 0,
-        variables_to_fetch: Optional[List[str]] = None,
+        variables_to_fetch: Optional[Iterable[str]] = None,
         tenant_id: Optional[str] = None,
-    ) -> Tuple[int, Dict]:
+    ) -> Tuple[int, Dict[str, Any]]:
         """
         Run process and wait for the result.
 
@@ -78,7 +83,7 @@ class ZeebeClient(object):
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
-            UnkownGrpcStatusCodeError: If Zeebe returns an unexpected status code
+            UnknownGrpcStatusCodeError: If Zeebe returns an unexpected status code
 
         """
         return await self.zeebe_adapter.create_process_instance_with_result(
@@ -105,7 +110,7 @@ class ZeebeClient(object):
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
-            UnkownGrpcStatusCodeError: If Zeebe returns an unexpected status code
+            UnknownGrpcStatusCodeError: If Zeebe returns an unexpected status code
 
         """
         await self.zeebe_adapter.cancel_process_instance(process_instance_key=process_instance_key)
@@ -124,7 +129,7 @@ class ZeebeClient(object):
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
-            UnkownGrpcStatusCodeError: If Zeebe returns an unexpected status code
+            UnknownGrpcStatusCodeError: If Zeebe returns an unexpected status code
 
         """
         await self.zeebe_adapter.deploy_process(*process_file_path)
@@ -144,7 +149,7 @@ class ZeebeClient(object):
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
-            UnkownGrpcStatusCodeError: If Zeebe returns an unexpected status code
+            UnknownGrpcStatusCodeError: If Zeebe returns an unexpected status code
 
         """
         await self.zeebe_adapter.deploy_resource(*resource_file_path, tenant_id=tenant_id)
@@ -153,7 +158,7 @@ class ZeebeClient(object):
         self,
         name: str,
         correlation_key: str,
-        variables: Optional[Dict] = None,
+        variables: Optional[Variables] = None,
         time_to_live_in_milliseconds: int = 60000,
         message_id: Optional[str] = None,
         tenant_id: Optional[str] = None,
@@ -175,7 +180,7 @@ class ZeebeClient(object):
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
-            UnkownGrpcStatusCodeError: If Zeebe returns an unexpected status code
+            UnknownGrpcStatusCodeError: If Zeebe returns an unexpected status code
 
         """
         await self.zeebe_adapter.publish_message(

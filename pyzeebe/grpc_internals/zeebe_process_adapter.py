@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Iterable, NoReturn, Optional, Tuple, cast
 
 import aiofiles
 import grpc
@@ -27,6 +27,7 @@ from pyzeebe.errors import (
 )
 from pyzeebe.grpc_internals.grpc_utils import is_error_status
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
+from pyzeebe.types import Variables
 
 
 class ZeebeProcessAdapter(ZeebeAdapterBase):
@@ -34,7 +35,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
         self,
         bpmn_process_id: str,
         version: int,
-        variables: Dict,
+        variables: Variables,
         tenant_id: Optional[str] = None,
     ) -> int:
         try:
@@ -48,17 +49,17 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
             )
         except grpc.aio.AioRpcError as grpc_error:
             await self._create_process_errors(grpc_error, bpmn_process_id, version, variables)
-        return response.processInstanceKey
+        return cast(int, response.processInstanceKey)
 
     async def create_process_instance_with_result(
         self,
         bpmn_process_id: str,
         version: int,
-        variables: Dict,
+        variables: Variables,
         timeout: int,
-        variables_to_fetch,
+        variables_to_fetch: Iterable[str],
         tenant_id: Optional[str] = None,
-    ) -> Tuple[int, Dict]:
+    ) -> Tuple[int, Dict[str, Any]]:
         try:
             response = await self._gateway_stub.CreateProcessInstanceWithResult(
                 CreateProcessInstanceWithResultRequest(
@@ -77,8 +78,8 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
         return response.processInstanceKey, json.loads(response.variables)
 
     async def _create_process_errors(
-        self, grpc_error: grpc.aio.AioRpcError, bpmn_process_id: str, version: int, variables: Dict
-    ) -> None:
+        self, grpc_error: grpc.aio.AioRpcError, bpmn_process_id: str, version: int, variables: Dict[str, Any]
+    ) -> NoReturn:
         if is_error_status(grpc_error, grpc.StatusCode.NOT_FOUND):
             raise ProcessDefinitionNotFoundError(bpmn_process_id=bpmn_process_id, version=version) from grpc_error
         elif is_error_status(grpc_error, grpc.StatusCode.INVALID_ARGUMENT):

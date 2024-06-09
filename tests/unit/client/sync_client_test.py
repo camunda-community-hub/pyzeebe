@@ -7,13 +7,11 @@ import pytest
 from pyzeebe import SyncZeebeClient
 from pyzeebe.errors import ProcessDefinitionNotFoundError
 
-# Pytest doesn't play well with loop.run_until_complete unless the test has a
-# running asyncio loop
-pytestmark = pytest.mark.asyncio
-
 
 @pytest.fixture
-def sync_zeebe_client(aio_grpc_channel: grpc.aio.Channel) -> SyncZeebeClient:
+def sync_zeebe_client(event_loop, aio_grpc_channel: grpc.aio.Channel) -> SyncZeebeClient:
+    # NOTE: event_loop: pytest doesn't play well with loop.run_until_complete unless the test has a
+    # running asyncio loop
     client = SyncZeebeClient(aio_grpc_channel)
     return client
 

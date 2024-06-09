@@ -1,11 +1,17 @@
 import functools
+from typing import Any, Dict, TypeVar
+
+from typing_extensions import ParamSpec
 
 from pyzeebe.function_tools import AsyncFunction, DictFunction
 
+P = ParamSpec("P")
+R = TypeVar("R")
 
-def convert_to_dict_function(single_value_function: AsyncFunction, variable_name: str) -> DictFunction:
+
+def convert_to_dict_function(single_value_function: AsyncFunction[P, R], variable_name: str) -> DictFunction[P]:
     @functools.wraps(single_value_function)
-    async def inner_fn(*args, **kwargs):
+    async def inner_fn(*args: P.args, **kwargs: P.kwargs) -> Dict[str, Any]:
         return {variable_name: await single_value_function(*args, **kwargs)}
 
     return inner_fn
