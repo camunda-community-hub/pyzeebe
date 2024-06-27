@@ -9,6 +9,7 @@ from pyzeebe.errors import (
     ZeebeBackPressureError,
     ZeebeGatewayUnavailableError,
     ZeebeInternalError,
+    ZeebeDeadlineExceeded,
 )
 from pyzeebe.errors.pyzeebe_errors import PyZeebeError
 from pyzeebe.grpc_internals.grpc_utils import is_error_status
@@ -32,7 +33,7 @@ class ZeebeAdapterBase:
         try:
             pyzeebe_error = _create_pyzeebe_error_from_grpc_error(grpc_error)
             raise pyzeebe_error
-        except (ZeebeGatewayUnavailableError, ZeebeInternalError):
+        except (ZeebeGatewayUnavailableError, ZeebeInternalError, ZeebeDeadlineExceeded):
             self._current_connection_retries += 1
             if not self._should_retry():
                 await self._close()
@@ -52,4 +53,6 @@ def _create_pyzeebe_error_from_grpc_error(grpc_error: grpc.aio.AioRpcError) -> P
         return ZeebeGatewayUnavailableError()
     if is_error_status(grpc_error, grpc.StatusCode.INTERNAL):
         return ZeebeInternalError()
+    elif is_error_status(grpc_error, grpc.StatusCode.DEADLINE_EXCEEDED):
+        return ZeebeDeadlineExceeded()
     return UnknownGrpcStatusCodeError(grpc_error)
