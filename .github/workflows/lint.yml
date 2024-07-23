@@ -7,7 +7,7 @@ jobs:
   type-checking:
     runs-on: ubuntu-latest
 
-    container: python:3.8
+    container: python:3.12
     steps:
       - uses: actions/checkout@v2
       - name: Init python poetry action
@@ -23,7 +23,7 @@ jobs:
   import-checking:
     runs-on: ubuntu-latest
 
-    container: python:3.8
+    container: python:3.12
     steps:
       - uses: actions/checkout@v2
       - name: Init python poetry action
@@ -39,7 +39,7 @@ jobs:
   format-checking:
     runs-on: ubuntu-latest
 
-    container: python:3.8
+    container: python:3.12
     steps:
       - uses: actions/checkout@v2
       - name: Init python poetry action
