@@ -13,7 +13,7 @@ jobs:
 
     container: python:${{ matrix.python-version }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Init python poetry action
         uses: abatilo/actions-poetry@v2.4.0
         with:
@@ -50,7 +50,7 @@ jobs:
           - 26500/tcp
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Init python poetry action
         uses: abatilo/actions-poetry@v2.4.0
         with:
