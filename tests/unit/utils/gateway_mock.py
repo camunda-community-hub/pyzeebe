@@ -163,16 +163,41 @@ class GatewayMock(GatewayServicer):
     def DeployResource(self, request, context):
         resources = []
         for resource in request.resources:
-            process_metadata = Deployment(
-                process=ProcessMetadata(
-                    bpmnProcessId=str(uuid4()),
-                    version=randint(0, 10),
-                    processDefinitionKey=randint(0, RANDOM_RANGE),
-                    resourceName=resource.name,
-                    tenantId=request.tenantId,
+            if resource.name.endswith("bpmn"):
+                metadata = Deployment(
+                    process=ProcessMetadata(
+                        bpmnProcessId=str(uuid4()),
+                        version=randint(0, 10),
+                        processDefinitionKey=randint(0, RANDOM_RANGE),
+                        resourceName=resource.name,
+                        tenantId=request.tenantId,
+                    )
                 )
-            )
-            resources.append(process_metadata)
+                resources.append(metadata)
+            elif resource.name.endswith("dmn"):
+                metadata = Deployment(
+                    decision=DecisionMetadata(
+                        dmnDecisionId=str(uuid4()),
+                        dmnDecisionName=resource.name,
+                        version=randint(0, 10),
+                        decisionKey=randint(0, RANDOM_RANGE),
+                        dmnDecisionRequirementsId=str(uuid4()),
+                        decisionRequirementsKey=randint(0, RANDOM_RANGE),
+                        tenantId=request.tenantId,
+                    )
+                )
+                resources.append(metadata)
+            elif resource.name.endswith("form"):
+                metadata = Deployment(
+                    form=FormMetadata(
+                        formId=str(uuid4()),
+                        version=randint(0, 10),
+                        formKey=randint(0, RANDOM_RANGE),
+                        resourceName=resource.name,
+                        tenantId=request.tenantId,
+                    )
+                )
+                resources.append(metadata)
 
         return DeployResourceResponse(key=randint(0, RANDOM_RANGE), deployments=resources, tenantId=request.tenantId)
 

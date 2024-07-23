@@ -13,6 +13,11 @@ from pyzeebe.errors import (
     ProcessInvalidError,
     ProcessTimeoutError,
 )
+from pyzeebe.grpc_internals.types import (
+    CreateProcessInstanceResponse,
+    CreateProcessInstanceWithResultResponse,
+    DeployResourceResponse,
+)
 from pyzeebe.grpc_internals.zeebe_process_adapter import ZeebeProcessAdapter
 from tests.unit.utils.gateway_mock import GatewayMock
 from tests.unit.utils.random_utils import RANDOM_RANGE
@@ -38,7 +43,7 @@ class TestCreateProcessInstance:
 
         response = await zeebe_adapter.create_process_instance(bpmn_process_id, version, {})
 
-        assert isinstance(response, int)
+        assert isinstance(response, CreateProcessInstanceResponse)
 
     async def test_raises_on_unkown_process(self, zeebe_adapter: ZeebeProcessAdapter):
         bpmn_process_id = str(uuid4())
@@ -69,6 +74,22 @@ class TestCreateProcessInstance:
 
 @pytest.mark.asyncio
 class TestCreateProcessWithResult:
+    async def test_response_is_of_correct_type(self, zeebe_adapter: ZeebeProcessAdapter, grpc_servicer: GatewayMock):
+        bpmn_process_id = str(uuid4())
+        version = randint(0, 10)
+        grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
+
+        response = await zeebe_adapter.create_process_instance_with_result(
+            bpmn_process_id=bpmn_process_id,
+            variables={},
+            version=version,
+            timeout=0,
+            variables_to_fetch=[],
+            tenant_id=None,
+        )
+
+        assert isinstance(response, CreateProcessInstanceWithResultResponse)
+
     async def test_process_instance_key_type_is_int(
         self, zeebe_adapter: ZeebeProcessAdapter, grpc_servicer: GatewayMock
     ):
@@ -76,7 +97,7 @@ class TestCreateProcessWithResult:
         version = randint(0, 10)
         grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
 
-        process_instance_key, _ = await zeebe_adapter.create_process_instance_with_result(
+        response = await zeebe_adapter.create_process_instance_with_result(
             bpmn_process_id=bpmn_process_id,
             variables={},
             version=version,
@@ -85,14 +106,14 @@ class TestCreateProcessWithResult:
             tenant_id=None,
         )
 
-        assert isinstance(process_instance_key, int)
+        assert isinstance(response.process_instance_key, int)
 
     async def test_variables_type_is_dict(self, zeebe_adapter: ZeebeProcessAdapter, grpc_servicer: GatewayMock):
         bpmn_process_id = str(uuid4())
         version = randint(0, 10)
         grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
 
-        _, response = await zeebe_adapter.create_process_instance_with_result(
+        response = await zeebe_adapter.create_process_instance_with_result(
             bpmn_process_id=bpmn_process_id,
             variables={},
             version=version,
@@ -101,7 +122,7 @@ class TestCreateProcessWithResult:
             tenant_id=None,
         )
 
-        assert isinstance(response, dict)
+        assert isinstance(response.variables, dict)
 
     async def test_raises_on_process_timeout(self, zeebe_adapter: ZeebeProcessAdapter, grpc_servicer: GatewayMock):
         bpmn_process_id = str(uuid4())
@@ -128,13 +149,13 @@ class TestCancelProcess:
         bpmn_process_id = str(uuid4())
         version = randint(0, 10)
         grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
-        process_instance_key = await zeebe_adapter.create_process_instance(
+        response = await zeebe_adapter.create_process_instance(
             bpmn_process_id=bpmn_process_id, variables={}, version=version
         )
 
-        await zeebe_adapter.cancel_process_instance(process_instance_key)
+        await zeebe_adapter.cancel_process_instance(response.process_instance_key)
 
-        assert process_instance_key not in grpc_servicer.active_processes.keys()
+        assert response.process_instance_key not in grpc_servicer.active_processes.keys()
 
     async def test_raises_on_already_cancelled_process(
         self, zeebe_adapter: ZeebeProcessAdapter, grpc_servicer: GatewayMock
@@ -167,6 +188,30 @@ class TestDeployProcess:
 
 @pytest.mark.asyncio
 class TestDeployResource:
+    async def test_deploy_process_response_type(self, zeebe_adapter: ZeebeProcessAdapter):
+        file_path = str(uuid4()) + ".bpmn"
+
+        response = await zeebe_adapter.deploy_resource(file_path)
+
+        assert isinstance(response, DeployResourceResponse)
+        assert isinstance(response.deployments[0], DeployResourceResponse.ProcessMetadata)
+
+    async def test_deploy_decision_response_type(self, zeebe_adapter: ZeebeProcessAdapter):
+        file_path = str(uuid4()) + ".dmn"
+
+        response = await zeebe_adapter.deploy_resource(file_path)
+
+        assert isinstance(response, DeployResourceResponse)
+        assert isinstance(response.deployments[0], DeployResourceResponse.DecisionMetadata)
+
+    async def test_deploy_form_response_type(self, zeebe_adapter: ZeebeProcessAdapter):
+        file_path = str(uuid4()) + ".form"
+
+        response = await zeebe_adapter.deploy_resource(file_path)
+
+        assert isinstance(response, DeployResourceResponse)
+        assert isinstance(response.deployments[0], DeployResourceResponse.FormMetadata)
+
     async def test_raises_on_invalid_process(self, zeebe_adapter: ZeebeProcessAdapter):
         error = grpc.aio.AioRpcError(grpc.StatusCode.INVALID_ARGUMENT, None, None)
 
