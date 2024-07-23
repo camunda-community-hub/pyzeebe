@@ -55,7 +55,7 @@ Deploy a process
 
 .. code-block:: python
 
-    await client.deploy_process("process_file.bpmn")
+    await client.deploy_resource("process_file.bpmn")
 
 
 Publish a message

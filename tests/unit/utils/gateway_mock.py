@@ -147,19 +147,6 @@ class GatewayMock(GatewayServicer):
             context.set_code(grpc.StatusCode.NOT_FOUND)
             return CancelProcessInstanceResponse()
 
-    def DeployProcess(self, request, context):
-        processes = []
-        for process in request.processes:
-            process_metadata = ProcessMetadata(
-                bpmnProcessId=str(uuid4()),
-                version=randint(0, 10),
-                processDefinitionKey=randint(0, RANDOM_RANGE),
-                resourceName=process.name,
-            )
-            processes.append(process_metadata)
-
-        return DeployProcessResponse(key=randint(0, RANDOM_RANGE), processes=processes)
-
     def DeployResource(self, request, context):
         resources = []
         for resource in request.resources:

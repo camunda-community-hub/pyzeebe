@@ -53,14 +53,6 @@ class TestRunProcessWithResult:
 
 
 @pytest.mark.asyncio
-async def test_deploy_process(zeebe_client: ZeebeClient):
-    zeebe_client.zeebe_adapter.deploy_process = AsyncMock()
-    file_path = str(uuid4())
-    await zeebe_client.deploy_process(file_path)
-    zeebe_client.zeebe_adapter.deploy_process.assert_called_with(file_path)
-
-
-@pytest.mark.asyncio
 async def test_deploy_resource(zeebe_client: ZeebeClient):
     zeebe_client.zeebe_adapter.deploy_resource = AsyncMock()
     file_path = str(uuid4())

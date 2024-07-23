@@ -1,13 +1,11 @@
 from typing import Iterable, Optional
 
 import grpc
-from typing_extensions import deprecated
 
 from pyzeebe.grpc_internals.types import (
     CancelProcessInstanceResponse,
     CreateProcessInstanceResponse,
     CreateProcessInstanceWithResultResponse,
-    DeployProcessResponse,
     DeployResourceResponse,
     PublishMessageResponse,
 )
@@ -122,27 +120,6 @@ class ZeebeClient:
 
         """
         return await self.zeebe_adapter.cancel_process_instance(process_instance_key=process_instance_key)
-
-    @deprecated("Deprecated since Zeebe 8.0. Use deploy_resource instead")
-    async def deploy_process(self, *process_file_path: str) -> DeployProcessResponse:
-        """
-        Deploy one or more processes
-
-        Args:
-            process_file_path (str): The file path to a process definition file (bpmn/yaml)
-
-        Returns:
-            DeployProcessResponse: response from Zeebe.
-
-        Raises:
-            ProcessInvalidError: If one of the process file definitions is invalid
-            ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
-            ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
-            ZeebeInternalError: If Zeebe experiences an internal error
-            UnknownGrpcStatusCodeError: If Zeebe returns an unexpected status code
-
-        """
-        return await self.zeebe_adapter.deploy_process(*process_file_path)
 
     async def deploy_resource(
         self, *resource_file_path: str, tenant_id: Optional[str] = None

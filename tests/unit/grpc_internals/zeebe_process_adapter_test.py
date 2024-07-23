@@ -169,24 +169,6 @@ class TestCancelProcess:
 
 
 @pytest.mark.asyncio
-class TestDeployProcess:
-    async def test_raises_on_invalid_process(self, zeebe_adapter: ZeebeProcessAdapter):
-        error = grpc.aio.AioRpcError(grpc.StatusCode.INVALID_ARGUMENT, None, None)
-
-        zeebe_adapter._gateway_stub.DeployProcess = AsyncMock(side_effect=error)
-
-        with pytest.raises(ProcessInvalidError):
-            await zeebe_adapter.deploy_process()
-
-    async def test_calls_open_in_rb_mode(self, zeebe_adapter: ZeebeProcessAdapter, mocked_aiofiles_open):
-        file_path = str(uuid4())
-
-        await zeebe_adapter.deploy_process(file_path)
-
-        mocked_aiofiles_open.assert_called_with(file_path, "rb")
-
-
-@pytest.mark.asyncio
 class TestDeployResource:
     async def test_deploy_process_response_type(self, zeebe_adapter: ZeebeProcessAdapter):
         file_path = str(uuid4()) + ".bpmn"

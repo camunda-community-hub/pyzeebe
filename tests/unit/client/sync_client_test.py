@@ -74,16 +74,6 @@ class TestCancelProcessInstance:
         assert isinstance(cancel_response, CancelProcessInstanceResponse)
 
 
-class TestDeployProcess:
-    def test_calls_deploy_process_of_zeebe_client(self, sync_zeebe_client: SyncZeebeClient):
-        sync_zeebe_client.client.deploy_process = AsyncMock()
-        file_path = str(uuid4())
-
-        sync_zeebe_client.deploy_process(file_path)
-
-        sync_zeebe_client.client.deploy_process.assert_called_with(file_path)
-
-
 class TestDeployResource:
     def test_calls_deploy_resource_of_zeebe_client(self, sync_zeebe_client: SyncZeebeClient):
         sync_zeebe_client.client.deploy_resource = AsyncMock()

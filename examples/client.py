@@ -31,7 +31,7 @@ process_instance_key, process_result = await zeebe_client.run_process_with_resul
 )  # Will wait 10000 milliseconds (10 seconds)
 
 # Deploy a bpmn process definition
-await zeebe_client.deploy_process("process.bpmn")
+await zeebe_client.deploy_resource("process.bpmn")
 
 # Cancel a running process
 await zeebe_client.cancel_process_instance(process_instance_key=12345)
