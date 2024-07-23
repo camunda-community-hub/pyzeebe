@@ -6,6 +6,11 @@ import pytest
 
 from pyzeebe import SyncZeebeClient
 from pyzeebe.errors import ProcessDefinitionNotFoundError
+from pyzeebe.grpc_internals.types import (
+    CancelProcessInstanceResponse,
+    CreateProcessInstanceResponse,
+    CreateProcessInstanceWithResultResponse,
+)
 
 
 @pytest.fixture
@@ -17,12 +22,12 @@ def sync_zeebe_client(event_loop, aio_grpc_channel: grpc.aio.Channel) -> SyncZee
 
 
 class TestRunProcess:
-    def test_run_process_returns_int(self, sync_zeebe_client: SyncZeebeClient, deployed_process):
+    def test_run_process_returns(self, sync_zeebe_client: SyncZeebeClient, deployed_process):
         bpmn_process_id, version = deployed_process
 
-        process_instance_key = sync_zeebe_client.run_process(bpmn_process_id, version=version)
+        response = sync_zeebe_client.run_process(bpmn_process_id, version=version)
 
-        assert isinstance(process_instance_key, int)
+        assert isinstance(response, CreateProcessInstanceResponse)
 
     def test_raises_process_definition_not_found_error_for_invalid_process_id(self, sync_zeebe_client: SyncZeebeClient):
         with pytest.raises(ProcessDefinitionNotFoundError):
@@ -30,12 +35,19 @@ class TestRunProcess:
 
 
 class TestRunProcessWithResult:
-    def test_run_process_with_result_instance_key_is_int(self, sync_zeebe_client: SyncZeebeClient, deployed_process):
+    def test_run_process_with_result_returns(self, sync_zeebe_client: SyncZeebeClient, deployed_process):
         bpmn_process_id, version = deployed_process
 
-        process_instance_key, _ = sync_zeebe_client.run_process_with_result(bpmn_process_id, {}, version)
+        response = sync_zeebe_client.run_process_with_result(bpmn_process_id, {}, version)
 
-        assert isinstance(process_instance_key, int)
+        assert isinstance(response, CreateProcessInstanceWithResultResponse)
+
+    def test_run_process_returns_int(self, sync_zeebe_client: SyncZeebeClient, deployed_process):
+        bpmn_process_id, version = deployed_process
+
+        response = sync_zeebe_client.run_process(bpmn_process_id, version=version)
+
+        assert isinstance(response.process_instance_key, int)
 
     def test_run_process_with_result_output_variables_are_as_expected(
         self, sync_zeebe_client: SyncZeebeClient, deployed_process
@@ -43,9 +55,9 @@ class TestRunProcessWithResult:
         expected = {}
         bpmn_process_id, version = deployed_process
 
-        _, output_variables = sync_zeebe_client.run_process_with_result(bpmn_process_id, {}, version)
+        response = sync_zeebe_client.run_process_with_result(bpmn_process_id, {}, version)
 
-        assert output_variables == expected
+        assert response.variables == expected
 
     def test_raises_process_definition_not_found_error_for_invalid_process_id(self, sync_zeebe_client: SyncZeebeClient):
         with pytest.raises(ProcessDefinitionNotFoundError):
@@ -55,13 +67,11 @@ class TestRunProcessWithResult:
 class TestCancelProcessInstance:
     def test_cancel_process_instance(self, sync_zeebe_client: SyncZeebeClient, deployed_process):
         bpmn_process_id, version = deployed_process
-        process_instance_key = sync_zeebe_client.run_process(
-            bpmn_process_id=bpmn_process_id, variables={}, version=version
-        )
+        response = sync_zeebe_client.run_process(bpmn_process_id=bpmn_process_id, variables={}, version=version)
 
-        returned_process_instance_key = sync_zeebe_client.cancel_process_instance(process_instance_key)
+        cancel_response = sync_zeebe_client.cancel_process_instance(response.process_instance_key)
 
-        assert returned_process_instance_key == process_instance_key
+        assert isinstance(cancel_response, CancelProcessInstanceResponse)
 
 
 class TestDeployProcess:

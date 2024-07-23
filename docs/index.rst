@@ -66,3 +66,4 @@ Table Of Contents
     Channels <channels>
     Decorators <decorators>
     Exceptions <errors>
+    Zeebe Adapter <zeebe_adapter>
