@@ -44,27 +44,6 @@ class CancelProcessInstanceResponse:
 
 
 @dataclass(frozen=True)
-class DeployProcessResponse:
-    @dataclass(frozen=True)
-    class ProcessMetadata:
-        #: the bpmn process ID, as parsed during deployment; together with the version forms a
-        #: unique identifier for a specific process definition
-        bpmn_process_id: str
-        #: the assigned process version
-        version: int
-        #: the assigned key, which acts as a unique identifier for this process
-        process_definition_key: int
-        #: the resource name (see: ProcessRequestObject.name) from which this process was
-        #: parsed
-        resource_name: str
-
-    #: the unique key identifying the deployment
-    key: int
-    #: a list of deployed processes
-    processes: List[ProcessMetadata]
-
-
-@dataclass(frozen=True)
 class DeployResourceResponse:
     @dataclass(frozen=True)
     class ProcessMetadata:

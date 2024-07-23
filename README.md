@@ -20,7 +20,7 @@ Zeebe version support:
 
 | Pyzeebe version | Tested Zeebe versions  |
 | :-------------: | ---------------------- |
-|      4.x.x      | 1.3, 8.1, 8.2, 8.3, 8.4 |
+|      4.x.x      | 8.2, 8.3, 8.4, 8.5     |
 |      3.x.x      | 1.0.0                  |
 |      2.x.x      | 0.23, 0.24, 0.25, 0.26 |
 |      1.x.x      | 0.23, 0.24             |
@@ -95,7 +95,7 @@ process_instance_key, process_result = await zeebe_client.run_process_with_resul
 )
 
 # Deploy a BPMN process definition
-await zeebe_client.deploy_process("process.bpmn")
+await zeebe_client.deploy_resource("process.bpmn")
 
 # Cancel a running process
 await zeebe_client.cancel_process_instance(process_instance_key=12345)

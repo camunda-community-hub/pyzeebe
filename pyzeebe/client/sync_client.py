@@ -2,14 +2,12 @@ import asyncio
 from typing import List, Optional
 
 import grpc
-from typing_extensions import deprecated
 
 from pyzeebe import ZeebeClient
 from pyzeebe.grpc_internals.types import (
     CancelProcessInstanceResponse,
     CreateProcessInstanceResponse,
     CreateProcessInstanceWithResultResponse,
-    DeployProcessResponse,
     DeployResourceResponse,
     PublishMessageResponse,
 )
@@ -47,10 +45,6 @@ class SyncZeebeClient:
 
     def cancel_process_instance(self, process_instance_key: int) -> CancelProcessInstanceResponse:
         return self.loop.run_until_complete(self.client.cancel_process_instance(process_instance_key))
-
-    @deprecated("Deprecated since Zeebe 8.0. Use deploy_resource instead")
-    def deploy_process(self, *process_file_path: str) -> DeployProcessResponse:
-        return self.loop.run_until_complete(self.client.deploy_process(*process_file_path))
 
     def deploy_resource(self, *resource_file_path: str, tenant_id: Optional[str] = None) -> DeployResourceResponse:
         return self.loop.run_until_complete(self.client.deploy_resource(*resource_file_path, tenant_id=tenant_id))

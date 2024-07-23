@@ -4,18 +4,15 @@ from typing import Any, Callable, Dict, Iterable, List, NoReturn, Optional, Unio
 
 import aiofiles
 import grpc
-from typing_extensions import deprecated
 from zeebe_grpc.gateway_pb2 import (
     CancelProcessInstanceRequest,
     CreateProcessInstanceRequest,
     CreateProcessInstanceWithResultRequest,
     DecisionMetadata,
     DecisionRequirementsMetadata,
-    DeployProcessRequest,
     DeployResourceRequest,
     FormMetadata,
     ProcessMetadata,
-    ProcessRequestObject,
     Resource,
 )
 
@@ -35,7 +32,6 @@ from .types import (
     CancelProcessInstanceResponse,
     CreateProcessInstanceResponse,
     CreateProcessInstanceWithResultResponse,
-    DeployProcessResponse,
     DeployResourceResponse,
 )
 
@@ -128,32 +124,6 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
             await self._handle_grpc_error(grpc_error)
 
         return CancelProcessInstanceResponse()
-
-    @deprecated("Deprecated since Zeebe 8.0. Use deploy_resource instead")
-    async def deploy_process(self, *process_file_path: str) -> DeployProcessResponse:
-        try:
-            response = await self._gateway_stub.DeployProcess(
-                DeployProcessRequest(
-                    processes=[await result for result in map(_create_process_request, process_file_path)]
-                )
-            )
-        except grpc.aio.AioRpcError as grpc_error:
-            if is_error_status(grpc_error, grpc.StatusCode.INVALID_ARGUMENT):
-                raise ProcessInvalidError() from grpc_error
-            await self._handle_grpc_error(grpc_error)
-
-        return DeployProcessResponse(
-            key=response.key,
-            processes=[
-                DeployProcessResponse.ProcessMetadata(
-                    bpmn_process_id=process.bpmnProcessId,
-                    version=process.version,
-                    process_definition_key=process.processDefinitionKey,
-                    resource_name=process.resourceName,
-                )
-                for process in response.processes
-            ],
-        )
 
     async def deploy_resource(
         self, *resource_file_path: str, tenant_id: Optional[str] = None
@@ -252,11 +222,6 @@ _METADATA_PARSERS: Dict[
     "decisionRequirements": ZeebeProcessAdapter._create_decision_requirements_from_raw_decision_requirements,
     "form": ZeebeProcessAdapter._create_form_from_raw_form,
 }
-
-
-async def _create_process_request(process_file_path: str) -> ProcessRequestObject:
-    async with aiofiles.open(process_file_path, "rb") as file:
-        return ProcessRequestObject(name=os.path.basename(process_file_path), definition=await file.read())
 
 
 async def _create_resource_request(resource_file_path: str) -> Resource:
