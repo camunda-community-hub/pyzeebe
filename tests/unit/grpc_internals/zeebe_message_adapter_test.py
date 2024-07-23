@@ -2,9 +2,9 @@ from random import randint
 from uuid import uuid4
 
 import pytest
-from zeebe_grpc.gateway_pb2 import PublishMessageResponse
 
 from pyzeebe.errors import MessageAlreadyExistsError
+from pyzeebe.grpc_internals.types import PublishMessageResponse
 from pyzeebe.grpc_internals.zeebe_message_adapter import ZeebeMessageAdapter
 from tests.unit.utils.random_utils import RANDOM_RANGE
 
