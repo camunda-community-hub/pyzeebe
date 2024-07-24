@@ -7,7 +7,7 @@ import pytest
 
 from pyzeebe import ExceptionHandler, TaskDecorator, ZeebeTaskRouter
 from pyzeebe.errors import DuplicateTaskTypeError
-from pyzeebe.job.job import Job
+from pyzeebe.job.job import Job, JobController
 from pyzeebe.task.task import Task
 from pyzeebe.worker.worker import ZeebeWorker
 
@@ -91,23 +91,33 @@ class TestIncludeRouter:
 
     @pytest.mark.asyncio
     async def test_router_before_decorator(
-        self, zeebe_worker: ZeebeWorker, router: ZeebeTaskRouter, decorator: TaskDecorator, mocked_job_with_adapter: Job
+        self,
+        zeebe_worker: ZeebeWorker,
+        router: ZeebeTaskRouter,
+        decorator: TaskDecorator,
+        job: Job,
+        job_controller: JobController,
     ):
         router.before(decorator)
         task = self.include_router_with_task(zeebe_worker, router)
 
-        await task.job_handler(mocked_job_with_adapter)
+        await task.job_handler(job, job_controller)
 
         decorator.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_router_after_decorator(
-        self, zeebe_worker: ZeebeWorker, router: ZeebeTaskRouter, decorator: TaskDecorator, mocked_job_with_adapter: Job
+        self,
+        zeebe_worker: ZeebeWorker,
+        router: ZeebeTaskRouter,
+        decorator: TaskDecorator,
+        job: Job,
+        job_controller: JobController,
     ):
         router.after(decorator)
         task = self.include_router_with_task(zeebe_worker, router)
 
-        await task.job_handler(mocked_job_with_adapter)
+        await task.job_handler(job, job_controller)
 
         decorator.assert_called_once()
 
@@ -117,34 +127,45 @@ class TestIncludeRouter:
         zeebe_worker: ZeebeWorker,
         router: ZeebeTaskRouter,
         exception_handler: ExceptionHandler,
-        mocked_job_with_adapter: Job,
+        job: Job,
+        job_controller: JobController,
     ):
         router.exception_handler(exception_handler)
         task = self.include_router_with_task_error(zeebe_worker, router)
 
-        await task.job_handler(mocked_job_with_adapter)
+        await task.job_handler(job, job_controller)
 
         exception_handler.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_worker_with_before_decorator(
-        self, zeebe_worker: ZeebeWorker, router: ZeebeTaskRouter, decorator: TaskDecorator, mocked_job_with_adapter: Job
+        self,
+        zeebe_worker: ZeebeWorker,
+        router: ZeebeTaskRouter,
+        decorator: TaskDecorator,
+        job: Job,
+        job_controller: JobController,
     ):
         zeebe_worker.before(decorator)
         task = self.include_router_with_task(zeebe_worker, router)
 
-        await task.job_handler(mocked_job_with_adapter)
+        await task.job_handler(job, job_controller)
 
         decorator.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_worker_with_after_decorator(
-        self, zeebe_worker: ZeebeWorker, router: ZeebeTaskRouter, decorator: TaskDecorator, mocked_job_with_adapter: Job
+        self,
+        zeebe_worker: ZeebeWorker,
+        router: ZeebeTaskRouter,
+        decorator: TaskDecorator,
+        job: Job,
+        job_controller: JobController,
     ):
         zeebe_worker.after(decorator)
         task = self.include_router_with_task(zeebe_worker, router)
 
-        await task.job_handler(mocked_job_with_adapter)
+        await task.job_handler(job, job_controller)
 
         decorator.assert_called_once()
 
@@ -154,12 +175,13 @@ class TestIncludeRouter:
         zeebe_worker: ZeebeWorker,
         router: ZeebeTaskRouter,
         exception_handler: ExceptionHandler,
-        mocked_job_with_adapter: Job,
+        job: Job,
+        job_controller: JobController,
     ):
         zeebe_worker.exception_handler(exception_handler)
         task = self.include_router_with_task_error(zeebe_worker, router)
 
-        await task.job_handler(mocked_job_with_adapter)
+        await task.job_handler(job, job_controller)
 
         exception_handler.assert_called_once()
 
@@ -168,7 +190,8 @@ class TestIncludeRouter:
         self,
         zeebe_worker: ZeebeWorker,
         router: ZeebeTaskRouter,
-        mocked_job_with_adapter: Job,
+        job: Job,
+        job_controller: JobController,
     ):
         exception_handler_router = AsyncMock()
         exception_handler_worker = AsyncMock()
@@ -176,7 +199,7 @@ class TestIncludeRouter:
         zeebe_worker.exception_handler(exception_handler_worker)
         task = self.include_router_with_task_error(zeebe_worker, router)
 
-        await task.job_handler(mocked_job_with_adapter)
+        await task.job_handler(job, job_controller)
 
         exception_handler_router.assert_called_once()
         exception_handler_worker.assert_not_called()

@@ -2,7 +2,6 @@ import copy
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
-from pyzeebe.errors import NoZeebeAdapterError
 from pyzeebe.job.job_status import JobStatus
 from pyzeebe.types import Variables
 
@@ -10,7 +9,7 @@ if TYPE_CHECKING:
     from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 
 
-@dataclass
+@dataclass(frozen=True)
 class Job:
     key: int
     type: str
@@ -27,43 +26,42 @@ class Job:
     variables: Variables
     tenant_id: Optional[str] = None
     status: JobStatus = JobStatus.Running
-    zeebe_adapter: Optional["ZeebeAdapter"] = None
 
-    async def set_running_after_decorators_status(self) -> None:
+    def set_status(self, value: JobStatus) -> None:
+        object.__setattr__(self, "status", value)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Job):
+            return NotImplemented
+        return self.key == other.key
+
+
+class JobController:
+    def __init__(self, zeebe_adapter: "ZeebeAdapter") -> None:
+        self.zeebe_adapter = zeebe_adapter
+
+    async def set_running_after_decorators_status(self, job: Job) -> None:
         """
         RunningAfterDecorators status means that the task has been completed as intended and the after decorators will now run.
-
-        Raises:
-            NoZeebeAdapterError: If the job does not have a configured ZeebeAdapter
-            ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
-            ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
-            ZeebeInternalError: If Zeebe experiences an internal error
-
         """
-        if self.zeebe_adapter:
-            self.status = JobStatus.RunningAfterDecorators
-        else:
-            raise NoZeebeAdapterError()
+        job.set_status(JobStatus.RunningAfterDecorators)
 
-    async def set_success_status(self) -> None:
+    async def set_success_status(self, job: Job, variables: Optional[Variables] = None) -> None:
         """
         Success status means that the job has been completed as intended.
 
         Raises:
-            NoZeebeAdapterError: If the job does not have a configured ZeebeAdapter
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
-        if self.zeebe_adapter:
-            self.status = JobStatus.Completed
-            await self.zeebe_adapter.complete_job(job_key=self.key, variables=self.variables)
-        else:
-            raise NoZeebeAdapterError()
+        job.set_status(JobStatus.Completed)
+        await self.zeebe_adapter.complete_job(job_key=job.key, variables=variables or {})
 
     async def set_failure_status(
         self,
+        job: Job,
         message: str,
         retry_back_off_ms: int = 0,
         variables: Optional[Variables] = None,
@@ -79,26 +77,23 @@ class Job:
                 the local scope of the job's associated task. Must be JSONable. New in Zeebe 8.2.
 
         Raises:
-            NoZeebeAdapterError: If the job does not have a configured ZeebeAdapter
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
-        if self.zeebe_adapter:
-            self.status = JobStatus.Failed
-            await self.zeebe_adapter.fail_job(
-                job_key=self.key,
-                retries=self.retries - 1,
-                message=message,
-                retry_back_off_ms=retry_back_off_ms,
-                variables=variables or {},
-            )
-        else:
-            raise NoZeebeAdapterError()
+        job.set_status(JobStatus.Failed)
+        await self.zeebe_adapter.fail_job(
+            job_key=job.key,
+            retries=job.retries - 1,
+            message=message,
+            retry_back_off_ms=retry_back_off_ms,
+            variables=variables or {},
+        )
 
     async def set_error_status(
         self,
+        job: Job,
         message: str,
         error_code: str = "",
         variables: Optional[Variables] = None,
@@ -115,24 +110,15 @@ class Job:
                 the local scope of the job's associated task. Must be JSONable. New in Zeebe 8.2.
 
         Raises:
-            NoZeebeAdapterError: If the job does not have a configured ZeebeAdapter
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
-        if self.zeebe_adapter:
-            self.status = JobStatus.ErrorThrown
-            await self.zeebe_adapter.throw_error(
-                job_key=self.key, message=message, error_code=error_code, variables=variables or {}
-            )
-        else:
-            raise NoZeebeAdapterError()
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Job):
-            raise NotImplementedError()
-        return self.key == other.key
+        job.set_status(JobStatus.ErrorThrown)
+        await self.zeebe_adapter.throw_error(
+            job_key=job.key, message=message, error_code=error_code, variables=variables or {}
+        )
 
 
 def create_copy(job: Job) -> Job:
@@ -152,5 +138,4 @@ def create_copy(job: Job) -> Job:
         copy.deepcopy(job.variables),
         job.tenant_id,
         job.status,
-        job.zeebe_adapter,
     )

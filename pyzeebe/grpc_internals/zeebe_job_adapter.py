@@ -74,7 +74,6 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
             deadline=response.deadline,
             variables=json.loads(response.variables),
             tenant_id=response.tenantId,
-            zeebe_adapter=self,  # type: ignore[arg-type]
         )
 
     async def complete_job(self, job_key: int, variables: Variables) -> CompleteJobResponse:

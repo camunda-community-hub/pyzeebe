@@ -7,7 +7,7 @@ import grpc
 
 from pyzeebe import TaskDecorator
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
-from pyzeebe.job.job import Job
+from pyzeebe.job.job import Job, JobController
 from pyzeebe.task import task_builder
 from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.worker.job_executor import JobExecutor
@@ -49,6 +49,7 @@ class ZeebeWorker(ZeebeTaskRouter):
         """
         super().__init__(before, after, exception_handler)
         self.zeebe_adapter = ZeebeAdapter(grpc_channel, max_connection_retries)
+        self.job_controller = JobController(self.zeebe_adapter)
         self.name = name or socket.gethostname()
         self.request_timeout = request_timeout
         self.watcher_max_errors_factor = watcher_max_errors_factor
@@ -87,7 +88,7 @@ class ZeebeWorker(ZeebeTaskRouter):
                 self.poll_retry_delay,
                 self.tenant_ids,
             )
-            executor = JobExecutor(task, jobs_queue, task_state)
+            executor = JobExecutor(task, jobs_queue, task_state, self.job_controller)
             self._job_pollers.append(poller)
             self._job_executors.append(executor)
 

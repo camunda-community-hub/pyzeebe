@@ -11,7 +11,7 @@ from pyzeebe.function_tools import DictFunction, Function
 from pyzeebe.function_tools.async_tools import asyncify, is_async_function
 from pyzeebe.function_tools.dict_tools import convert_to_dict_function
 from pyzeebe.function_tools.parameter_tools import get_job_parameter_name
-from pyzeebe.job.job import create_copy
+from pyzeebe.job.job import JobController, create_copy
 from pyzeebe.task.exception_handler import default_exception_handler
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_config import TaskConfig
@@ -35,18 +35,20 @@ def build_job_handler(task_function: Function[..., Any], task_config: TaskConfig
     after_decorator_runner = create_decorator_runner(task_config.after)
 
     @functools.wraps(task_function)
-    async def job_handler(job: Job) -> Job:
+    async def job_handler(job: Job, job_controller: JobController) -> Job:
         if task_config.job_parameter_name:
             job.variables[task_config.job_parameter_name] = create_copy(job)
 
         job = await before_decorator_runner(job)
-        original_return_value, succeeded = await run_original_task_function(prepared_task_function, task_config, job)
+        original_return_value, succeeded = await run_original_task_function(
+            prepared_task_function, task_config, job, job_controller
+        )
         job.variables.update(original_return_value)
         job.variables.pop(task_config.job_parameter_name, None)  # type: ignore[arg-type]
-        await job.set_running_after_decorators_status()
+        await job_controller.set_running_after_decorators_status(job)
         job = await after_decorator_runner(job)
         if succeeded:
-            await job.set_success_status()
+            await job_controller.set_success_status(job, variables=original_return_value)
         return job
 
     return job_handler
@@ -63,7 +65,7 @@ def prepare_task_function(task_function: Function[P, R], task_config: TaskConfig
 
 
 async def run_original_task_function(
-    task_function: DictFunction[...], task_config: TaskConfig, job: Job
+    task_function: DictFunction[...], task_config: TaskConfig, job: Job, job_controller: JobController
 ) -> Tuple[Dict[str, Any], bool]:
     try:
         if task_config.variables_to_fetch is None:
@@ -83,7 +85,7 @@ async def run_original_task_function(
     except Exception as e:
         logger.debug("Failed job: %s. Error: %s.", job, e)
         exception_handler = task_config.exception_handler or default_exception_handler
-        await exception_handler(e, job)
+        await exception_handler(e, job, job_controller)
         return job.variables, False
 
 

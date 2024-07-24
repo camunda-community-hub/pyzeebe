@@ -100,7 +100,7 @@ class GatewayMock(GatewayServicer):
         if job.status != JobStatus.Running:
             context.set_code(grpc.StatusCode.FAILED_PRECONDITION)
         else:
-            job.status = status_on_deactivate
+            job.set_status(status_on_deactivate)
         return context
 
     def CreateProcessInstance(self, request, context):

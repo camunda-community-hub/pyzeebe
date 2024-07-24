@@ -7,6 +7,7 @@ import grpc
 import pytest
 
 from pyzeebe import Job, ZeebeClient, ZeebeWorker, create_insecure_channel
+from pyzeebe.job.job import JobController
 from tests.integration.utils import ProcessRun, ProcessStats
 
 
@@ -34,8 +35,8 @@ def zeebe_worker(grpc_channel):
 
 @pytest.fixture(autouse=True, scope="module")
 def task(zeebe_worker: ZeebeWorker, process_stats: ProcessStats):
-    async def exception_handler(exc: Exception, job: Job) -> None:
-        await job.set_error_status(f"Failed to run task {job.type}. Reason: {exc}")
+    async def exception_handler(exc: Exception, job: Job, job_controller: JobController) -> None:
+        await job_controller.set_error_status(job, f"Failed to run task {job.type}. Reason: {exc}")
 
     @zeebe_worker.task("test", exception_handler)
     async def task_handler(should_throw: bool, input: str, job: Job) -> Dict:
