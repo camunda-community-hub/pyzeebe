@@ -19,13 +19,13 @@ from tests.unit.utils.random_utils import random_job
 
 
 @pytest.fixture
-def job_controller():
-    return JobController(zeebe_adapter=AsyncMock())
+def job_controller(job):
+    return JobController(job=job, zeebe_adapter=AsyncMock())
 
 
 @pytest.fixture
-def mocked_job_controller():
-    job_controller = JobController(MagicMock())
+def mocked_job_controller(job):
+    job_controller = JobController(job, MagicMock())
     job_controller.set_running_after_decorators_status = AsyncMock()
     job_controller.set_success_status = AsyncMock()
     job_controller.set_failure_status = AsyncMock()

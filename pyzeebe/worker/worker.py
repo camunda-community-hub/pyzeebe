@@ -49,7 +49,6 @@ class ZeebeWorker(ZeebeTaskRouter):
         """
         super().__init__(before, after, exception_handler)
         self.zeebe_adapter = ZeebeAdapter(grpc_channel, max_connection_retries)
-        self.job_controller = JobController(self.zeebe_adapter)
         self.name = name or socket.gethostname()
         self.request_timeout = request_timeout
         self.watcher_max_errors_factor = watcher_max_errors_factor
@@ -88,7 +87,7 @@ class ZeebeWorker(ZeebeTaskRouter):
                 self.poll_retry_delay,
                 self.tenant_ids,
             )
-            executor = JobExecutor(task, jobs_queue, task_state, self.job_controller)
+            executor = JobExecutor(task, jobs_queue, task_state, self.zeebe_adapter)
             self._job_pollers.append(poller)
             self._job_executors.append(executor)
 

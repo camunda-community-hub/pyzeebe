@@ -27,7 +27,7 @@ class Job:
     tenant_id: Optional[str] = None
     status: JobStatus = JobStatus.Running
 
-    def set_status(self, value: JobStatus) -> None:
+    def _set_status(self, value: JobStatus) -> None:
         object.__setattr__(self, "status", value)
 
     def __eq__(self, other: object) -> bool:
@@ -37,16 +37,17 @@ class Job:
 
 
 class JobController:
-    def __init__(self, zeebe_adapter: "ZeebeAdapter") -> None:
-        self.zeebe_adapter = zeebe_adapter
+    def __init__(self, job: Job, zeebe_adapter: "ZeebeAdapter") -> None:
+        self._job = job
+        self._zeebe_adapter = zeebe_adapter
 
-    async def set_running_after_decorators_status(self, job: Job) -> None:
+    async def set_running_after_decorators_status(self) -> None:
         """
         RunningAfterDecorators status means that the task has been completed as intended and the after decorators will now run.
         """
-        job.set_status(JobStatus.RunningAfterDecorators)
+        self._job._set_status(JobStatus.RunningAfterDecorators)
 
-    async def set_success_status(self, job: Job, variables: Optional[Variables] = None) -> None:
+    async def set_success_status(self, variables: Optional[Variables] = None) -> None:
         """
         Success status means that the job has been completed as intended.
 
@@ -56,12 +57,11 @@ class JobController:
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
-        job.set_status(JobStatus.Completed)
-        await self.zeebe_adapter.complete_job(job_key=job.key, variables=variables or {})
+        self._job._set_status(JobStatus.Completed)
+        await self._zeebe_adapter.complete_job(job_key=self._job.key, variables=variables or {})
 
     async def set_failure_status(
         self,
-        job: Job,
         message: str,
         retry_back_off_ms: int = 0,
         variables: Optional[Variables] = None,
@@ -82,10 +82,10 @@ class JobController:
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
-        job.set_status(JobStatus.Failed)
-        await self.zeebe_adapter.fail_job(
-            job_key=job.key,
-            retries=job.retries - 1,
+        self._job._set_status(JobStatus.Failed)
+        await self._zeebe_adapter.fail_job(
+            job_key=self._job.key,
+            retries=self._job.retries - 1,
             message=message,
             retry_back_off_ms=retry_back_off_ms,
             variables=variables or {},
@@ -93,7 +93,6 @@ class JobController:
 
     async def set_error_status(
         self,
-        job: Job,
         message: str,
         error_code: str = "",
         variables: Optional[Variables] = None,
@@ -115,9 +114,9 @@ class JobController:
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
-        job.set_status(JobStatus.ErrorThrown)
-        await self.zeebe_adapter.throw_error(
-            job_key=job.key, message=message, error_code=error_code, variables=variables or {}
+        self._job._set_status(JobStatus.ErrorThrown)
+        await self._zeebe_adapter.throw_error(
+            job_key=self._job.key, message=message, error_code=error_code, variables=variables or {}
         )
 
 
@@ -137,5 +136,4 @@ def create_copy(job: Job) -> Job:
         job.deadline,
         copy.deepcopy(job.variables),
         job.tenant_id,
-        job.status,
     )

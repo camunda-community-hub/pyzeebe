@@ -45,10 +45,10 @@ def build_job_handler(task_function: Function[..., Any], task_config: TaskConfig
         )
         job.variables.update(original_return_value)
         job.variables.pop(task_config.job_parameter_name, None)  # type: ignore[arg-type]
-        await job_controller.set_running_after_decorators_status(job)
+        await job_controller.set_running_after_decorators_status()
         job = await after_decorator_runner(job)
         if succeeded:
-            await job_controller.set_success_status(job, variables=original_return_value)
+            await job_controller.set_success_status(variables=original_return_value)
         return job
 
     return job_handler

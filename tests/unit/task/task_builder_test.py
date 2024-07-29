@@ -159,7 +159,7 @@ class TestBuildJobHandler:
 
         await job_handler(job, mocked_job_controller)
 
-        mocked_job_controller.set_success_status.assert_called_once_with(job, variables={})
+        mocked_job_controller.set_success_status.assert_called_once_with(variables={})
 
     @pytest.mark.asyncio
     async def test_returned_task_runs_original_function(
