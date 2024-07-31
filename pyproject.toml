@@ -38,7 +38,7 @@ coveralls = "^3.3.1"
 responses = ">=0.23.2,<0.26.0"
 bump2version = "^1.0.1"
 sphinx-rtd-theme = ">=1.2.2,<3.0.0"
-sphinx = ">=6,<8"
+sphinx = ">=8,<9"
 importlib-metadata = ">=6.8,<9.0"
 
 [tool.poetry.group.stubs.dependencies]
