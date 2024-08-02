@@ -61,8 +61,7 @@ class ZeebeTaskRouter:
         after: Optional[List[TaskDecorator]] = None,
         *,
         single_value: Literal[False] = False,
-    ) -> Callable[[Function[P, RD]], Function[P, RD]]:
-        ...
+    ) -> Callable[[Function[P, RD]], Function[P, RD]]: ...
 
     @overload
     def task(
@@ -78,8 +77,7 @@ class ZeebeTaskRouter:
         *,
         single_value: Literal[True],
         variable_name: str,
-    ) -> Callable[[Function[P, R]], Function[P, R]]:
-        ...
+    ) -> Callable[[Function[P, R]], Function[P, R]]: ...
 
     def task(
         self,
