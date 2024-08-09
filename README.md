@@ -42,19 +42,19 @@ The `ZeebeWorker` class gets jobs from the gateway and runs them.
 ```python
 import asyncio
 
-from pyzeebe import ZeebeWorker, Job, create_insecure_channel
+from pyzeebe import ZeebeWorker, Job, JobController, create_insecure_channel
 
 
 channel = create_insecure_channel(hostname="localhost", port=26500) # Create grpc channel
 worker = ZeebeWorker(channel) # Create a zeebe worker
 
 
-async def on_error(exception: Exception, job: Job):
+async def on_error(exception: Exception, job: Job, job_controller: JobController):
     """
     on_error will be called when the task fails
     """
     print(exception)
-    await job.set_error_status(f"Failed to handle job {job}. Error: {str(exception)}")
+    await job_controller.set_error_status(job, f"Failed to handle job {job}. Error: {str(exception)}")
 
 
 @worker.task(task_type="example", exception_handler=on_error)

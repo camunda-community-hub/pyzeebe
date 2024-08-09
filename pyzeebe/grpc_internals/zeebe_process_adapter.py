@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any, Callable, Dict, Iterable, List, NoReturn, Optional, Union
+from typing import Callable, Dict, Iterable, List, NoReturn, Optional, Union
 
 import aiofiles
 import grpc
@@ -99,7 +99,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
         )
 
     async def _create_process_errors(
-        self, grpc_error: grpc.aio.AioRpcError, bpmn_process_id: str, version: int, variables: Dict[str, Any]
+        self, grpc_error: grpc.aio.AioRpcError, bpmn_process_id: str, version: int, variables: Variables
     ) -> NoReturn:
         if is_error_status(grpc_error, grpc.StatusCode.NOT_FOUND):
             raise ProcessDefinitionNotFoundError(bpmn_process_id=bpmn_process_id, version=version) from grpc_error

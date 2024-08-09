@@ -14,9 +14,8 @@ from typing import (
 
 from typing_extensions import ParamSpec
 
-from pyzeebe.errors import BusinessError, DuplicateTaskTypeError, TaskNotFoundError
-from pyzeebe.function_tools import DictFunction, Function, parameter_tools
-from pyzeebe.job.job import Job
+from pyzeebe.errors import DuplicateTaskTypeError, TaskNotFoundError
+from pyzeebe.function_tools import Function, parameter_tools
 from pyzeebe.task import task_builder
 from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.task.task import Task

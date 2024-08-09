@@ -9,6 +9,7 @@ from pyzeebe import (
     create_secure_channel,
 )
 from pyzeebe.errors import BusinessError
+from pyzeebe.job.job import JobController
 
 
 # Use decorators to add functionality before and after tasks. These will not fail the task
@@ -68,7 +69,7 @@ async def add_one(x: int) -> int:
     return x + 1
 
 
-# The default exception handler will call job.set_error_status
+# The default exception handler will call job_controller.set_error_status
 # on raised BusinessError, and propagate its error_code
 # so the specific business error can be caught in the Zeebe process
 @worker.task(task_type="business_exception_task")
@@ -77,10 +78,10 @@ def exception_task():
 
 
 # Define a custom exception_handler for a task like so:
-async def example_exception_handler(exception: Exception, job: Job) -> None:
+async def example_exception_handler(exception: Exception, job: Job, job_controller: JobController) -> None:
     print(exception)
     print(job)
-    await job.set_failure_status(f"Failed to run task {job.type}. Reason: {exception}")
+    await job_controller.set_failure_status(job, f"Failed to run task {job.type}. Reason: {exception}")
 
 
 @worker.task(task_type="exception_task", exception_handler=example_exception_handler)

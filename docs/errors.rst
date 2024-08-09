@@ -10,8 +10,6 @@ All ``pyzeebe`` errors inherit from :py:class:`PyZeebeError`
 
 .. autoexception:: pyzeebe.errors.NoVariableNameGivenError
 
-.. autoexception:: pyzeebe.errors.NoZeebeAdapterError
-
 .. autoexception:: pyzeebe.errors.DuplicateTaskTypeError
 
 .. autoexception:: pyzeebe.errors.ActivateJobsRequestInvalidError

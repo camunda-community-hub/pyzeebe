@@ -3,15 +3,16 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from pyzeebe.job.job import Job
+from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
+from pyzeebe.job.job import Job, JobController
 from pyzeebe.task.task import Task
 from pyzeebe.worker.job_executor import JobExecutor, create_job_callback
 from pyzeebe.worker.task_state import TaskState
 
 
 @pytest.fixture
-def job_executor(task: Task, queue: asyncio.Queue, task_state: TaskState):
-    return JobExecutor(task, queue, task_state)
+def job_executor(task: Task, queue: asyncio.Queue, task_state: TaskState, zeebe_adapter: ZeebeAdapter):
+    return JobExecutor(task, queue, task_state, zeebe_adapter)
 
 
 @pytest.fixture(autouse=True)
@@ -21,14 +22,18 @@ def mock_job_handler(task: Task):
 
 @pytest.mark.asyncio
 class TestExecuteOneJob:
-    async def test_executes_jobs(self, job_executor: JobExecutor, job_from_task: Job, task: Task):
-        await job_executor.execute_one_job(job_from_task)
+    async def test_executes_jobs(
+        self, job_executor: JobExecutor, job_from_task: Job, task: Task, job_controller: JobController
+    ):
+        await job_executor.execute_one_job(job_from_task, job_controller)
 
-        task.job_handler.assert_called_with(job_from_task)
+        task.job_handler.assert_called_with(job_from_task, job_controller)
 
-    async def test_continues_on_deactivated_job(self, job_executor: JobExecutor, job_from_task: Job):
-        await job_executor.execute_one_job(job_from_task)
-        await job_executor.execute_one_job(job_from_task)
+    async def test_continues_on_deactivated_job(
+        self, job_executor: JobExecutor, job_from_task: Job, job_controller: JobController
+    ):
+        await job_executor.execute_one_job(job_from_task, job_controller)
+        await job_executor.execute_one_job(job_from_task, job_controller)
 
 
 @pytest.mark.asyncio

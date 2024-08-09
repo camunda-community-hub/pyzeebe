@@ -87,7 +87,7 @@ class ZeebeWorker(ZeebeTaskRouter):
                 self.poll_retry_delay,
                 self.tenant_ids,
             )
-            executor = JobExecutor(task, jobs_queue, task_state)
+            executor = JobExecutor(task, jobs_queue, task_state, self.zeebe_adapter)
             self._job_pollers.append(poller)
             self._job_executors.append(executor)
 
