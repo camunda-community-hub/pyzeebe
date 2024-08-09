@@ -1,5 +1,6 @@
-from typing import Any, Dict
+from typing import Any, Mapping
 
 from typing_extensions import TypeAlias
 
-Variables: TypeAlias = Dict[str, Any]
+Headers: TypeAlias = Mapping[str, Any]
+Variables: TypeAlias = Mapping[str, Any]

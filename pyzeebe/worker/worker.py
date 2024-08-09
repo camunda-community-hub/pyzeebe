@@ -7,7 +7,7 @@ import grpc
 
 from pyzeebe import TaskDecorator
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
-from pyzeebe.job.job import Job, JobController
+from pyzeebe.job.job import Job
 from pyzeebe.task import task_builder
 from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.worker.job_executor import JobExecutor

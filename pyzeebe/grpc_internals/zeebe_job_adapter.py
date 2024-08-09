@@ -1,5 +1,6 @@
 import json
 import logging
+import types
 from typing import AsyncGenerator, Iterable, Optional
 
 import grpc
@@ -68,11 +69,11 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
             process_definition_key=response.processDefinitionKey,
             element_id=response.elementId,
             element_instance_key=response.elementInstanceKey,
-            custom_headers=json.loads(response.customHeaders),
+            custom_headers=types.MappingProxyType(json.loads(response.customHeaders)),
             worker=response.worker,
             retries=response.retries,
             deadline=response.deadline,
-            variables=json.loads(response.variables),
+            variables=types.MappingProxyType(json.loads(response.variables)),
             tenant_id=response.tenantId,
         )
 

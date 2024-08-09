@@ -1,9 +1,8 @@
-import copy
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Optional
 
 from pyzeebe.job.job_status import JobStatus
-from pyzeebe.types import Variables
+from pyzeebe.types import Headers, Variables
 
 if TYPE_CHECKING:
     from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
@@ -19,7 +18,7 @@ class Job:
     process_definition_key: int
     element_id: str
     element_instance_key: int
-    custom_headers: Dict[str, Any]
+    custom_headers: Headers
     worker: str
     retries: int
     deadline: int
@@ -118,22 +117,3 @@ class JobController:
         await self._zeebe_adapter.throw_error(
             job_key=self._job.key, message=message, error_code=error_code, variables=variables or {}
         )
-
-
-def create_copy(job: Job) -> Job:
-    return Job(
-        job.key,
-        job.type,
-        job.process_instance_key,
-        job.bpmn_process_id,
-        job.process_definition_version,
-        job.process_definition_key,
-        job.element_id,
-        job.element_instance_key,
-        copy.deepcopy(job.custom_headers),
-        job.worker,
-        job.retries,
-        job.deadline,
-        copy.deepcopy(job.variables),
-        job.tenant_id,
-    )
