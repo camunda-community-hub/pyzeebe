@@ -81,7 +81,7 @@ def exception_task():
 async def example_exception_handler(exception: Exception, job: Job, job_controller: JobController) -> None:
     print(exception)
     print(job)
-    await job_controller.set_failure_status(job, f"Failed to run task {job.type}. Reason: {exception}")
+    await job_controller.set_failure_status(f"Failed to run task {job.type}. Reason: {exception}")
 
 
 @worker.task(task_type="exception_task", exception_handler=example_exception_handler)
