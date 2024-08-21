@@ -74,7 +74,7 @@ class OAuth2ClientCredentials(grpc.AuthMetadataPlugin):
             # NOTE: "expires_at" is not part of the OAuth2 Standard, but very useful
             # https://datatracker.ietf.org/doc/html/rfc6749#appendix-A
             # https://oauthlib.readthedocs.io/en/latest/_modules/oauthlib/oauth2/rfc6749/clients/base.html?highlight=expires_at#
-            if self._oauth.token.get("expires_at", 0) <= time.time():
+            elif self._oauth.token.get("expires_at", 0) - 10 <= time.time():  # FIXME: 10 seconds before expiration
                 self._get_access_token()
 
         except Exception as exception:  # pylint: disable=broad-except
@@ -108,9 +108,8 @@ class OAuth2ClientCredentials(grpc.AuthMetadataPlugin):
 
     def _no_expiration(self, r):
         token = json.loads(r.text)
-        expires_in = token.get("expires_in")
 
-        if expires_in is None:
+        if token.get("expires_in") is None:
             logger.warning("Token attribute expires_in not found.")
             token["expires_in"] = self._expires_in
 
