@@ -1,15 +1,14 @@
 import json
 import logging
-import math
 import time
 import timeit
 from collections.abc import Callable
 from functools import partial
-from typing import Optional
+from typing import Any, Optional
 
 import grpc
+import requests
 from grpc._auth import _sign_request
-from grpc.aio._typing import ChannelArgumentType
 from oauthlib import oauth2
 from requests_oauthlib import OAuth2Session
 
@@ -29,7 +28,8 @@ class OAuth2MetadataPlugin(grpc.AuthMetadataPlugin):
     def __init__(
         self,
         oauth2session: OAuth2Session,
-        func_retrieve_token: Callable,
+        func_retrieve_token: Callable[[], Any],
+        leeway: int = 60,
         expire_in: Optional[int] = None,
     ) -> None:
         """AuthMetadataPlugin for OAuth2 Authentication.
@@ -40,11 +40,14 @@ class OAuth2MetadataPlugin(grpc.AuthMetadataPlugin):
             oauth2session (OAuth2Session): The OAuth2Session object.
             func_fetch_token (Callable): The function to fetch the token.
 
-            expire_in (Optional[int]): Only used if the token does not contain an "expires_in" attribute. The number of seconds the token is valid for.
+            leeway (int): The number of seconds to consider the token as expired before the actual expiration time. Defaults to 60.
+            expire_in (Optional[int]): The number of seconds the token is valid for. Defaults to None.
+                Should only be used if the token does not contain an "expires_in" attribute.
         """
         self._oauth: OAuth2Session = oauth2session
-        self._func_retrieve_token: Callable = func_retrieve_token
+        self._func_retrieve_token: Callable[[], Any] = func_retrieve_token
 
+        self._leeway: int = leeway
         self._expires_in: Optional[int] = expire_in
         if self._expires_in is not None:
             # NOTE: "expires_in" is only RECOMMENDED
@@ -55,7 +58,7 @@ class OAuth2MetadataPlugin(grpc.AuthMetadataPlugin):
         self,
         context: grpc.AuthMetadataContext,
         callback: grpc.AuthMetadataPluginCallback,
-    ):
+    ) -> None:
         start_time = timeit.default_timer()
 
         try:
@@ -86,7 +89,7 @@ class OAuth2MetadataPlugin(grpc.AuthMetadataPlugin):
         # https://datatracker.ietf.org/doc/html/rfc6749#appendix-A
         # https://oauthlib.readthedocs.io/en/latest/_modules/oauthlib/oauth2/rfc6749/clients/base.html?highlight=expires_at#
         expires_at = self._oauth.token.get("expires_at", 0)
-        if time.time() > math.floor(expires_at):  # FIXME: math.floor, token could be already expired
+        if time.time() > (expires_at - self._leeway):
             return True
 
         return False
@@ -101,7 +104,7 @@ class OAuth2MetadataPlugin(grpc.AuthMetadataPlugin):
             logger.error(str(e))
             raise e
 
-    def _no_expiration(self, r):
+    def _no_expiration(self, r: requests.Response) -> requests.Response:
         """
         Sets the expiration time for the token if it is not provided in the response.
 
@@ -135,6 +138,7 @@ class Oauth2ClientCredentialsMetadataPlugin(OAuth2MetadataPlugin):
         authorization_server: str,
         scope: Optional[str] = None,
         audience: Optional[str] = None,
+        leeway: int = 60,
         expire_in: Optional[int] = None,
     ):
         """AuthMetadataPlugin for OAuth2 Client Credentials Authentication based on Oauth2MetadataPlugin.
@@ -150,6 +154,7 @@ class Oauth2ClientCredentialsMetadataPlugin(OAuth2MetadataPlugin):
             scope (Optional[str]): The scope of the access request. Defaults to None.
             audience (Optional[str]): The audience for authentication. Defaults to None.
 
+            leeway (int): The number of seconds to consider the token as expired before the actual expiration time. Defaults to 60.
             expire_in (Optional[int]): The number of seconds the token is valid for. Defaults to None.
                 Should only be used if the token does not contain an "expires_in" attribute.
         """
@@ -157,9 +162,10 @@ class Oauth2ClientCredentialsMetadataPlugin(OAuth2MetadataPlugin):
         self.client_id: str = client_id
         self.client_secret: str = client_secret
         self.authorization_server: str = authorization_server
-        self.scope: str | None = scope
-        self.audience: str | None = audience
-        self.expire_in: int | None = expire_in
+        self.scope: Optional[str] = scope
+        self.audience: Optional[str] = audience
+        self.leeway: int = leeway
+        self.expire_in: Optional[int] = expire_in
 
         client = oauth2.BackendApplicationClient(client_id=self.client_id, scope=self.scope)
         oauth2session = OAuth2Session(client=client)
@@ -171,36 +177,6 @@ class Oauth2ClientCredentialsMetadataPlugin(OAuth2MetadataPlugin):
             audience=self.audience,
         )
 
-        super().__init__(oauth2session=oauth2session, func_retrieve_token=func, expire_in=self.expire_in)
-
-    def call_credentials(self) -> grpc.CallCredentials:
-        """
-        Creates and returns the gRPC call credentials.
-
-        Returns:
-            grpc.CallCredentials: The gRPC call credentials.
-        """
-        return grpc.metadata_call_credentials(self)
-
-    def channel(self, target: str, channel_options: Optional[ChannelArgumentType] = None) -> grpc.aio.Channel:
-        """
-        Creates and returns a gRPC channel with secure credentials.
-        Args:
-            target (str): The target address of the channel.
-            channel_options (Optional[ChannelArgumentType], optional): Additional options for the gRPC channel. Defaults to None.
-                See https://grpc.github.io/grpc/python/glossary.html#term-channel_arguments
-        Returns:
-            grpc.aio.Channel: The created gRPC channel.
-        """
-
-        call_credentials: grpc.CallCredentials = self.call_credentials()
-        channel_credentials: grpc.ChannelCredentials = grpc.ssl_channel_credentials()
-
-        composite_credentials: grpc.ChannelCredentials = grpc.composite_channel_credentials(
-            channel_credentials, call_credentials
+        super().__init__(
+            oauth2session=oauth2session, func_retrieve_token=func, leeway=self.leeway, expire_in=self.expire_in
         )
-
-        channel: grpc.aio.Channel = grpc.aio.secure_channel(
-            target=target, credentials=composite_credentials, options=channel_options
-        )
-        return channel

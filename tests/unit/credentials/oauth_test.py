@@ -105,26 +105,27 @@ class TestOAuth2MetadataPlugin:
 
         assert oauth2mp._oauth.client_id == "test_id"
         assert oauth2mp._oauth.scope == "test_scope_a test_scope_b"
+        assert oauth2mp._leeway == 60
 
         assert oauth2mp._func_retrieve_token.keywords["token_url"] == "https://auth.server"
         assert oauth2mp._func_retrieve_token.keywords["client_secret"] == "test_secret"
         assert oauth2mp._func_retrieve_token.keywords["audience"] == "test_audience"
 
     @pytest.mark.parametrize(
-        "authorized, token, expected",
+        "authorized, token, is_expired",
         [
-            (True, {"expires_at": time.time() + 3600}, False),
-            (True, {"expires_at": time.time() - 3600}, True),
-            (False, {"expires_at": time.time() + 3600}, True),
-            (False, {"expires_at": time.time() - 3600}, True),
+            (True, {"expires_at": time.time() + 300}, False),
+            (True, {"expires_at": time.time()}, True),
+            (False, {"expires_at": time.time() + 300}, True),
+            (False, {"expires_at": time.time()}, True),
         ],
     )
     @mock.patch("pyzeebe.credentials.oauth.OAuth2Session.authorized", new_callable=PropertyMock)
-    def test_is_token_expired(self, mock_authorized, authorized, token, expected, oauth2mp):
+    def test_is_token_expired(self, mock_authorized, authorized, token, is_expired, oauth2mp):
         mock_authorized.return_value = authorized
 
         oauth2mp._oauth.token = token
-        assert oauth2mp.is_token_expired() is expected
+        assert oauth2mp.is_token_expired() is is_expired
 
     @pytest.fixture()
     def mock_response(self, token):
@@ -290,6 +291,51 @@ class TestOAuth2MetadataPluginExpireIn:
         mock_dumps.assert_called_once_with(token)
 
 
+class TestOAuth2MetadataPluginLeeway:
+
+    # NOTE: Following tests in scenario where "leeway" needs to be considered
+    @pytest.fixture(autouse=True)
+    def oauth2mp_leeway(self, oauth2session, func):
+
+        return OAuth2MetadataPlugin(
+            oauth2session=oauth2session,
+            func_retrieve_token=func,
+            leeway=30,
+        )
+
+    def test_initialization(self, oauth2mp_leeway: OAuth2MetadataPlugin):
+
+        assert isinstance(oauth2mp_leeway._oauth, OAuth2Session)
+        assert isinstance(oauth2mp_leeway._func_retrieve_token, partial)
+        assert isinstance(oauth2mp_leeway._func_retrieve_token, Callable)
+
+        assert oauth2mp_leeway._oauth.client_id == "test_id"
+        assert oauth2mp_leeway._oauth.scope == "test_scope_a test_scope_b"
+        assert oauth2mp_leeway._leeway == 30
+
+        assert oauth2mp_leeway._func_retrieve_token.keywords["token_url"] == "https://auth.server"
+        assert oauth2mp_leeway._func_retrieve_token.keywords["client_secret"] == "test_secret"
+        assert oauth2mp_leeway._func_retrieve_token.keywords["audience"] == "test_audience"
+
+    @pytest.mark.parametrize(
+        "authorized, token, is_expired",
+        [
+            (True, {"expires_at": time.time() + 300}, False),
+            (True, {"expires_at": time.time() + 30}, True),  # NOTE: leeway is 30
+            (True, {"expires_at": time.time()}, True),
+            (False, {"expires_at": time.time() + 300}, True),
+            (False, {"expires_at": time.time() + 30}, True),  # NOTE: leeway is 30
+            (False, {"expires_at": time.time()}, True),
+        ],
+    )
+    @mock.patch("pyzeebe.credentials.oauth.OAuth2Session.authorized", new_callable=PropertyMock)
+    def test_is_token_expired(self, mock_authorized, authorized, token, is_expired, oauth2mp_leeway):
+        mock_authorized.return_value = authorized
+
+        oauth2mp_leeway._oauth.token = token
+        assert oauth2mp_leeway.is_token_expired() is is_expired
+
+
 class TestOauth2ClientCredentialsMetadataPlugin:
 
     @pytest.fixture(autouse=True)
@@ -314,18 +360,3 @@ class TestOauth2ClientCredentialsMetadataPlugin:
         assert oauth2ccmp._func_retrieve_token.keywords["token_url"] == "https://auth.server"
         assert oauth2ccmp._func_retrieve_token.keywords["client_secret"] == "test_secret"
         assert oauth2ccmp._func_retrieve_token.keywords["audience"] == "test_audience"
-
-    def test_call_credentials(self, oauth2ccmp: Oauth2ClientCredentialsMetadataPlugin):
-        assert isinstance(oauth2ccmp.call_credentials(), grpc.CallCredentials)
-
-    def test_channel(self, oauth2ccmp: Oauth2ClientCredentialsMetadataPlugin):
-
-        channel = oauth2ccmp.channel(target="zeebe-grpc-camunda.test.de:443")
-        assert isinstance(channel, grpc.aio.Channel)
-
-    def test_channel_options(self, oauth2ccmp: Oauth2ClientCredentialsMetadataPlugin):
-
-        channel_options: ChannelArgumentType = (("grpc.ssl_target_name_override", "test_override"),)
-        channel = oauth2ccmp.channel(target="zeebe-grpc-camunda.test.de:443", channel_options=channel_options)
-
-        assert isinstance(channel, grpc.aio.Channel)

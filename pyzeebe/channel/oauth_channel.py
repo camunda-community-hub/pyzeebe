@@ -1,15 +1,10 @@
 from functools import partial
-from typing import Callable, Optional
+from typing import Optional
 
 import grpc
 from grpc.aio._typing import ChannelArgumentType
-from oauthlib import oauth2
-from requests_oauthlib import OAuth2Session
 
-from pyzeebe.credentials.oauth import (
-    Oauth2ClientCredentialsMetadataPlugin,
-    OAuth2MetadataPlugin,
-)
+from pyzeebe.credentials.oauth import Oauth2ClientCredentialsMetadataPlugin
 
 
 def create_oauth2_client_credentials_channel(
@@ -19,8 +14,10 @@ def create_oauth2_client_credentials_channel(
     authorization_server: str,
     scope: Optional[str] = None,
     audience: Optional[str] = None,
-    expire_in: Optional[int] = None,
+    channel_credentials: grpc.ChannelCredentials = grpc.ssl_channel_credentials(),
     channel_options: Optional[ChannelArgumentType] = None,
+    leeway: int = 60,
+    expire_in: Optional[int] = None,
 ) -> grpc.aio.Channel:
     """
     Create a gRPC channel for connecting to Camunda 8 (Self-Managed) with OAuth2ClientCredentials.
@@ -38,11 +35,13 @@ def create_oauth2_client_credentials_channel(
         scope (Optional[str]): The scope of the access request. Defaults to None.
         audience (Optional[str]): The audience for authentication. Defaults to None.
 
-        expire_in (Optional[int]): The number of seconds the token is valid for. Defaults to None.
-            Should only be used if the token does not contain an "expires_in" attribute.
-
+        channel_credentials (grpc.ChannelCredentials): The gRPC channel credentials. Defaults to grpc.ssl_channel_credentials().
         channel_options (Optional[ChannelArgumentType], optional): Additional options for the gRPC channel. Defaults to None.
                 See https://grpc.github.io/grpc/python/glossary.html#term-channel_arguments
+
+        leeway (int): The number of seconds to consider the token as expired before the actual expiration time. Defaults to 60.
+        expire_in (Optional[int]): The number of seconds the token is valid for. Defaults to None.
+            Should only be used if the token does not contain an "expires_in" attribute.
 
     Returns:
         grpc.aio.Channel: A gRPC channel connected to the Zeebe Gateway.
@@ -57,10 +56,20 @@ def create_oauth2_client_credentials_channel(
         authorization_server=authorization_server,
         scope=scope,
         audience=audience,
+        leeway=leeway,
         expire_in=expire_in,
     )
 
-    channel = oauth2_client_credentials.channel(target=target, channel_options=channel_options)
+    call_credentials: grpc.CallCredentials = grpc.metadata_call_credentials(oauth2_client_credentials)
+    # channel_credentials: grpc.ChannelCredentials = channel_credentials or grpc.ssl_channel_credentials()
+    composite_credentials: grpc.ChannelCredentials = grpc.composite_channel_credentials(
+        channel_credentials, call_credentials
+    )
+
+    channel: grpc.aio.Channel = grpc.aio.secure_channel(
+        target=target, credentials=composite_credentials, options=channel_options
+    )
+
     return channel
 
 
@@ -72,8 +81,10 @@ def create_camunda_cloud_channel(
     scope: str = "Zeebe",
     authorization_server: str = "https://login.cloud.camunda.io/oauth/token",
     audience: str = "zeebe.camunda.io",
-    expire_in: Optional[int] = None,
+    channel_credentials: grpc.ChannelCredentials = grpc.ssl_channel_credentials(),
     channel_options: Optional[ChannelArgumentType] = None,
+    leeway: int = 60,
+    expire_in: Optional[int] = None,
 ) -> grpc.aio.Channel:
     """
     Create a gRPC channel for connecting to Camunda 8 Cloud (SaaS).
@@ -88,10 +99,13 @@ def create_camunda_cloud_channel(
         to the client after successfully authenticating the client. Defaults to "https://login.cloud.camunda.io/oauth/token".
         audience (Optional[str]): The audience for authentication. Defaults to "zeebe.camunda.io".
 
-        expire_in (Optional[int]): The expiration time for the token. Defaults to None.
-
+        channel_credentials (grpc.ChannelCredentials): The gRPC channel credentials. Defaults to grpc.ssl_channel_credentials().
         channel_options (Optional[ChannelArgumentType], optional): Additional options for the gRPC channel. Defaults to None.
                 See https://grpc.github.io/grpc/python/glossary.html#term-channel_arguments
+
+        leeway (int): The number of seconds to consider the token as expired before the actual expiration time. Defaults to 60.
+        expire_in (Optional[int]): The number of seconds the token is valid for. Defaults to None.
+            Should only be used if the token does not contain an "expires_in" attribute.
 
     Returns:
         grpc.aio.Channel: The gRPC channel for connecting to Camunda Cloud.
@@ -105,6 +119,7 @@ def create_camunda_cloud_channel(
         authorization_server=authorization_server,
         scope=scope,
         audience=audience,
+        leeway=leeway,
         expire_in=expire_in,
     )
 
@@ -118,5 +133,14 @@ def create_camunda_cloud_channel(
     )
     oauth2_client_credentials._func_retrieve_token = func
 
-    channel = oauth2_client_credentials.channel(target=target, channel_options=channel_options)
+    call_credentials: grpc.CallCredentials = grpc.metadata_call_credentials(oauth2_client_credentials)
+    # channel_credentials: grpc.ChannelCredentials = channel_credentials or grpc.ssl_channel_credentials()
+    composite_credentials: grpc.ChannelCredentials = grpc.composite_channel_credentials(
+        channel_credentials, call_credentials
+    )
+
+    channel: grpc.aio.Channel = grpc.aio.secure_channel(
+        target=target, credentials=composite_credentials, options=channel_options
+    )
+
     return channel
