@@ -1,20 +1,23 @@
 import json
-import re
 import time
-from typing import Any
-from unittest import TestCase, mock, removeResult
-from unittest.mock import MagicMock, Mock, PropertyMock, patch
-from urllib import request
+from functools import partial
+from typing import Callable
+from unittest import mock
+from unittest.mock import MagicMock, PropertyMock
 from uuid import uuid4
 
+import grpc
 import pytest
-import pytest_asyncio
+from grpc.aio._typing import ChannelArgumentType
 from oauthlib import oauth2
 from oauthlib.oauth2 import OAuth2Error
 from requests import Response
 from requests_oauthlib import OAuth2Session
 
-from pyzeebe.credentials.oauth import OAuth2ClientCredentials
+from pyzeebe.credentials.oauth import (
+    Oauth2ClientCredentialsMetadataPlugin,
+    OAuth2MetadataPlugin,
+)
 
 
 @pytest.fixture
@@ -31,35 +34,97 @@ def token(access_token) -> dict:
             "refresh_expires_in": 0,
             "token_type": "Bearer",
             "not-before-policy": 0,
-            "scope": ["test_scope"],
+            "scope": ["test_scope_a", "test_scope_b"],
         }
     )
 
 
-class TestOauth2ClientCredentials:
+@pytest.fixture
+def client_id():
+    return "test_id"
+
+
+@pytest.fixture
+def client_secret():
+    return "test_secret"
+
+
+@pytest.fixture
+def token_url():
+    return "https://auth.server"
+
+
+@pytest.fixture
+def scope():
+    return "test_scope_a test_scope_b"
+
+
+@pytest.fixture
+def audience():
+    return "test_audience"
+
+
+@pytest.fixture
+def oauth2_client(client_id, scope):
+    return oauth2.BackendApplicationClient(client_id=client_id, scope=scope)
+
+
+@pytest.fixture()
+def oauth2session(oauth2_client):
+    return OAuth2Session(client=oauth2_client)
+
+
+@pytest.fixture()
+def func(oauth2session, token_url, client_secret, audience):
+    return partial(
+        oauth2session.fetch_token,
+        token_url=token_url,
+        client_secret=client_secret,
+        audience=audience,
+    )
+
+
+class TestOAuth2MetadataPlugin:
 
     @pytest.fixture(autouse=True)
-    def oauth_client_credentials(self):
-
-        return OAuth2ClientCredentials(
-            client_id="test_id",
-            client_secret="test_secret",
-            authorization_server="https://auth.server",
-            scope="test_scope",
-            audience="test_audience",
+    def oauth2mp(self, oauth2session, func):
+        return OAuth2MetadataPlugin(
+            oauth2session=oauth2session,
+            func_retrieve_token=func,
         )
-
-    def test_initialization(self, oauth_client_credentials: OAuth2ClientCredentials):
-        assert oauth_client_credentials._client_id == "test_id"
-        assert oauth_client_credentials._client_secret == "test_secret"
-        assert oauth_client_credentials._authorization_server == "https://auth.server"
-        assert oauth_client_credentials._scope == "test_scope"
-        assert oauth_client_credentials._audience == "test_audience"
 
     # Test OAuth2Session Initialization
     @mock.patch("pyzeebe.credentials.oauth.OAuth2Session")
     def test_oauth2_session_initialization(self, mock_oauth2_session):
         isinstance(mock_oauth2_session, oauth2.BackendApplicationClient)
+
+    def test_initialization(self, oauth2mp: OAuth2MetadataPlugin):
+        assert isinstance(oauth2mp._oauth, OAuth2Session)
+        assert isinstance(oauth2mp._func_retrieve_token, partial)
+        assert isinstance(oauth2mp._func_retrieve_token, Callable)
+
+        assert oauth2mp._oauth.client_id == "test_id"
+        assert oauth2mp._oauth.scope == "test_scope_a test_scope_b"
+
+        assert oauth2mp._func_retrieve_token.keywords["token_url"] == "https://auth.server"
+        assert oauth2mp._func_retrieve_token.keywords["client_secret"] == "test_secret"
+        assert oauth2mp._func_retrieve_token.keywords["audience"] == "test_audience"
+
+    @pytest.mark.parametrize(
+        "authorized, token, expected",
+        [
+            (True, {"expires_at": time.time() + 3600}, False),
+            (True, {"expires_at": time.time() - 3600}, True),
+            (False, {"expires_at": time.time() + 3600}, True),
+            (False, {"expires_at": time.time() - 3600}, True),
+        ],
+    )
+    @mock.patch("pyzeebe.credentials.oauth.OAuth2Session.authorized", new_callable=PropertyMock)
+    def test_is_token_expired(self, mock_authorized, authorized, token, expected, oauth2mp):
+        mock_authorized.return_value = authorized
+
+        oauth2mp._oauth.token = token
+        assert oauth2mp.is_token_expired() is expected
 
     @pytest.fixture()
     def mock_response(self, token):
@@ -78,7 +143,7 @@ class TestOauth2ClientCredentials:
         self,
         mock_request,
         mock_authorized,
-        oauth_client_credentials: OAuth2ClientCredentials,
+        oauth2mp: OAuth2MetadataPlugin,
         mock_response,
         token,
         authorized,
@@ -87,66 +152,114 @@ class TestOauth2ClientCredentials:
         mock_authorized.return_value = authorized
 
         mock_request.return_value = mock_response
-        oauth_client_credentials._oauth.request = mock_request
+        oauth2mp._oauth.request = mock_request
 
         mock_context = MagicMock()
         mock_callback = MagicMock()
-        oauth_client_credentials.__call__(mock_context, mock_callback)
+        oauth2mp.__call__(mock_context, mock_callback)
 
         mock_request.assert_called_once()
-        assert oauth_client_credentials._oauth.authorized is authorized
+        assert oauth2mp._oauth.authorized is authorized
 
-        t = oauth_client_credentials._oauth.token
+        t = oauth2mp._oauth.token
         del t["expires_at"]  # NOTE: We don't care about the expiration time
         assert t == token
 
-    # Test Fetching Token
-    @mock.patch("pyzeebe.credentials.oauth.OAuth2Session.fetch_token")
-    def test_fetch_token(self, mock_fetch_token, oauth_client_credentials: OAuth2ClientCredentials, token):
+    @pytest.fixture()
+    def oauth2mp_mock_func(self, oauth2session, mock_func):
 
-        # Call method to fetch  token and assert the returned token matches mock_token
-        # Verify correct parameters were passed to fetch_token
-        mock_context = MagicMock()
-        mock_callback = MagicMock()
-        oauth_client_credentials.__call__(mock_context, mock_callback)
-
-        mock_fetch_token.assert_called_once_with(
-            token_url=oauth_client_credentials._authorization_server,
-            client_secret=oauth_client_credentials._client_secret,
-            audience=oauth_client_credentials._audience,
+        return OAuth2MetadataPlugin(
+            oauth2session=oauth2session,
+            func_retrieve_token=mock_func,
         )
 
+    # Test Fetching Token
+    @mock.patch("pyzeebe.credentials.oauth.OAuth2Session.fetch_token")
+    def test_fetch_token(self, mock_fetch_token, oauth2session: OAuth2Session):
 
-class TestOauth2ClientCredentialsExpireIn:
+        func = partial(
+            mock_fetch_token,
+            token_url="https://auth.server",
+            client_secret="test_secret",
+            audience="test_audience",
+        )
+
+        oauth2mp = OAuth2MetadataPlugin(
+            oauth2session=oauth2session,
+            func_retrieve_token=func,
+        )
+
+        mock_context = MagicMock()
+        mock_callback = MagicMock()
+        oauth2mp.__call__(mock_context, mock_callback)
+
+        mock_fetch_token.assert_called_once_with(
+            token_url="https://auth.server",
+            client_secret="test_secret",
+            audience="test_audience",
+        )
+
+    @mock.patch("pyzeebe.credentials.oauth.OAuth2Session.fetch_token", side_effect=OAuth2Error("Error fetching token"))
+    def test_authorized_error(
+        self,
+        mock_fetch_token,
+        oauth2session: OAuth2Session,
+    ):
+
+        func = partial(
+            mock_fetch_token,
+            token_url="https://auth.server",
+            client_secret="test_secret",
+            audience="test_audience",
+        )
+
+        oauth2mp = OAuth2MetadataPlugin(
+            oauth2session=oauth2session,
+            func_retrieve_token=func,
+        )
+
+        mock_context = MagicMock()
+        mock_callback = MagicMock()
+
+        oauth2mp.__call__(mock_context, mock_callback)
+
+        with pytest.raises(OAuth2Error, match="Error fetching token"):
+            oauth2mp.retrieve_token()
+
+
+class TestOAuth2MetadataPluginExpireIn:
 
     # NOTE: Following tests in scenario where "expires_in" is not available in the OAuth2ClientCredentials Token
-    @pytest.fixture(autouse=True, scope="class")
-    def oauth_client_credentials_expire_in(self):
-        # This fixture now returns an instance of OAuth2ClientCredentials
-        return OAuth2ClientCredentials(
-            client_id="test_id",
-            client_secret="test_secret",
-            authorization_server="https://auth.server",
-            scope="test_scope",
-            audience="test_audience",
+    @pytest.fixture(autouse=True)
+    def oauth2mp_expire_in(self, oauth2session, func):
+
+        return OAuth2MetadataPlugin(
+            oauth2session=oauth2session,
+            func_retrieve_token=func,
             expire_in=3600,
         )
 
-    def test_initialization_expire_in(self, oauth_client_credentials_expire_in: OAuth2ClientCredentials):
-        assert oauth_client_credentials_expire_in._client_id == "test_id"
-        assert oauth_client_credentials_expire_in._client_secret == "test_secret"
-        assert oauth_client_credentials_expire_in._authorization_server == "https://auth.server"
-        assert oauth_client_credentials_expire_in._scope == "test_scope"
-        assert oauth_client_credentials_expire_in._audience == "test_audience"
-        assert oauth_client_credentials_expire_in._expires_in == 3600
+    def test_initialization(self, oauth2mp_expire_in: OAuth2MetadataPlugin):
+
+        assert isinstance(oauth2mp_expire_in._oauth, OAuth2Session)
+        assert isinstance(oauth2mp_expire_in._func_retrieve_token, partial)
+        assert isinstance(oauth2mp_expire_in._func_retrieve_token, Callable)
+
+        assert oauth2mp_expire_in._oauth.client_id == "test_id"
+        assert oauth2mp_expire_in._oauth.scope == "test_scope_a test_scope_b"
+        assert oauth2mp_expire_in._expires_in == 3600
+
+        assert oauth2mp_expire_in._func_retrieve_token.keywords["token_url"] == "https://auth.server"
+        assert oauth2mp_expire_in._func_retrieve_token.keywords["client_secret"] == "test_secret"
+        assert oauth2mp_expire_in._func_retrieve_token.keywords["audience"] == "test_audience"
 
     @mock.patch("pyzeebe.credentials.oauth.json.loads")
     @mock.patch("pyzeebe.credentials.oauth.json.dumps")
-    def test_no_expiration(self, mock_dumps, mock_loads, oauth_client_credentials_expire_in: OAuth2ClientCredentials):
+    def test_no_expiration(self, mock_dumps, mock_loads, oauth2mp_expire_in: OAuth2MetadataPlugin):
         mock_response = mock.MagicMock()
         mock_response.text = "{}"
         mock_loads.return_value = {}
-        oauth_client_credentials_expire_in._no_expiration(mock_response)
+        oauth2mp_expire_in._no_expiration(mock_response)
         mock_dumps.assert_called_once_with({"expires_in": 3600})
 
     @pytest.fixture
@@ -168,10 +281,51 @@ class TestOauth2ClientCredentialsExpireIn:
         token,
         token_without_expire_in,
         token_without_expire_in_string,
-        oauth_client_credentials_expire_in: OAuth2ClientCredentials,
+        oauth2mp_expire_in: OAuth2MetadataPlugin,
     ):
         mock_response = mock.MagicMock()
         mock_response.text = token_without_expire_in_string
         mock_loads.return_value = token_without_expire_in
-        oauth_client_credentials_expire_in._no_expiration(mock_response)
+        oauth2mp_expire_in._no_expiration(mock_response)
         mock_dumps.assert_called_once_with(token)
+
+
+class TestOauth2ClientCredentialsMetadataPlugin:
+
+    @pytest.fixture(autouse=True)
+    def oauth2ccmp(self, client_id, client_secret, token_url, scope, audience):
+
+        return Oauth2ClientCredentialsMetadataPlugin(
+            client_id=client_id,
+            client_secret=client_secret,
+            authorization_server=token_url,
+            scope=scope,
+            audience=audience,
+        )
+
+    def test_initialization(self, oauth2ccmp: Oauth2ClientCredentialsMetadataPlugin):
+        assert isinstance(oauth2ccmp._oauth, OAuth2Session)
+        assert isinstance(oauth2ccmp._func_retrieve_token, partial)
+        assert isinstance(oauth2ccmp._func_retrieve_token, Callable)
+
+        assert oauth2ccmp._oauth.client_id == "test_id"
+        assert oauth2ccmp._oauth.scope == "test_scope_a test_scope_b"
+
+        assert oauth2ccmp._func_retrieve_token.keywords["token_url"] == "https://auth.server"
+        assert oauth2ccmp._func_retrieve_token.keywords["client_secret"] == "test_secret"
+        assert oauth2ccmp._func_retrieve_token.keywords["audience"] == "test_audience"
+
+    def test_call_credentials(self, oauth2ccmp: Oauth2ClientCredentialsMetadataPlugin):
+        assert isinstance(oauth2ccmp.call_credentials(), grpc.CallCredentials)
+
+    def test_channel(self, oauth2ccmp: Oauth2ClientCredentialsMetadataPlugin):
+
+        channel = oauth2ccmp.channel(target="zeebe-grpc-camunda.test.de:443")
+        assert isinstance(channel, grpc.aio.Channel)
+
+    def test_channel_options(self, oauth2ccmp: Oauth2ClientCredentialsMetadataPlugin):
+
+        channel_options: ChannelArgumentType = (("grpc.ssl_target_name_override", "test_override"),)
+        channel = oauth2ccmp.channel(target="zeebe-grpc-camunda.test.de:443", channel_options=channel_options)
+
+        assert isinstance(channel, grpc.aio.Channel)
