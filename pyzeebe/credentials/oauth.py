@@ -7,14 +7,14 @@ from typing import Any, Callable, Optional
 
 import grpc
 import requests
-from grpc._auth import _sign_request
+from grpc._auth import _sign_request  # type: ignore[import-untyped]
 from oauthlib import oauth2
 from requests_oauthlib import OAuth2Session
 
 logger = logging.getLogger(__name__)
 
 
-class OAuth2MetadataPlugin(grpc.AuthMetadataPlugin):
+class OAuth2MetadataPlugin(grpc.AuthMetadataPlugin):  # type: ignore[misc]
     """AuthMetadataPlugin for OAuth2 Authentication.
 
     Implements the AuthMetadataPlugin interface for OAuth2 Authentication based on oauthlib and requests_oauthlib.
@@ -27,7 +27,7 @@ class OAuth2MetadataPlugin(grpc.AuthMetadataPlugin):
     def __init__(
         self,
         oauth2session: OAuth2Session,
-        func_retrieve_token: Callable[[], Any],
+        func_retrieve_token: Callable[..., Any],
         leeway: int = 60,
         expire_in: Optional[int] = None,
     ) -> None:

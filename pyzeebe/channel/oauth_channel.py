@@ -2,7 +2,7 @@ from functools import partial
 from typing import Optional
 
 import grpc
-from grpc.aio._typing import ChannelArgumentType
+from grpc.aio._typing import ChannelArgumentType  # type: ignore[import-untyped]
 
 from pyzeebe.credentials.oauth import Oauth2ClientCredentialsMetadataPlugin
 
