@@ -2,9 +2,8 @@ import json
 import logging
 import time
 import timeit
-from collections.abc import Callable
 from functools import partial
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 import grpc
 import requests
