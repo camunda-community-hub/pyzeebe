@@ -3,15 +3,23 @@ import logging
 import time
 import timeit
 from functools import partial
-from typing import Any, Callable, Optional
+from typing import Any, Dict, Optional
 
 import grpc
 import requests
-from grpc._auth import _sign_request  # type: ignore[import-untyped]
 from oauthlib import oauth2
 from requests_oauthlib import OAuth2Session
 
 logger = logging.getLogger(__name__)
+
+
+def _sign_request(
+    callback: grpc.AuthMetadataPluginCallback,
+    token: Optional[str],
+    error: Optional[Exception],
+) -> None:
+    metadata = (("authorization", "Bearer {}".format(token)),)
+    callback(metadata, error)
 
 
 class OAuth2MetadataPlugin(grpc.AuthMetadataPlugin):  # type: ignore[misc]
@@ -27,24 +35,24 @@ class OAuth2MetadataPlugin(grpc.AuthMetadataPlugin):  # type: ignore[misc]
     def __init__(
         self,
         oauth2session: OAuth2Session,
-        func_retrieve_token: Callable[..., Any],
+        func_retrieve_token: partial[Dict[str, Any]],
         leeway: int = 60,
         expire_in: Optional[int] = None,
     ) -> None:
         """AuthMetadataPlugin for OAuth2 Authentication.
 
-        https://datatracker.ietf.org/doc/html/rfc6749
-
         Args:
             oauth2session (OAuth2Session): The OAuth2Session object.
             func_fetch_token (Callable): The function to fetch the token.
 
-            leeway (int): The number of seconds to consider the token as expired before the actual expiration time. Defaults to 60.
-            expire_in (Optional[int]): The number of seconds the token is valid for. Defaults to None.
+            leeway (int): The number of seconds to consider the token as expired before the actual expiration time.
+                Defaults to 60.
+            expire_in (Optional[int]): The number of seconds the token is valid for.
+                Defaults to None.
                 Should only be used if the token does not contain an "expires_in" attribute.
         """
         self._oauth: OAuth2Session = oauth2session
-        self._func_retrieve_token: Callable[[], Any] = func_retrieve_token
+        self._func_retrieve_token: partial[Dict[str, Any]] = func_retrieve_token
 
         self._leeway: int = leeway
         self._expires_in: Optional[int] = expire_in
@@ -142,19 +150,18 @@ class Oauth2ClientCredentialsMetadataPlugin(OAuth2MetadataPlugin):
     ):
         """AuthMetadataPlugin for OAuth2 Client Credentials Authentication based on Oauth2MetadataPlugin.
 
-        https://oauth.net/2/grant-types/client-credentials/
-        https://datatracker.ietf.org/doc/html/rfc6749#section-11.2.2
-
         Args:
             client_id (str): The client id.
             client_secret (str): The client secret.
-            authorization_server (str): The authorization server issuing access tokens.
-            to the client after successfully authenticating the client.
+            authorization_server (str): The authorization server issuing access tokens
+                to the client after successfully authenticating the client.
             scope (Optional[str]): The scope of the access request. Defaults to None.
             audience (Optional[str]): The audience for authentication. Defaults to None.
 
-            leeway (int): The number of seconds to consider the token as expired before the actual expiration time. Defaults to 60.
-            expire_in (Optional[int]): The number of seconds the token is valid for. Defaults to None.
+            leeway (int): The number of seconds to consider the token as expired before the actual expiration time.
+                Defaults to 60.
+            expire_in (Optional[int]): The number of seconds the token is valid for.
+                Defaults to None.
                 Should only be used if the token does not contain an "expires_in" attribute.
         """
 

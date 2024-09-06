@@ -1,21 +1,23 @@
-from typing import Any, Dict, Optional
+from typing import Optional
 
 import grpc
 
 from pyzeebe.channel.channel_options import get_channel_options
 from pyzeebe.channel.utils import create_address
+from pyzeebe.credentials.typing import ChannelArgumentType
 
 
 def create_insecure_channel(
-    hostname: Optional[str] = None, port: Optional[int] = None, channel_options: Optional[Dict[str, Any]] = None
+    hostname: Optional[str] = None, port: Optional[int] = None, channel_options: Optional[ChannelArgumentType] = None
 ) -> grpc.aio.Channel:
     """
     Create an insecure channel
 
     Args:
-        hostname (Optional[str], optional): Zeebe gateway hostname
-        port (Optional[int], optional): Zeebe gateway port
-        channel_options (Optional[Dict], optional): GRPC channel options. See https://grpc.github.io/grpc/python/glossary.html#term-channel_arguments
+        hostname (Optional[str]): Zeebe gateway hostname
+        port (Optional[int]): Zeebe gateway port
+        channel_options (Optional[ChannelArgumentType]): GRPC channel options.
+            See https://grpc.github.io/grpc/python/glossary.html#term-channel_arguments
 
     Returns:
         grpc.aio.Channel: A GRPC Channel connected to the Zeebe gateway.

@@ -1,23 +1,31 @@
-from typing import Any, Dict, Optional
+from typing import Optional
 
+import deprecation  # type: ignore[import-untyped]
 import grpc
 from oauthlib import oauth2
 from requests import HTTPError
 from requests_oauthlib import OAuth2Session
 
 from pyzeebe.channel.channel_options import get_channel_options
+from pyzeebe.credentials.typing import ChannelArgumentType
 from pyzeebe.errors import (
     InvalidCamundaCloudCredentialsError,
     InvalidOAuthCredentialsError,
 )
 
 
+@deprecation.deprecated(
+    deprecated_in="v4.0.0rc5",
+    # current_version=__version__
+    removed_in="v4.0.1",
+    details="Use pyzeebe.channel.oauth_channel.create_camunda_cloud_channel function instead",
+)  # type: ignore[misc]
 def create_camunda_cloud_channel(
     client_id: str,
     client_secret: str,
     cluster_id: str,
     region: str = "bru-2",
-    channel_options: Optional[Dict[str, Any]] = None,
+    channel_options: Optional[ChannelArgumentType] = None,
 ) -> grpc.aio.Channel:
     """
     Create channel connected to a Camunda Cloud cluster
@@ -27,7 +35,7 @@ def create_camunda_cloud_channel(
         client_secret (str): The client secret provided by Camunda Cloud
         cluster_id (str): The zeebe cluster id to connect to
         region (str): The cluster's region. Defaults to bru-2
-        channel_options (Optional[Dict], optional): GRPC channel options. See https://grpc.github.io/grpc/python/glossary.html
+        channel_options (Optional[ChannelArgumentType]): GRPC channel options. See https://grpc.github.io/grpc/python/glossary.html
 
     Returns:
         grpc.aio.Channel: A GRPC Channel connected to the Zeebe gateway.
@@ -40,7 +48,7 @@ def create_camunda_cloud_channel(
     return grpc.aio.secure_channel(
         f"{cluster_id}.{region}.zeebe.camunda.io:443",
         channel_credentials,
-        options=get_channel_options(channel_options or {}),
+        options=get_channel_options(channel_options),
     )
 
 
