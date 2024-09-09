@@ -4,17 +4,6 @@ from typing import Callable, Dict, Iterable, List, NoReturn, Optional, Union
 
 import aiofiles
 import grpc
-from zeebe_grpc.gateway_pb2 import (
-    CancelProcessInstanceRequest,
-    CreateProcessInstanceRequest,
-    CreateProcessInstanceWithResultRequest,
-    DecisionMetadata,
-    DecisionRequirementsMetadata,
-    DeployResourceRequest,
-    FormMetadata,
-    ProcessMetadata,
-    Resource,
-)
 
 from pyzeebe.errors import (
     InvalidJSONError,
@@ -26,6 +15,17 @@ from pyzeebe.errors import (
 )
 from pyzeebe.grpc_internals.grpc_utils import is_error_status
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
+from pyzeebe.proto.gateway_pb2 import (
+    CancelProcessInstanceRequest,
+    CreateProcessInstanceRequest,
+    CreateProcessInstanceWithResultRequest,
+    DecisionMetadata,
+    DecisionRequirementsMetadata,
+    DeployResourceRequest,
+    FormMetadata,
+    ProcessMetadata,
+    Resource,
+)
 from pyzeebe.types import Variables
 
 from .types import (

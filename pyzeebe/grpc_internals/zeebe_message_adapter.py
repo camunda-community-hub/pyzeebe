@@ -2,11 +2,11 @@ import json
 from typing import Optional
 
 import grpc
-from zeebe_grpc.gateway_pb2 import PublishMessageRequest
 
 from pyzeebe.errors import MessageAlreadyExistsError
 from pyzeebe.grpc_internals.grpc_utils import is_error_status
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
+from pyzeebe.proto.gateway_pb2 import PublishMessageRequest
 from pyzeebe.types import Variables
 
 from .types import PublishMessageResponse
