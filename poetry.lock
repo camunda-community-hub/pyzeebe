@@ -1283,6 +1283,17 @@ files = [
 ]
 
 [[package]]
+name = "types-protobuf"
+version = "5.27.0.20240907"
+description = "Typing stubs for protobuf"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "types-protobuf-5.27.0.20240907.tar.gz", hash = "sha256:bb6f90f66b18d4d1c75667b6586334b0573a6fcee5eb0142a7348a765a7cbadc"},
+    {file = "types_protobuf-5.27.0.20240907-py3-none-any.whl", hash = "sha256:5443270534cc8072909ef7ad9e1421ccff924ca658749a6396c0c43d64c32676"},
+]
+
+[[package]]
 name = "types-requests"
 version = "2.32.0.20240907"
 description = "Typing stubs for requests"
@@ -1361,4 +1372,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "fb9a706f5d4558131c1638c3cdbe70f0c2f631760fd3168de41fa5a56ed79f55"
+content-hash = "44152860d64cc14e4c28a072eed2e4033ebfa89d24a61275b47874e41802a652"
