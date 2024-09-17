@@ -41,6 +41,7 @@ def build_job_handler(task_function: Function[..., Any], task_config: TaskConfig
         return_variables, succeeded = await run_original_task_function(
             prepared_task_function, task_config, job, job_controller
         )
+        job.set_task_result(return_variables)
         await job_controller.set_running_after_decorators_status()
         job = await after_decorator_runner(job)
         if succeeded:
