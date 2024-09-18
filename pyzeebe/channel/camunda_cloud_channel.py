@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Optional
 
 import grpc
 from oauthlib import oauth2
@@ -6,6 +6,7 @@ from requests import HTTPError
 from requests_oauthlib import OAuth2Session
 
 from pyzeebe.channel.channel_options import get_channel_options
+from pyzeebe.credentials.typing import ChannelArgumentType
 from pyzeebe.errors import (
     InvalidCamundaCloudCredentialsError,
     InvalidOAuthCredentialsError,
@@ -17,7 +18,7 @@ def create_camunda_cloud_channel(
     client_secret: str,
     cluster_id: str,
     region: str = "bru-2",
-    channel_options: Optional[Dict[str, Any]] = None,
+    channel_options: Optional[ChannelArgumentType] = None,
 ) -> grpc.aio.Channel:
     """
     Create channel connected to a Camunda Cloud cluster
@@ -40,7 +41,7 @@ def create_camunda_cloud_channel(
     return grpc.aio.secure_channel(
         f"{cluster_id}.{region}.zeebe.camunda.io:443",
         channel_credentials,
-        options=get_channel_options(channel_options or {}),
+        options=get_channel_options(channel_options),
     )
 
 
