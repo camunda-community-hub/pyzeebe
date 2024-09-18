@@ -1,10 +1,10 @@
 from typing import Optional
 
-import deprecation  # type: ignore[import-untyped]
 import grpc
 from oauthlib import oauth2
 from requests import HTTPError
 from requests_oauthlib import OAuth2Session
+from typing_extensions import deprecated
 
 from pyzeebe.channel.channel_options import get_channel_options
 from pyzeebe.credentials.typing import ChannelArgumentType
@@ -14,12 +14,11 @@ from pyzeebe.errors import (
 )
 
 
-@deprecation.deprecated(
-    deprecated_in="v4.0.0rc5",
-    # current_version=__version__
-    removed_in="v4.0.1",
-    details="Use pyzeebe.channel.oauth_channel.create_camunda_cloud_channel function instead",
-)  # type: ignore[misc]
+@deprecated(
+    "Use pyzeebe.channel.oauth_channel.create_camunda_cloud_channel function instead",
+    category=DeprecationWarning,
+    stacklevel=1,
+)
 def create_camunda_cloud_channel(
     client_id: str,
     client_secret: str,

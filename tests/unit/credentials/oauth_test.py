@@ -254,12 +254,10 @@ class TestOAuth2MetadataPluginExpireIn:
         assert oauth2mp_expire_in._func_retrieve_token.keywords["client_secret"] == "test_secret"
         assert oauth2mp_expire_in._func_retrieve_token.keywords["audience"] == "test_audience"
 
-    @mock.patch("pyzeebe.credentials.oauth.json.loads")
     @mock.patch("pyzeebe.credentials.oauth.json.dumps")
-    def test_no_expiration(self, mock_dumps, mock_loads, oauth2mp_expire_in: OAuth2MetadataPlugin):
-        mock_response = mock.MagicMock()
-        mock_response.text = "{}"
-        mock_loads.return_value = {}
+    def test_no_expiration(self, mock_dumps, oauth2mp_expire_in: OAuth2MetadataPlugin):
+        mock_response = mock.MagicMock(Response)
+        mock_response.json.return_value = {}
         oauth2mp_expire_in._no_expiration(mock_response)
         mock_dumps.assert_called_once_with({"expires_in": 3600})
 
@@ -269,24 +267,16 @@ class TestOAuth2MetadataPluginExpireIn:
         del t["expires_in"]
         return t
 
-    @pytest.fixture
-    def token_without_expire_in_string(self, token_without_expire_in) -> str:
-        return json.dumps(token_without_expire_in)
-
-    @mock.patch("pyzeebe.credentials.oauth.json.loads")
     @mock.patch("pyzeebe.credentials.oauth.json.dumps")
     def test_no_expiration_with_token(
         self,
         mock_dumps,
-        mock_loads,
         token,
         token_without_expire_in,
-        token_without_expire_in_string,
         oauth2mp_expire_in: OAuth2MetadataPlugin,
     ):
-        mock_response = mock.MagicMock()
-        mock_response.text = token_without_expire_in_string
-        mock_loads.return_value = token_without_expire_in
+        mock_response = mock.MagicMock(Response)
+        mock_response.json.return_value = token_without_expire_in
         oauth2mp_expire_in._no_expiration(mock_response)
         mock_dumps.assert_called_once_with(token)
 

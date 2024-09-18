@@ -121,7 +121,7 @@ class OAuth2MetadataPlugin(grpc.AuthMetadataPlugin):  # type: ignore[misc]
         Returns:
             requests.Response: The modified response object with the updated token.
         """
-        token = json.loads(r.text)
+        token = r.json()
 
         if token.get("expires_in") is None:
             logger.warning("Token attribute expires_in not found.")
