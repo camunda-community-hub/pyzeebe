@@ -208,6 +208,29 @@ class TestBuildJobHandler:
         task_config.after.pop().assert_called_once()
 
     @pytest.mark.asyncio
+    async def test_after_decorator_can_access_task_result(
+        self,
+        task_config: TaskConfig,
+        job: Job,
+        mocked_job_controller: JobController,
+    ):
+        async def task_function():
+            return {"result": 1}
+
+        self.task_result = dict()
+
+        async def after_decorator(job: Job):
+            self.task_result = job.task_result
+            return job
+
+        task_config.after.append(after_decorator)
+        job_handler = task_builder.build_job_handler(task_function, task_config)
+
+        await job_handler(job, mocked_job_controller)
+
+        assert self.task_result == {"result": 1}
+
+    @pytest.mark.asyncio
     async def test_failing_decorator_continues(
         self,
         original_task_function: Callable,
