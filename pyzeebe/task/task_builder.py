@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import functools
+import inspect
 import logging
-from typing import Any, Sequence, Tuple, TypeVar
+from inspect import Parameter
+from typing import Any, Callable, Dict, Sequence, Tuple, TypeVar
 
 from typing_extensions import ParamSpec
 
@@ -66,13 +68,19 @@ async def run_original_task_function(
 ) -> Tuple[Variables, bool]:
     try:
         if task_config.variables_to_fetch is None:
-            variables = {}
+            variables: Dict[str, Any] = {}
+        elif task_wants_all_variables(task_config):
+            if only_job_is_required_in_task_function(task_function):
+                variables = {}
+            else:
+                variables = {**job.variables}
         else:
             variables = {
                 k: v
                 for k, v in job.variables.items()
                 if k in task_config.variables_to_fetch or k == task_config.job_parameter_name
             }
+
         if task_config.job_parameter_name:
             variables[task_config.job_parameter_name] = job
 
@@ -87,6 +95,15 @@ async def run_original_task_function(
         exception_handler = task_config.exception_handler or default_exception_handler
         await exception_handler(e, job, job_controller)
         return job.variables, False
+
+
+def only_job_is_required_in_task_function(task_function: DictFunction[...]) -> bool:
+    function_signature = inspect.signature(task_function)
+    return all(param.annotation == Job for param in function_signature.parameters.values())
+
+
+def task_wants_all_variables(task_config: TaskConfig) -> bool:
+    return task_config.variables_to_fetch == []
 
 
 def create_decorator_runner(decorators: Sequence[AsyncTaskDecorator]) -> DecoratorRunner:
