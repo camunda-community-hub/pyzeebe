@@ -2,7 +2,6 @@ import logging
 from typing import NoReturn
 
 import grpc
-from zeebe_grpc.gateway_pb2_grpc import GatewayStub
 
 from pyzeebe.errors import (
     UnknownGrpcStatusCodeError,
@@ -12,6 +11,7 @@ from pyzeebe.errors import (
 )
 from pyzeebe.errors.pyzeebe_errors import PyZeebeError
 from pyzeebe.grpc_internals.grpc_utils import is_error_status
+from pyzeebe.proto.gateway_pb2_grpc import GatewayStub
 
 logger = logging.getLogger(__name__)
 
