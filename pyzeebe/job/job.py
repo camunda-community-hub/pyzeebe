@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 from pyzeebe.job.job_status import JobStatus
 from pyzeebe.types import Headers, Variables
@@ -25,6 +25,10 @@ class Job:
     variables: Variables
     tenant_id: Optional[str] = None
     status: JobStatus = JobStatus.Running
+    task_result = None
+
+    def set_task_result(self, task_result: Any) -> None:
+        object.__setattr__(self, "task_result", task_result)
 
     def _set_status(self, value: JobStatus) -> None:
         object.__setattr__(self, "status", value)
