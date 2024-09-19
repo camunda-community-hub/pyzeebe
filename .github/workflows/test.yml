@@ -3,7 +3,7 @@ name: Test pyzeebe
 on: [push, pull_request]
 
 jobs:
-  # 3.6 and 3.7 only for passing branch rules
+  # 3.6, 3.7 and 3.8 only for passing branch rules
   # https://github.com/camunda-community-hub/pyzeebe/issues/381#issuecomment-2107430780
   unit-test:
     runs-on: ubuntu-latest
@@ -18,20 +18,20 @@ jobs:
         uses: abatilo/actions-poetry@v2.4.0
         with:
           poetry-version: 1.5.1
-        if: ${{ matrix.python-version != '3.6' && matrix.python-version != '3.7' }}
+        if: ${{ matrix.python-version != '3.6' && matrix.python-version != '3.7' && matrix.python-version != '3.8' }}
       - name: Install dependencies
         run: poetry install
-        if: ${{ matrix.python-version != '3.6' && matrix.python-version != '3.7' }}
+        if: ${{ matrix.python-version != '3.6' && matrix.python-version != '3.7' && matrix.python-version != '3.8' }}
       - name: Test with pytest
         run: |
           poetry run coverage run --source=pyzeebe -m pytest tests/unit
-        if: ${{ matrix.python-version != '3.6' && matrix.python-version != '3.7' }}
+        if: ${{ matrix.python-version != '3.6' && matrix.python-version != '3.7' && matrix.python-version != '3.8' }}
       - name: Upload to coveralls
         run: |
           poetry run coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: ${{ matrix.python-version != '3.6' && matrix.python-version != '3.7' }}
+        if: ${{ matrix.python-version != '3.6' && matrix.python-version != '3.7' && matrix.python-version != '3.8' }}
 
   integration-test:
     env:
