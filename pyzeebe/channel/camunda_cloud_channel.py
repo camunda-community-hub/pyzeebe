@@ -6,11 +6,11 @@ from requests import HTTPError
 from requests_oauthlib import OAuth2Session
 
 from pyzeebe.channel.channel_options import get_channel_options
-from pyzeebe.credentials.typing import ChannelArgumentType
 from pyzeebe.errors import (
     InvalidCamundaCloudCredentialsError,
     InvalidOAuthCredentialsError,
 )
+from pyzeebe.types import ChannelArgumentType
 
 
 def create_camunda_cloud_channel(
@@ -28,7 +28,8 @@ def create_camunda_cloud_channel(
         client_secret (str): The client secret provided by Camunda Cloud
         cluster_id (str): The zeebe cluster id to connect to
         region (str): The cluster's region. Defaults to bru-2
-        channel_options (Optional[Dict], optional): GRPC channel options. See https://grpc.github.io/grpc/python/glossary.html
+        channel_options (Optional[Dict], optional): GRPC channel options.
+            See https://grpc.github.io/grpc/python/glossary.html
 
     Returns:
         grpc.aio.Channel: A GRPC Channel connected to the Zeebe gateway.

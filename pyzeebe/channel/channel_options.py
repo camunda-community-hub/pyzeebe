@@ -10,7 +10,7 @@ https://docs.camunda.io/docs/product-manuals/zeebe/deployment-guide/operations/s
 
 from typing import Optional
 
-from pyzeebe.credentials.typing import ChannelArgumentType
+from pyzeebe.types import ChannelArgumentType
 
 GRPC_CHANNEL_OPTIONS_DEFAULT: ChannelArgumentType = (("grpc.keepalive_time_ms", 45_000),)
 
