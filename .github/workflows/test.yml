@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Init python poetry action
-        uses: abatilo/actions-poetry@v2.4.0
+        uses: abatilo/actions-poetry@v3.0.0
         with:
           poetry-version: 1.5.1
         if: ${{ matrix.python-version != '3.6' && matrix.python-version != '3.7' && matrix.python-version != '3.8' }}
@@ -52,7 +52,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Init python poetry action
-        uses: abatilo/actions-poetry@v2.4.0
+        uses: abatilo/actions-poetry@v3.0.0
         with:
           poetry-version: 1.5.1
       - name: Install dependencies
