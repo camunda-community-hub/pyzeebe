@@ -40,8 +40,7 @@ jobs:
 
   integration-test:
     env:
-      ZEEBE_ADDRESS: "zeebe:26500"
-      GRPC_DNS_RESOLVER: "native"
+      ZEEBE_ADDRESS: "localhost:26500"
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -51,7 +50,7 @@ jobs:
       zeebe:
         image: camunda/zeebe:${{ matrix.zeebe-version }}
         ports:
-          - 26500/tcp
+          - 26500:26500
 
     steps:
       - uses: actions/checkout@v4
