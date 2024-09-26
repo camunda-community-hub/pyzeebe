@@ -5,9 +5,9 @@ from typing import List, Optional
 from pyzeebe.errors import (
     ActivateJobsRequestInvalidError,
     ZeebeBackPressureError,
+    ZeebeDeadlineExceeded,
     ZeebeGatewayUnavailableError,
     ZeebeInternalError,
-    ZeebeDeadlineExceeded,
 )
 from pyzeebe.grpc_internals.zeebe_job_adapter import ZeebeJobAdapter
 from pyzeebe.job.job import Job
