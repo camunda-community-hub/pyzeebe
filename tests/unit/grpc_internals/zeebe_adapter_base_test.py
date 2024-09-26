@@ -5,6 +5,7 @@ import pytest
 
 from pyzeebe.errors import (
     ZeebeBackPressureError,
+    ZeebeDeadlineExceeded,
     ZeebeGatewayUnavailableError,
     ZeebeInternalError,
 )
@@ -33,6 +34,11 @@ class TestHandleRpcError:
     async def test_raises_back_pressure_error_on_resource_exhausted(self, zeebe_adapter: ZeebeAdapterBase):
         error = grpc.aio.AioRpcError(grpc.StatusCode.RESOURCE_EXHAUSTED, None, None)
         with pytest.raises(ZeebeBackPressureError):
+            await zeebe_adapter._handle_grpc_error(error)
+
+    async def test_raises_deadline_exceeded_on_deadline_exceeded(self, zeebe_adapter: ZeebeAdapterBase):
+        error = grpc.aio.AioRpcError(grpc.StatusCode.DEADLINE_EXCEEDED, None, None)
+        with pytest.raises(ZeebeDeadlineExceeded):
             await zeebe_adapter._handle_grpc_error(error)
 
     async def test_raises_gateway_unavailable_on_unavailable_status(
