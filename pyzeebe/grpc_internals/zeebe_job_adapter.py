@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_GRPC_REQUEST_TIMEOUT = 20  # This constant represents the fallback timeout value
 
+
 class ZeebeJobAdapter(ZeebeAdapterBase):
     async def activate_jobs(
         self,
