@@ -41,6 +41,7 @@ jobs:
   integration-test:
     env:
       ZEEBE_ADDRESS: "zeebe:26500"
+      GRPC_DNS_RESOLVER: "native"
     runs-on: ubuntu-latest
     strategy:
       matrix:
