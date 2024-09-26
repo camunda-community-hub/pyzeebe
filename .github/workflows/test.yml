@@ -33,6 +33,8 @@ jobs:
         run: |
           poetry run coveralls --service=github
         env:
+          COVERALLS_PARALLEL: "true"
+          COVERALLS_SERVICE_JOB_ID: ${{ github.run_id }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: ${{ matrix.python-version != '3.6' && matrix.python-version != '3.7' && matrix.python-version != '3.8' }}
 
@@ -69,3 +71,23 @@ jobs:
       - name: Run integration tests
         run: |
           poetry run pytest tests/integration
+
+  finish-coveralls:
+    runs-on: ubuntu-latest
+    needs: unit-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+      - name: Init python poetry action
+        uses: abatilo/actions-poetry@v3.0.0
+        with:
+          poetry-version: 1.8.3
+      - name: Install dependencies
+        run: poetry install
+      - name: finish coveralls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          poetry run coveralls --service=github --finish
