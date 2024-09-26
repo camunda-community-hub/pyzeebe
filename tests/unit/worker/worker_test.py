@@ -1,7 +1,9 @@
+import asyncio
 from typing import List
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
+import anyio.abc
 import grpc
 import pytest
 
@@ -9,6 +11,8 @@ from pyzeebe import ExceptionHandler, TaskDecorator, ZeebeTaskRouter
 from pyzeebe.errors import DuplicateTaskTypeError
 from pyzeebe.job.job import Job, JobController
 from pyzeebe.task.task import Task
+from pyzeebe.worker.job_executor import JobExecutor
+from pyzeebe.worker.job_poller import JobPoller
 from pyzeebe.worker.worker import ZeebeWorker
 
 
@@ -227,3 +231,68 @@ class TestIncludeRouter:
 
         zeebe_worker.include_router(router)
         return zeebe_worker.get_task(task_type)
+
+
+class TestWorker:
+    @pytest.fixture()
+    def zeebe_worker(self, aio_grpc_channel_mock):
+        return ZeebeWorker(grpc_channel=aio_grpc_channel_mock)
+
+    @staticmethod
+    async def wait_for_channel_ready(*, task_status: anyio.abc.TaskStatus = anyio.TASK_STATUS_IGNORED):
+        task_status.started()
+
+    async def test_start_stop(self, zeebe_worker: ZeebeWorker):
+        zeebe_worker._stop_event = AsyncMock(spec_set=anyio.Event)
+
+        await zeebe_worker.work()
+        zeebe_worker._stop_event.wait.assert_awaited_once()
+
+        await zeebe_worker.stop()
+        zeebe_worker._stop_event.set.assert_called_once()
+
+    async def test_poller_stoped(self, zeebe_worker: ZeebeWorker):
+        zeebe_worker._init_tasks = Mock()
+        zeebe_worker._stop_event = AsyncMock(spec_set=anyio.Event)
+
+        poller_mock = AsyncMock(spec_set=JobPoller)
+        zeebe_worker._job_pollers = [poller_mock]
+
+        await zeebe_worker.work()
+        poller_mock.poll.assert_awaited_once()
+
+        await zeebe_worker.stop()
+        poller_mock.stop.assert_awaited_once()
+
+    async def test_poller_failed(self, zeebe_worker: ZeebeWorker):
+        zeebe_worker._init_tasks = Mock()
+
+        poller_mock = AsyncMock(spec_set=JobPoller, poll=AsyncMock(side_effect=[Exception("test_exception")]))
+        zeebe_worker._job_pollers = [poller_mock]
+
+        with pytest.raises(Exception, match=r"unhandled errors in a TaskGroup \(1 sub-exception\)") as err:
+            await zeebe_worker.work()
+
+        poller_mock.poll.assert_awaited_once()
+
+    async def test_second_poller_should_cancel(self, zeebe_worker: ZeebeWorker):
+        zeebe_worker._init_tasks = Mock()
+
+        poller2_cancel_event = anyio.Event()
+
+        async def poll2():
+            try:
+                await anyio.Event().wait()
+            except anyio.get_cancelled_exc_class():
+                poller2_cancel_event.set()
+
+        poller_mock = AsyncMock(spec_set=JobPoller, poll=AsyncMock(side_effect=[Exception("test_exception")]))
+        poller2_mock = AsyncMock(spec_set=JobPoller, poll=AsyncMock(wraps=poll2))
+        zeebe_worker._job_pollers = [poller_mock, poller2_mock]
+
+        with pytest.raises(Exception, match=r"unhandled errors in a TaskGroup \(1 sub-exception\)") as err:
+            await zeebe_worker.work()
+
+        poller_mock.poll.assert_awaited_once()
+        poller2_mock.poll.assert_awaited_once()
+        assert poller2_cancel_event.is_set()
