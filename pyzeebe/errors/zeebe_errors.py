@@ -15,6 +15,10 @@ class ZeebeInternalError(PyZeebeError):
     pass
 
 
+class ZeebeDeadlineExceeded(PyZeebeError):
+    pass
+
+
 class UnknownGrpcStatusCodeError(PyZeebeError):
     def __init__(self, grpc_error: grpc.aio.AioRpcError):
         super().__init__()

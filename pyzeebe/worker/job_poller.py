@@ -5,6 +5,7 @@ from typing import List, Optional
 from pyzeebe.errors import (
     ActivateJobsRequestInvalidError,
     ZeebeBackPressureError,
+    ZeebeDeadlineExceeded,
     ZeebeGatewayUnavailableError,
     ZeebeInternalError,
 )
@@ -70,7 +71,12 @@ class JobPoller:
         except ActivateJobsRequestInvalidError:
             logger.warning("Activate job requests was invalid for task %s", self.task.type)
             raise
-        except (ZeebeBackPressureError, ZeebeGatewayUnavailableError, ZeebeInternalError) as error:
+        except (
+            ZeebeBackPressureError,
+            ZeebeGatewayUnavailableError,
+            ZeebeInternalError,
+            ZeebeDeadlineExceeded,
+        ) as error:
             logger.warning(
                 "Failed to activate jobs from the gateway. Exception: %s. Retrying in 5 seconds...",
                 repr(error),
