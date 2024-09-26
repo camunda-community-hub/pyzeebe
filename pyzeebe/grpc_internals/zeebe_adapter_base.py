@@ -7,9 +7,9 @@ from zeebe_grpc.gateway_pb2_grpc import GatewayStub
 from pyzeebe.errors import (
     UnknownGrpcStatusCodeError,
     ZeebeBackPressureError,
+    ZeebeDeadlineExceeded,
     ZeebeGatewayUnavailableError,
     ZeebeInternalError,
-    ZeebeDeadlineExceeded,
 )
 from pyzeebe.errors.pyzeebe_errors import PyZeebeError
 from pyzeebe.grpc_internals.grpc_utils import is_error_status
