@@ -74,14 +74,14 @@ def first_active_job(task, job_from_task, grpc_servicer) -> str:
 
 
 @pytest.fixture
-def task_config(task_type):
+def task_config(task_type, variables_to_fetch=None):
     return TaskConfig(
         type=task_type,
         exception_handler=AsyncMock(),
         timeout_ms=10000,
         max_jobs_to_activate=32,
         max_running_jobs=32,
-        variables_to_fetch=[],
+        variables_to_fetch=variables_to_fetch or [],
         single_value=False,
         variable_name="",
         before=[],
