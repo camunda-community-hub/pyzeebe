@@ -11,13 +11,16 @@ jobs:
       matrix:
         python-version: ["3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
 
-    container: python:${{ matrix.python-version }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+        if: ${{ matrix.python-version != '3.6' && matrix.python-version != '3.7' && matrix.python-version != '3.8' }}
       - name: Init python poetry action
         uses: abatilo/actions-poetry@v3.0.0
         with:
-          poetry-version: 1.5.1
+          poetry-version: 1.8.3
         if: ${{ matrix.python-version != '3.6' && matrix.python-version != '3.7' && matrix.python-version != '3.8' }}
       - name: Install dependencies
         run: poetry install
@@ -41,8 +44,6 @@ jobs:
       matrix:
         zeebe-version: ["8.2.29", "8.3.13", "8.4.9", "8.5.5"]
 
-    container: python:3.11
-
     services:
       zeebe:
         image: camunda/zeebe:${{ matrix.zeebe-version }}
@@ -51,10 +52,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
       - name: Init python poetry action
         uses: abatilo/actions-poetry@v3.0.0
         with:
-          poetry-version: 1.5.1
+          poetry-version: 1.8.3
       - name: Install dependencies
         run: poetry install
       - name: Sleep for 30 seconds

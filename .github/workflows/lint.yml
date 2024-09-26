@@ -6,7 +6,6 @@ on: [push, pull_request]
 jobs:
   type-checking:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
@@ -24,14 +23,15 @@ jobs:
 
   import-checking:
     runs-on: ubuntu-latest
-
-    container: python:3.9
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
       - name: Init python poetry action
         uses: abatilo/actions-poetry@v3.0.0
         with:
-          poetry-version: 1.5.1
+          poetry-version: 1.8.3
       - name: Install dependencies
         run: poetry install
       - name: Check imports
@@ -40,14 +40,15 @@ jobs:
 
   format-checking:
     runs-on: ubuntu-latest
-
-    container: python:3.9
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
       - name: Init python poetry action
         uses: abatilo/actions-poetry@v3.0.0
         with:
-          poetry-version: 1.5.1
+          poetry-version: 1.8.3
       - name: Install dependencies
         run: poetry install
       - name: Check imports
