@@ -185,6 +185,11 @@ async def aio_grpc_channel(aio_create_grpc_channel):
         yield channel
 
 
+@pytest.fixture()
+def aio_grpc_channel_mock():
+    return AsyncMock(spec_set=grpc.aio.Channel)
+
+
 @pytest.fixture
 def task_state() -> TaskState:
     return TaskState()

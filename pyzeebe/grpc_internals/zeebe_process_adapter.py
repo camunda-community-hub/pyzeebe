@@ -2,7 +2,7 @@ import json
 import os
 from typing import Callable, Dict, Iterable, List, NoReturn, Optional, Union
 
-import aiofiles
+import anyio
 import grpc
 from zeebe_grpc.gateway_pb2 import (
     CancelProcessInstanceRequest,
@@ -225,5 +225,5 @@ _METADATA_PARSERS: Dict[
 
 
 async def _create_resource_request(resource_file_path: str) -> Resource:
-    async with aiofiles.open(resource_file_path, "rb") as file:
+    async with await anyio.open_file(resource_file_path, "rb") as file:
         return Resource(name=os.path.basename(resource_file_path), content=await file.read())
