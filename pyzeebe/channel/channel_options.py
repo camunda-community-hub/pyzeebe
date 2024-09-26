@@ -7,27 +7,35 @@ Time between keepalive pings. Following the official Zeebe Java/Go client, sendi
 
 https://docs.camunda.io/docs/product-manuals/zeebe/deployment-guide/operations/setting-up-a-cluster/#keep-alive-intervals
 """
-from typing import Any, Dict, Optional, Tuple
 
-GRPC_CHANNEL_OPTIONS = {"grpc.keepalive_time_ms": 45_000}
+from typing import Optional
+
+from pyzeebe.types import ChannelArgumentType
+
+GRPC_CHANNEL_OPTIONS_DEFAULT: ChannelArgumentType = (("grpc.keepalive_time_ms", 45_000),)
 
 
-def get_channel_options(options: Optional[Dict[str, Any]] = None) -> Tuple[Tuple[str, Any], ...]:
+def get_channel_options(options: Optional[ChannelArgumentType] = None) -> ChannelArgumentType:
     """
-    Convert options dict to tuple in expected format for creating the gRPC channel
+    Get default channel options for creating the gRPC channel.
 
     Args:
-        options (Dict[str, Any]): A key/value representation of `gRPC channel arguments_`.
+        options (Optional[ChannelArgumentType]): A tuple of gRPC channel arguments tuple.
+            e.g. (("grpc.keepalive_time_ms", 45_000),)
             Default: None (will use library defaults)
+            See https://grpc.github.io/grpc/python/glossary.html#term-channel_arguments
 
     Returns:
-        Tuple[Tuple[str, Any], ...]: Options for the gRPC channel
-
-    .. _gRPC channel arguments:
-        https://grpc.github.io/grpc/python/glossary.html#term-channel_arguments
+        ChannelArgumentType: Options for the gRPC channel
     """
-    if options:
-        options = {**GRPC_CHANNEL_OPTIONS, **options}
-    else:
-        options = GRPC_CHANNEL_OPTIONS
-    return tuple((k, v) for k, v in options.items())
+    if options is not None:
+        existing = set()
+        _options = []
+
+        for a, b in (*options, *GRPC_CHANNEL_OPTIONS_DEFAULT):
+            if a not in existing:  # NOTE: Remove duplicates, fist one wins
+                existing.add(a)
+                _options.append((a, b))
+
+        return tuple(_options)  # (*options, GRPC_CHANNEL_OPTIONS)
+    return GRPC_CHANNEL_OPTIONS_DEFAULT

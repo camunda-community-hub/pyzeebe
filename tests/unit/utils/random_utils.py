@@ -1,7 +1,7 @@
 from random import randint
+from typing import Optional
 from uuid import uuid4
 
-from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job
 from pyzeebe.task import task_builder
 from pyzeebe.task.task import Task
@@ -14,7 +14,7 @@ def random_job(
     task: Task = task_builder.build_task(
         lambda x: {"x": x}, TaskConfig("test", lambda: None, 10000, 32, 32, [], False, "", [], [])
     ),
-    zeebe_adapter: ZeebeAdapter = None,
+    variables: Optional[dict] = None,
 ) -> Job:
     return Job(
         type=task.type,
@@ -27,8 +27,7 @@ def random_job(
         process_definition_key=randint(0, RANDOM_RANGE),
         element_id=str(uuid4()),
         element_instance_key=randint(0, RANDOM_RANGE),
-        variables={},
+        variables=variables or {},
         custom_headers={},
         deadline=randint(0, RANDOM_RANGE),
-        zeebe_adapter=zeebe_adapter,
     )

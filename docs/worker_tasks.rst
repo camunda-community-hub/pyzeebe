@@ -67,12 +67,12 @@ To add an exception handler to a task:
 
 .. code-block:: python
 
-    from pyzeebe import Job
+    from pyzeebe import Job, JobController
 
 
-    async def my_exception_handler(exception: Exception, job: Job) -> None:
+    async def my_exception_handler(exception: Exception, job: Job, job_controller: JobController) -> None:
         print(exception)
-        await job.set_failure_status(message=str(exception))
+        await job_controller.set_failure_status(job, message=str(exception))
 
 
     @worker.task(task_type="my_task", exception_handler=my_exception_handler)
@@ -81,7 +81,7 @@ To add an exception handler to a task:
 
 Now every time ``my_task`` is called (and then fails), ``my_exception_handler`` is called.
 
-*What does job.set_failure_status do?*
+*What does job_controller.set_failure_status do?*
 
 This tells Zeebe that the job failed. The job will then be retried (if configured in process definition).
 
@@ -153,9 +153,3 @@ Example:
     async def my_task(job: Job):
         print(job.process_instance_key)
         return {**job.custom_headers}
-
-.. note::
-
-    Do not set the status for the job (set_success_status, set_failure_status or set_error_status) inside the task. 
-    This will cause pyzeebe to raise an :py:class:`pyzeebe.errors.ActivateJobsRequestInvalidError`.
-

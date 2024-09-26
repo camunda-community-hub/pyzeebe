@@ -18,6 +18,12 @@ This means that all methods that :py:class:`ZeebeTaskRouter` has will also appea
 .. autoclass:: pyzeebe.Job
    :members:
    :undoc-members:
+   :member-order: bysource
+
+
+.. autoclass:: pyzeebe.JobController
+   :members:
+   :undoc-members:
 
 
 .. autoclass:: pyzeebe.JobStatus

@@ -9,6 +9,7 @@ import pytest_asyncio
 
 from pyzeebe import Job, ZeebeClient, ZeebeWorker
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
+from pyzeebe.job.job import JobController
 from pyzeebe.task import task_builder
 from pyzeebe.task.task_config import TaskConfig
 from pyzeebe.worker.task_router import ZeebeTaskRouter
@@ -18,27 +19,28 @@ from tests.unit.utils.random_utils import random_job
 
 
 @pytest.fixture
-def job_with_adapter(zeebe_adapter):
-    return random_job(zeebe_adapter=zeebe_adapter)
+def job_controller(job):
+    return JobController(job=job, zeebe_adapter=AsyncMock())
 
 
 @pytest.fixture
-def mocked_job_with_adapter(job_with_adapter):
-    job_with_adapter.set_success_status = AsyncMock()
-    job_with_adapter.set_failure_status = AsyncMock()
-    job_with_adapter.set_error_status = AsyncMock()
-    return job_with_adapter
+def mocked_job_controller(job):
+    job_controller = JobController(job, MagicMock())
+    job_controller.set_running_after_decorators_status = AsyncMock()
+    job_controller.set_success_status = AsyncMock()
+    job_controller.set_failure_status = AsyncMock()
+    job_controller.set_error_status = AsyncMock()
+    return job_controller
 
 
 @pytest.fixture
-def job_without_adapter():
+def job():
     return random_job()
 
 
 @pytest.fixture
 def job_from_task(task):
-    job = random_job(task)
-    job.variables = dict(x=str(uuid4()))
+    job = random_job(task, variables=dict(x=str(uuid4())))
     return job
 
 
@@ -72,14 +74,14 @@ def first_active_job(task, job_from_task, grpc_servicer) -> str:
 
 
 @pytest.fixture
-def task_config(task_type):
+def task_config(task_type, variables_to_fetch=None):
     return TaskConfig(
         type=task_type,
         exception_handler=AsyncMock(),
         timeout_ms=10000,
         max_jobs_to_activate=32,
         max_running_jobs=32,
-        variables_to_fetch=[],
+        variables_to_fetch=variables_to_fetch or [],
         single_value=False,
         variable_name="",
         before=[],
@@ -147,7 +149,7 @@ def decorator():
 
 @pytest.fixture
 def exception_handler():
-    async def simple_exception_handler(e: Exception, job: Job) -> None:
+    async def simple_exception_handler(e: Exception, job: Job, job_controller: JobController) -> None:
         return None
 
     return AsyncMock(wraps=simple_exception_handler)
@@ -181,6 +183,11 @@ def aio_create_grpc_channel(request, grpc_addr, grpc_server):
 async def aio_grpc_channel(aio_create_grpc_channel):
     async with aio_create_grpc_channel as channel:
         yield channel
+
+
+@pytest.fixture()
+def aio_grpc_channel_mock():
+    return AsyncMock(spec_set=grpc.aio.Channel)
 
 
 @pytest.fixture

@@ -3,6 +3,7 @@ import logging
 import socket
 from typing import List, Optional
 
+import anyio
 import grpc
 
 from pyzeebe import TaskDecorator
@@ -55,22 +56,11 @@ class ZeebeWorker(ZeebeTaskRouter):
         self._watcher_thread = None
         self.poll_retry_delay = poll_retry_delay
         self.tenant_ids = tenant_ids
-        self._work_task: "Optional[asyncio.Future[List[None]]]" = None
         self._job_pollers: List[JobPoller] = []
         self._job_executors: List[JobExecutor] = []
+        self._stop_event = anyio.Event()
 
-    async def work(self) -> None:
-        """
-        Start the worker. The worker will poll zeebe for jobs of each task in a different thread.
-
-        Raises:
-            ActivateJobsRequestInvalidError: If one of the worker's task has invalid types
-            ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
-            ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
-            ZeebeInternalError: If Zeebe experiences an internal error
-            UnknownGrpcStatusCodeError: If Zeebe returns an unexpected status code
-
-        """
+    def _init_tasks(self) -> None:
         self._job_executors, self._job_pollers = [], []
 
         for task in self.tasks:
@@ -87,34 +77,49 @@ class ZeebeWorker(ZeebeTaskRouter):
                 self.poll_retry_delay,
                 self.tenant_ids,
             )
-            executor = JobExecutor(task, jobs_queue, task_state)
+            executor = JobExecutor(task, jobs_queue, task_state, self.zeebe_adapter)
+
             self._job_pollers.append(poller)
             self._job_executors.append(executor)
 
-        coroutines = [poller.poll() for poller in self._job_pollers] + [
-            executor.execute() for executor in self._job_executors
-        ]
+    async def work(self) -> None:
+        """
+        Start the worker. The worker will poll zeebe for jobs of each task in a different thread.
 
-        self._work_task = asyncio.gather(*coroutines)
+        Raises:
+            ActivateJobsRequestInvalidError: If one of the worker's task has invalid types
+            ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
+            ZeebeInternalError: If Zeebe experiences an internal error
+            UnknownGrpcStatusCodeError: If Zeebe returns an unexpected status code
 
-        try:
-            await self._work_task
-        except asyncio.CancelledError:
-            logger.info("Zeebe worker was stopped")
-            return
+        """
+        self._init_tasks()
+
+        async with anyio.create_task_group() as tg:
+            for poller in self._job_pollers:
+                tg.start_soon(poller.poll)
+
+            for executor in self._job_executors:
+                tg.start_soon(executor.execute)
+
+            await self._stop_event.wait()
+
+            tg.cancel_scope.cancel()
+
+        logger.info("Zeebe worker was stopped")
 
     async def stop(self) -> None:
         """
         Stop the worker. This will emit a signal asking tasks to complete the current task and stop polling for new.
         """
-        if self._work_task is not None:
-            self._work_task.cancel()
-
         for poller in self._job_pollers:
             await poller.stop()
 
         for executor in self._job_executors:
             await executor.stop()
+
+        self._stop_event.set()
 
     def include_router(self, *routers: ZeebeTaskRouter) -> None:
         """

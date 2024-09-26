@@ -1,16 +1,14 @@
-import copy
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
-from pyzeebe.errors import NoZeebeAdapterError
 from pyzeebe.job.job_status import JobStatus
-from pyzeebe.types import Variables
+from pyzeebe.types import Headers, Variables
 
 if TYPE_CHECKING:
     from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 
 
-@dataclass
+@dataclass(frozen=True)
 class Job:
     key: int
     type: str
@@ -20,47 +18,50 @@ class Job:
     process_definition_key: int
     element_id: str
     element_instance_key: int
-    custom_headers: Dict[str, Any]
+    custom_headers: Headers
     worker: str
     retries: int
     deadline: int
     variables: Variables
     tenant_id: Optional[str] = None
     status: JobStatus = JobStatus.Running
-    zeebe_adapter: Optional["ZeebeAdapter"] = None
+    task_result = None
+
+    def set_task_result(self, task_result: Any) -> None:
+        object.__setattr__(self, "task_result", task_result)
+
+    def _set_status(self, value: JobStatus) -> None:
+        object.__setattr__(self, "status", value)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Job):
+            return NotImplemented
+        return self.key == other.key
+
+
+class JobController:
+    def __init__(self, job: Job, zeebe_adapter: "ZeebeAdapter") -> None:
+        self._job = job
+        self._zeebe_adapter = zeebe_adapter
 
     async def set_running_after_decorators_status(self) -> None:
         """
         RunningAfterDecorators status means that the task has been completed as intended and the after decorators will now run.
-
-        Raises:
-            NoZeebeAdapterError: If the job does not have a configured ZeebeAdapter
-            ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
-            ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
-            ZeebeInternalError: If Zeebe experiences an internal error
-
         """
-        if self.zeebe_adapter:
-            self.status = JobStatus.RunningAfterDecorators
-        else:
-            raise NoZeebeAdapterError()
+        self._job._set_status(JobStatus.RunningAfterDecorators)
 
-    async def set_success_status(self) -> None:
+    async def set_success_status(self, variables: Optional[Variables] = None) -> None:
         """
         Success status means that the job has been completed as intended.
 
         Raises:
-            NoZeebeAdapterError: If the job does not have a configured ZeebeAdapter
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
-        if self.zeebe_adapter:
-            self.status = JobStatus.Completed
-            await self.zeebe_adapter.complete_job(job_key=self.key, variables=self.variables)
-        else:
-            raise NoZeebeAdapterError()
+        self._job._set_status(JobStatus.Completed)
+        await self._zeebe_adapter.complete_job(job_key=self._job.key, variables=variables or {})
 
     async def set_failure_status(
         self,
@@ -79,23 +80,19 @@ class Job:
                 the local scope of the job's associated task. Must be JSONable. New in Zeebe 8.2.
 
         Raises:
-            NoZeebeAdapterError: If the job does not have a configured ZeebeAdapter
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
-        if self.zeebe_adapter:
-            self.status = JobStatus.Failed
-            await self.zeebe_adapter.fail_job(
-                job_key=self.key,
-                retries=self.retries - 1,
-                message=message,
-                retry_back_off_ms=retry_back_off_ms,
-                variables=variables or {},
-            )
-        else:
-            raise NoZeebeAdapterError()
+        self._job._set_status(JobStatus.Failed)
+        await self._zeebe_adapter.fail_job(
+            job_key=self._job.key,
+            retries=self._job.retries - 1,
+            message=message,
+            retry_back_off_ms=retry_back_off_ms,
+            variables=variables or {},
+        )
 
     async def set_error_status(
         self,
@@ -115,42 +112,12 @@ class Job:
                 the local scope of the job's associated task. Must be JSONable. New in Zeebe 8.2.
 
         Raises:
-            NoZeebeAdapterError: If the job does not have a configured ZeebeAdapter
             ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
             ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
             ZeebeInternalError: If Zeebe experiences an internal error
 
         """
-        if self.zeebe_adapter:
-            self.status = JobStatus.ErrorThrown
-            await self.zeebe_adapter.throw_error(
-                job_key=self.key, message=message, error_code=error_code, variables=variables or {}
-            )
-        else:
-            raise NoZeebeAdapterError()
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Job):
-            raise NotImplementedError()
-        return self.key == other.key
-
-
-def create_copy(job: Job) -> Job:
-    return Job(
-        job.key,
-        job.type,
-        job.process_instance_key,
-        job.bpmn_process_id,
-        job.process_definition_version,
-        job.process_definition_key,
-        job.element_id,
-        job.element_instance_key,
-        copy.deepcopy(job.custom_headers),
-        job.worker,
-        job.retries,
-        job.deadline,
-        copy.deepcopy(job.variables),
-        job.tenant_id,
-        job.status,
-        job.zeebe_adapter,
-    )
+        self._job._set_status(JobStatus.ErrorThrown)
+        await self._zeebe_adapter.throw_error(
+            job_key=self._job.key, message=message, error_code=error_code, variables=variables or {}
+        )

@@ -25,11 +25,6 @@ Zeebe GRPC Responses
    :undoc-members:
    :member-order: bysource
 
-.. autoclass:: pyzeebe.grpc_internals.types.DeployProcessResponse
-   :members:
-   :undoc-members:
-   :member-order: bysource
-
 .. autoclass:: pyzeebe.grpc_internals.types.DeployResourceResponse
    :members:
    :undoc-members:

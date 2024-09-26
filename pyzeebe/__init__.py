@@ -1,4 +1,4 @@
-__version__ = "4.0.0rc1"
+__version__ = "4.0.0rc5"
 
 from pyzeebe import errors
 from pyzeebe.channel import *
@@ -7,7 +7,7 @@ from pyzeebe.client.sync_client import SyncZeebeClient
 from pyzeebe.credentials.base import CredentialsABC
 from pyzeebe.credentials.camunda_identity import CamundaIdentityCredentials
 from pyzeebe.credentials.plugins import AuthMetadataPlugin
-from pyzeebe.job.job import Job
+from pyzeebe.job.job import Job, JobController
 from pyzeebe.job.job_status import JobStatus
 from pyzeebe.task.exception_handler import ExceptionHandler, default_exception_handler
 from pyzeebe.task.task_config import TaskConfig
@@ -23,6 +23,7 @@ __all__ = (
     "ZeebeClient",
     "SyncZeebeClient",
     "Job",
+    "JobController",
     "JobStatus",
     "ExceptionHandler",
     "TaskConfig",

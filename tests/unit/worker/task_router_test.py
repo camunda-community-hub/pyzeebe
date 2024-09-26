@@ -5,7 +5,7 @@ import pytest
 
 from pyzeebe import TaskDecorator
 from pyzeebe.errors import BusinessError, DuplicateTaskTypeError, TaskNotFoundError
-from pyzeebe.job.job import Job
+from pyzeebe.job.job import Job, JobController
 from pyzeebe.task.exception_handler import ExceptionHandler, default_exception_handler
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_router import ZeebeTaskRouter
@@ -126,27 +126,25 @@ def test_set_exception_handler_through_constructor(exception_handler: ExceptionH
 
 
 @pytest.mark.asyncio
-async def test_default_exception_handler_logs_a_warning(mocked_job_with_adapter: Job):
+async def test_default_exception_handler_logs_a_warning(job: Job, mocked_job_controller: JobController):
     with mock.patch("pyzeebe.task.exception_handler.logger.warning") as logging_mock:
-        await default_exception_handler(Exception(), mocked_job_with_adapter)
+        await default_exception_handler(Exception(), job, mocked_job_controller)
 
-        mocked_job_with_adapter.set_failure_status.assert_called()
+        mocked_job_controller.set_failure_status.assert_called()
         logging_mock.assert_called()
 
 
 @pytest.mark.asyncio
-async def test_default_exception_handler_uses_business_error(job_without_adapter):
-    with mock.patch("pyzeebe.job.job.Job.set_error_status") as failure_mock:
-        error_code = "custom-error-code"
-        exception = BusinessError(error_code)
-        await default_exception_handler(exception, job_without_adapter)
-        failure_mock.assert_called_with(mock.ANY, error_code=error_code)
+async def test_default_exception_handler_uses_business_error(job: Job, mocked_job_controller: JobController):
+    error_code = "custom-error-code"
+    exception = BusinessError(error_code)
+    await default_exception_handler(exception, job, mocked_job_controller)
+    mocked_job_controller.set_error_status.assert_called_with(mock.ANY, error_code=error_code)
 
 
 @pytest.mark.asyncio
-async def test_default_exception_handler_warns_of_job_failure(job_without_adapter):
+async def test_default_exception_handler_warns_of_job_failure(job: Job, mocked_job_controller: JobController):
     with mock.patch("pyzeebe.task.exception_handler.logger.warning") as logging_mock:
-        with mock.patch("pyzeebe.job.job.Job.set_error_status"):
-            exception = BusinessError("custom-error-code")
-            await default_exception_handler(exception, job_without_adapter)
+        exception = BusinessError("custom-error-code")
+        await default_exception_handler(exception, job, mocked_job_controller)
         logging_mock.assert_called()

@@ -20,7 +20,7 @@ Zeebe version support:
 
 | Pyzeebe version | Tested Zeebe versions  |
 | :-------------: | ---------------------- |
-|      4.x.x      | 1.3, 8.1, 8.2, 8.3, 8.4 |
+|      4.x.x      | 8.2, 8.3, 8.4, 8.5     |
 |      3.x.x      | 1.0.0                  |
 |      2.x.x      | 0.23, 0.24, 0.25, 0.26 |
 |      1.x.x      | 0.23, 0.24             |
@@ -42,19 +42,19 @@ The `ZeebeWorker` class gets jobs from the gateway and runs them.
 ```python
 import asyncio
 
-from pyzeebe import ZeebeWorker, Job, create_insecure_channel
+from pyzeebe import ZeebeWorker, Job, JobController, create_insecure_channel
 
 
 channel = create_insecure_channel(hostname="localhost", port=26500) # Create grpc channel
 worker = ZeebeWorker(channel) # Create a zeebe worker
 
 
-async def on_error(exception: Exception, job: Job):
+async def on_error(exception: Exception, job: Job, job_controller: JobController):
     """
     on_error will be called when the task fails
     """
     print(exception)
-    await job.set_error_status(f"Failed to handle job {job}. Error: {str(exception)}")
+    await job_controller.set_error_status(job, f"Failed to handle job {job}. Error: {str(exception)}")
 
 
 @worker.task(task_type="example", exception_handler=on_error)
@@ -95,7 +95,7 @@ process_instance_key, process_result = await zeebe_client.run_process_with_resul
 )
 
 # Deploy a BPMN process definition
-await zeebe_client.deploy_process("process.bpmn")
+await zeebe_client.deploy_resource("process.bpmn")
 
 # Cancel a running process
 await zeebe_client.cancel_process_instance(process_instance_key=12345)

@@ -100,7 +100,7 @@ class GatewayMock(GatewayServicer):
         if job.status != JobStatus.Running:
             context.set_code(grpc.StatusCode.FAILED_PRECONDITION)
         else:
-            job.status = status_on_deactivate
+            job._set_status(status_on_deactivate)
         return context
 
     def CreateProcessInstance(self, request, context):
@@ -146,19 +146,6 @@ class GatewayMock(GatewayServicer):
         else:
             context.set_code(grpc.StatusCode.NOT_FOUND)
             return CancelProcessInstanceResponse()
-
-    def DeployProcess(self, request, context):
-        processes = []
-        for process in request.processes:
-            process_metadata = ProcessMetadata(
-                bpmnProcessId=str(uuid4()),
-                version=randint(0, 10),
-                processDefinitionKey=randint(0, RANDOM_RANGE),
-                resourceName=process.name,
-            )
-            processes.append(process_metadata)
-
-        return DeployProcessResponse(key=randint(0, RANDOM_RANGE), processes=processes)
 
     def DeployResource(self, request, context):
         resources = []
