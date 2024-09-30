@@ -6,6 +6,8 @@
 
 # -- Path setup --------------------------------------------------------------
 
+import importlib.metadata
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -26,7 +28,7 @@ copyright = "2020, Jonatan Martens"
 author = "Jonatan Martens"
 
 # The full version, including alpha/beta/rc tags
-release = "4.0.0rc5"
+release = importlib.metadata.version(project)
 
 # -- General configuration ---------------------------------------------------
 
@@ -61,7 +63,7 @@ html_theme = "sphinx_rtd_theme"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-version = "4.0.0rc5"
+version = importlib.metadata.version(project)
 
 master_doc = "index"
 
