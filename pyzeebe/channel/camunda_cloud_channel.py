@@ -12,6 +12,7 @@ from pyzeebe.errors import (
     InvalidCamundaCloudCredentialsError,
     InvalidOAuthCredentialsError,
 )
+from pyzeebe.types import ChannelArgumentType
 
 
 @deprecated(

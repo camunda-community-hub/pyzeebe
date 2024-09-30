@@ -30,7 +30,7 @@ def mocked_aiofiles_open():
     file_mock = AsyncMock()
     file_mock.__aenter__.return_value.read = read_mock
 
-    with patch("pyzeebe.grpc_internals.zeebe_process_adapter.aiofiles.open", return_value=file_mock) as open_mock:
+    with patch("pyzeebe.grpc_internals.zeebe_process_adapter.anyio.open_file", return_value=file_mock) as open_mock:
         yield open_mock
 
 

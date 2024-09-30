@@ -38,6 +38,8 @@ All ``pyzeebe`` errors inherit from :py:class:`PyZeebeError`
 
 .. autoexception:: pyzeebe.errors.ZeebeInternalError
 
+.. autoexception:: pyzeebe.errors.ZeebeDeadlineExceeded
+
 .. autoexception:: pyzeebe.errors.InvalidOAuthCredentialsError
 
 .. autoexception:: pyzeebe.errors.InvalidCamundaCloudCredentialsError

@@ -4,7 +4,7 @@ import grpc
 
 from pyzeebe.channel.channel_options import get_channel_options
 from pyzeebe.channel.utils import create_address
-from pyzeebe.credentials.typing import ChannelArgumentType
+from pyzeebe.types import ChannelArgumentType
 
 
 def create_secure_channel(

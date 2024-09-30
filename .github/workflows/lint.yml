@@ -6,14 +6,15 @@ on: [push, pull_request]
 jobs:
   type-checking:
     runs-on: ubuntu-latest
-
-    container: python:3.9
     steps:
       - uses: actions/checkout@v4
-      - name: Init python poetry action
-        uses: abatilo/actions-poetry@v2.4.0
+      - uses: actions/setup-python@v5
         with:
-          poetry-version: 1.5.1
+          python-version: "3.9"
+      - name: Init python poetry action
+        uses: abatilo/actions-poetry@v3.0.0
+        with:
+          poetry-version: 1.8.3
       - name: Install dependencies
         run: poetry install
       - name: Lint with mypy
@@ -22,14 +23,15 @@ jobs:
 
   import-checking:
     runs-on: ubuntu-latest
-
-    container: python:3.9
     steps:
       - uses: actions/checkout@v4
-      - name: Init python poetry action
-        uses: abatilo/actions-poetry@v2.4.0
+      - uses: actions/setup-python@v5
         with:
-          poetry-version: 1.5.1
+          python-version: "3.9"
+      - name: Init python poetry action
+        uses: abatilo/actions-poetry@v3.0.0
+        with:
+          poetry-version: 1.8.3
       - name: Install dependencies
         run: poetry install
       - name: Check imports
@@ -38,14 +40,15 @@ jobs:
 
   format-checking:
     runs-on: ubuntu-latest
-
-    container: python:3.9
     steps:
       - uses: actions/checkout@v4
-      - name: Init python poetry action
-        uses: abatilo/actions-poetry@v2.4.0
+      - uses: actions/setup-python@v5
         with:
-          poetry-version: 1.5.1
+          python-version: "3.9"
+      - name: Init python poetry action
+        uses: abatilo/actions-poetry@v3.0.0
+        with:
+          poetry-version: 1.8.3
       - name: Install dependencies
         run: poetry install
       - name: Check imports

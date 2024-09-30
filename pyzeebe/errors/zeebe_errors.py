@@ -4,7 +4,10 @@ from pyzeebe.errors.pyzeebe_errors import PyZeebeError
 
 
 class ZeebeBackPressureError(PyZeebeError):
-    pass
+    """If Zeebe is currently in back pressure (too many requests)
+
+    See: https://docs.camunda.io/docs/self-managed/zeebe-deployment/operations/backpressure/
+    """
 
 
 class ZeebeGatewayUnavailableError(PyZeebeError):
@@ -13,6 +16,13 @@ class ZeebeGatewayUnavailableError(PyZeebeError):
 
 class ZeebeInternalError(PyZeebeError):
     pass
+
+
+class ZeebeDeadlineExceeded(PyZeebeError):
+    """If Zeebe hasn't responded after a certain timeout
+
+    See: https://grpc.io/docs/guides/deadlines/
+    """
 
 
 class UnknownGrpcStatusCodeError(PyZeebeError):
