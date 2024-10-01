@@ -77,7 +77,7 @@ Example:
     from pyzeebe.channel.oauth_channel import create_oauth2_client_credentials_channel
 
     channel: grpc.aio.Channel = create_oauth2_client_credentials_channel(
-        target=ZEEBE_ADDRESS,
+        grpc_address=ZEEBE_ADDRESS,
         client_id=ZEEBE_CLIENT_ID,
         client_secret=ZEEBE_CLIENT_SECRET,
         authorization_server=ZEEBE_AUTHORIZATION_SERVER_URL,
@@ -91,12 +91,12 @@ Example with custom `channel_options`:
 
     import grpc
     from pyzeebe.channel.oauth_channel import create_oauth2_client_credentials_channel
-    from pyzeebe.credentials.typing import ChannelArgumentType
+    from pyzeebe.types import ChannelArgumentType
 
     channel_options: ChannelArgumentType  = (("grpc.so_reuseport", 0),)
 
     channel: grpc.aio.Channel = create_oauth2_client_credentials_channel(
-        target=ZEEBE_ADDRESS,
+        grpc_address=ZEEBE_ADDRESS,
         client_id=ZEEBE_CLIENT_ID,
         client_secret=ZEEBE_CLIENT_SECRET,
         authorization_server=ZEEBE_AUTHORIZATION_SERVER_URL,
@@ -113,7 +113,7 @@ Useful for self-signed certificates with `grpc.ssl_channel_credentials`.
 
     import grpc
     from pyzeebe.channel.oauth_channel import create_oauth2_client_credentials_channel
-    from pyzeebe.credentials.typing import ChannelArgumentType
+    from pyzeebe.types import ChannelArgumentType
 
     channel_credentials: grpc.ChannelCredentials = grpc.ssl_channel_credentials(
         certificate_chain=None, private_key=None, root_certificates=None
@@ -121,7 +121,7 @@ Useful for self-signed certificates with `grpc.ssl_channel_credentials`.
     channel_options: ChannelArgumentType  = (("grpc.so_reuseport", 0),)
 
     channel: grpc.aio.Channel = create_oauth2_client_credentials_channel(
-        target=ZEEBE_ADDRESS,
+        grpc_address=ZEEBE_ADDRESS,
         client_id=ZEEBE_CLIENT_ID,
         client_secret=ZEEBE_CLIENT_SECRET,
         authorization_server=ZEEBE_AUTHORIZATION_SERVER_URL,

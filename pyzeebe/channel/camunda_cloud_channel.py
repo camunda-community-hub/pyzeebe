@@ -7,7 +7,6 @@ from requests_oauthlib import OAuth2Session
 from typing_extensions import deprecated
 
 from pyzeebe.channel.channel_options import get_channel_options
-from pyzeebe.credentials.typing import ChannelArgumentType
 from pyzeebe.errors import (
     InvalidCamundaCloudCredentialsError,
     InvalidOAuthCredentialsError,

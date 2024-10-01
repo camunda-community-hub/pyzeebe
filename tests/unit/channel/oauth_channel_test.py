@@ -19,11 +19,11 @@ def test_create_oauth2_client_credentials_channel(
     mock_oauth2metadataplugin,
 ):
 
-    target = "zeebe-gateway:26500"
+    grpc_address = "zeebe-gateway:26500"
     client_id = "client_id"
     client_secret = "client_secret"
     authorization_server = "https://authorization.server"
-    channel = create_oauth2_client_credentials_channel(target, client_id, client_secret, authorization_server)
+    channel = create_oauth2_client_credentials_channel(grpc_address, client_id, client_secret, authorization_server)
 
     assert isinstance(channel, grpc.aio.Channel)
 

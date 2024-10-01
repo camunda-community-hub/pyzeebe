@@ -5,11 +5,11 @@ import grpc
 
 from pyzeebe.channel.channel_options import get_channel_options
 from pyzeebe.credentials.oauth import Oauth2ClientCredentialsMetadataPlugin
-from pyzeebe.credentials.typing import ChannelArgumentType
+from pyzeebe.types import ChannelArgumentType
 
 
 def create_oauth2_client_credentials_channel(
-    target: str,
+    grpc_address: str,
     client_id: str,
     client_secret: str,
     authorization_server: str,
@@ -26,7 +26,7 @@ def create_oauth2_client_credentials_channel(
     https://datatracker.ietf.org/doc/html/rfc6749#section-11.2.2
 
     Args:
-        target (str): The target address of the Zeebe Gateway.
+        grpc_address (str): Zeebe Gateway Address.
 
         client_id (str): The client id.
         client_secret (str): The client secret.
@@ -70,7 +70,7 @@ def create_oauth2_client_credentials_channel(
     )
 
     channel: grpc.aio.Channel = grpc.aio.secure_channel(
-        target=target, credentials=composite_credentials, options=get_channel_options(channel_options)
+        target=grpc_address, credentials=composite_credentials, options=get_channel_options(channel_options)
     )
 
     return channel
@@ -117,7 +117,7 @@ def create_camunda_cloud_channel(
         grpc.aio.Channel: The gRPC channel for connecting to Camunda Cloud.
     """
 
-    target = f"{cluster_id}.{region}.zeebe.camunda.io:443"
+    grpc_address = f"{cluster_id}.{region}.zeebe.camunda.io:443"
 
     oauth2_client_credentials = Oauth2ClientCredentialsMetadataPlugin(
         client_id=client_id,
@@ -146,7 +146,7 @@ def create_camunda_cloud_channel(
     )
 
     channel: grpc.aio.Channel = grpc.aio.secure_channel(
-        target=target, credentials=composite_credentials, options=get_channel_options(channel_options)
+        target=grpc_address, credentials=composite_credentials, options=get_channel_options(channel_options)
     )
 
     return channel
