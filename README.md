@@ -45,7 +45,7 @@ import asyncio
 from pyzeebe import ZeebeWorker, Job, JobController, create_insecure_channel
 
 
-channel = create_insecure_channel(hostname="localhost", port=26500) # Create grpc channel
+channel = create_insecure_channel(grpc_address="localhost:26500") # Create grpc channel
 worker = ZeebeWorker(channel) # Create a zeebe worker
 
 
@@ -82,7 +82,7 @@ await zeebe_worker.stop() # Stops worker after all running jobs have been comple
 from pyzeebe import ZeebeClient, create_insecure_channel
 
 # Create a zeebe client
-channel = create_insecure_channel(hostname="localhost", port=26500)
+channel = create_insecure_channel(grpc_address="localhost:26500")
 zeebe_client = ZeebeClient(channel)
 
 # Run a Zeebe process instance

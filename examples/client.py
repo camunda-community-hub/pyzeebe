@@ -6,7 +6,7 @@ from pyzeebe import (
 )
 
 # Create a zeebe client without credentials
-grpc_channel = create_insecure_channel(hostname="localhost", port=26500)
+grpc_channel = create_insecure_channel(grpc_address="localhost:26500")
 zeebe_client = ZeebeClient(grpc_channel)
 
 # Create a zeebe client with TLS

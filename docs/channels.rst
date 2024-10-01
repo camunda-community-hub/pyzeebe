@@ -22,7 +22,7 @@ Example:
 
     from pyzeebe import create_insecure_channel
 
-    channel = create_insecure_channel(hostname="zeebe", port=443)
+    channel = create_insecure_channel(grpc_address="localhost:26500")
 
 
 Secure
@@ -41,7 +41,7 @@ Example:
 
 
     grpc.ssl_channel_credentials(root_certificates="<root_certificate>", private_key="<private_key>")
-    channel = create_secure_channel(channel_credentials=credentials)
+    channel = create_secure_channel(grpc_address="host:port", channel_credentials=credentials)
 
 
 Example with oauth2 (like Camunda Identity):
@@ -57,7 +57,7 @@ Example with oauth2 (like Camunda Identity):
     call_credentials = grpc.metadata_call_credentials(AuthMetadataPlugin(credentials=credentials))
     ssl_credentials = grpc.ssl_channel_credentials(root_certificates="<root_certificate>", private_key="<private_key>")
     channel_credentials = grpc.composite_channel_credentials(ssl_credentials, call_credentials)
-    channel = create_secure_channel(channel_credentials=channel_credentials)
+    channel = create_secure_channel(grpc_address="host:port", channel_credentials=channel_credentials)
 
 
 Oauth2 Client Credentials Channel
