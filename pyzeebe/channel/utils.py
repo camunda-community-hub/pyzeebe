@@ -7,9 +7,8 @@ DEFAULT_ADDRESS = f"{DEFAULT_HOSTNAME}:{DEFAULT_PORT}"
 
 
 def create_address(
-    hostname: Optional[str] = None,
-    port: Optional[int] = None,
+    grpc_address: Optional[str] = None,
 ) -> str:
-    if hostname or port:
-        return f"{hostname or DEFAULT_HOSTNAME}:{port or DEFAULT_PORT}"
+    if grpc_address:
+        return grpc_address
     return os.getenv("ZEEBE_ADDRESS", DEFAULT_ADDRESS)
