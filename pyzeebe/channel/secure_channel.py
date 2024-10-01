@@ -17,9 +17,9 @@ def create_secure_channel(
     Create a secure channel
 
     Args:
-        hostname (Optional[str]): Zeebe gateway hostname
-        port (Optional[int]): Zeebe gateway port
-        channel_options (Optional[ChannelArgumentType]): GRPC channel options.
+        hostname (Optional[str], optional): Zeebe gateway hostname
+        port (Optional[int], optional): Zeebe gateway port
+        channel_options (Optional[Dict], optional): GRPC channel options.
             See https://grpc.github.io/grpc/python/glossary.html#term-channel_arguments
         channel_credentials (Optional[grpc.ChannelCredentials]): Channel credentials to use.
             Will use grpc.ssl_channel_credentials() if not provided.
