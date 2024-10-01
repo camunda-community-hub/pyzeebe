@@ -1,9 +1,7 @@
 import os
 from typing import Optional
 
-DEFAULT_HOSTNAME = "localhost"
-DEFAULT_PORT = 26500
-DEFAULT_ADDRESS = f"{DEFAULT_HOSTNAME}:{DEFAULT_PORT}"
+DEFAULT_ZEEBE_ADDRESS = "localhost:26500"
 
 
 def create_address(
@@ -11,4 +9,4 @@ def create_address(
 ) -> str:
     if grpc_address:
         return grpc_address
-    return os.getenv("ZEEBE_ADDRESS", DEFAULT_ADDRESS)
+    return os.getenv("ZEEBE_ADDRESS", DEFAULT_ZEEBE_ADDRESS)
