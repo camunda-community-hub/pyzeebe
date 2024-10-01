@@ -14,7 +14,8 @@ def create_insecure_channel(
     Create an insecure channel
 
     Args:
-        grpc_address (Optional[str], optional): Zeebe gateway hostname
+        grpc_address (Optional[str], optional): Zeebe Gateway Address
+            Default: None, alias the ZEEBE_ADDRESS environment variable or "localhost:26500"
         channel_options (Optional[Dict], optional): GRPC channel options.
             See https://grpc.github.io/grpc/python/glossary.html#term-channel_arguments
 
