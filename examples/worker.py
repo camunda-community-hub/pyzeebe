@@ -24,16 +24,16 @@ async def example_logging_task_decorator(job: Job) -> Job:
 grpc_channel = create_insecure_channel()
 worker = ZeebeWorker(grpc_channel)
 
-# With custom hostname/port
-grpc_channel = create_insecure_channel(hostname="zeebe-gateway.mydomain", port=443)
+# With custom grpc_address
+grpc_channel = create_insecure_channel(grpc_address="zeebe-gateway.mydomain:443")
 worker = ZeebeWorker(grpc_channel)
 
 # Will use environment variable ZEEBE_ADDRESS or localhost:26500 and use TLS
 grpc_channel = create_secure_channel()
 worker = ZeebeWorker(grpc_channel)
 
-# With custom hostname/port
-grpc_channel = create_secure_channel(hostname="zeebe-gateway.mydomain", port=443)
+# With custom grpc_address
+grpc_channel = create_secure_channel(grpc_address="zeebe-gateway.mydomain:443")
 worker = ZeebeWorker(grpc_channel)
 
 # Connect to zeebe cluster in camunda cloud
