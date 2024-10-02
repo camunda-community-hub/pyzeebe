@@ -5,7 +5,7 @@ import pytest
 
 from pyzeebe import create_insecure_channel
 from pyzeebe.channel.channel_options import get_channel_options
-from pyzeebe.channel.utils import create_address
+from pyzeebe.channel.utils import get_zeebe_address
 
 
 class TestCreateInsecureChannel:
@@ -29,4 +29,4 @@ class TestCreateInsecureChannel:
         create_insecure_channel()
 
         insecure_channel_call = insecure_channel_mock.mock_calls[0]
-        assert insecure_channel_call.kwargs["target"] == create_address()
+        assert insecure_channel_call.kwargs["target"] == get_zeebe_address()
