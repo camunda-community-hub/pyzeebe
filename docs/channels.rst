@@ -3,6 +3,22 @@ Channels
 ========
 
 In order to instantiate a ZeebeWorker or ZeebeClient you will need to provide an instance of a `grpc.aio.Channel`.
+This Channel can be configured with the parameters `channel_credentials` and `channel_options`.
+
+.. seealso::
+    
+    `Python Channel Options <https://grpc.github.io/grpc/python/glossary.html#term-channel_arguments>`_
+      Documentation of the available Python `grpc.aio.Channel` `options` (channel_arguments).
+
+
+.. note::
+    
+    By default, channel_options is defined so that the grpc.keepalive_time_ms option is always set to 45_000 (45 seconds).
+    Reference Camunda Spring Zeebe SDK with predefined `keep-alive <https://docs.camunda.io/docs/apis-tools/spring-zeebe-sdk/configuration/#keep-alive>`_ attribute.
+
+    You can override the default `channel_options` by passing
+    e.g. `channel_options = (("grpc.keepalive_time_ms", 60_000),)` - for a keepalive time of 60 seconds.
+    
 
 Pyzeebe provides a couple standard ways to achieve this:
 
