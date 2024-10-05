@@ -108,7 +108,7 @@ class OAuth2MetadataPlugin(grpc.AuthMetadataPlugin):  # type: ignore[misc]
             self._func_retrieve_token()
 
         except oauth2.OAuth2Error as e:
-            logger.error(str(e))
+            logger.exception(str(e))
             raise e
 
     def _no_expiration(self, r: requests.Response) -> requests.Response:
