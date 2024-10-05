@@ -64,7 +64,6 @@ def create_oauth2_client_credentials_channel(
     )
 
     call_credentials: grpc.CallCredentials = grpc.metadata_call_credentials(oauth2_client_credentials)
-    # channel_credentials: grpc.ChannelCredentials = channel_credentials or grpc.ssl_channel_credentials()
     composite_credentials: grpc.ChannelCredentials = grpc.composite_channel_credentials(
         channel_credentials, call_credentials
     )
