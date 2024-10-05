@@ -5,7 +5,7 @@ import grpc
 import pytest
 import responses
 
-from pyzeebe import create_camunda_cloud_channel
+from pyzeebe.channel.camunda_cloud_channel import create_camunda_cloud_channel
 from pyzeebe.errors import InvalidCamundaCloudCredentialsError
 
 

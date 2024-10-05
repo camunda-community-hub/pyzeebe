@@ -64,6 +64,7 @@ Table Of Contents
     Client <client>
     Worker <worker>
     Channels <channels>
+    Credentials <credentials>
     Decorators <decorators>
     Exceptions <errors>
     Zeebe Adapter <zeebe_adapter>
