@@ -14,7 +14,7 @@ This Channel can be configured with the parameters `channel_credentials` and `ch
 .. note::
     
     By default, channel_options is defined so that the grpc.keepalive_time_ms option is always set to 45_000 (45 seconds).
-    Reference Camunda Spring Zeebe SDK with predefined `keep-alive <https://docs.camunda.io/docs/apis-tools/spring-zeebe-sdk/configuration/#keep-alive>`_ attribute.
+    Reference Camunda Docs `keep alive intervals <https://docs.camunda.io/docs/self-managed/zeebe-deployment/operations/setting-up-a-cluster/#keep-alive-intervals>`_.
 
     You can override the default `channel_options` by passing
     e.g. `channel_options = (("grpc.keepalive_time_ms", 60_000),)` - for a keepalive time of 60 seconds.
