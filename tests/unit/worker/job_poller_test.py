@@ -6,7 +6,7 @@ import pytest
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
-from pyzeebe.worker.job_poller import JobPoller
+from pyzeebe.worker.job_poller import JobPoller, JobStreamer
 from pyzeebe.worker.task_state import TaskState
 from tests.unit.utils.gateway_mock import GatewayMock
 from tests.unit.utils.random_utils import random_job
@@ -15,6 +15,13 @@ from tests.unit.utils.random_utils import random_job
 @pytest.fixture
 def job_poller(zeebe_adapter: ZeebeAdapter, task: Task, queue: asyncio.Queue, task_state: TaskState) -> JobPoller:
     return JobPoller(zeebe_adapter, task, queue, "test_worker", 100, task_state, 0, None)
+
+
+@pytest.fixture
+def job_stream_poller(
+    zeebe_adapter: ZeebeAdapter, task: Task, queue: asyncio.Queue, task_state: TaskState
+) -> JobStreamer:
+    return JobStreamer(zeebe_adapter, task, queue, "test_worker", 100, task_state, [])
 
 
 @pytest.mark.asyncio
@@ -62,6 +69,26 @@ class TestShouldPoll:
         await job_poller.stop()
 
         assert not job_poller.should_poll()
+
+
+class TestStreamShouldPoll:
+    def test_should_poll_returns_expected_result_when_disconnected(self, job_stream_poller: JobStreamer):
+        job_stream_poller.zeebe_adapter._connected = False
+        job_stream_poller.zeebe_adapter.retrying_connection = False
+
+        assert not job_stream_poller.should_poll()
+
+    def test_continues_polling_when_retrying_connection(self, job_stream_poller: JobStreamer):
+        job_stream_poller.zeebe_adapter._connected = False
+        job_stream_poller.zeebe_adapter.retrying_connection = True
+
+        assert job_stream_poller.should_poll()
+
+    @pytest.mark.asyncio
+    async def test_stops_polling_after_poller_is_stopped(self, job_stream_poller: JobStreamer):
+        await job_stream_poller.stop()
+
+        assert not job_stream_poller.should_poll()
 
 
 class TestMaxJobsToActivate:
@@ -130,6 +157,19 @@ class TestActivateMaxJobs:
         grpc_servicer.active_jobs[job_from_task.key] = job_from_task
 
         await job_poller.activate_max_jobs()
+
+        job: Job = queue.get_nowait()
+        assert job.key == job_from_task.key
+
+
+@pytest.mark.asyncio
+class TestActivateStream:
+    async def test_puts_job_in_queue_with_one_available_job(
+        self, job_stream_poller: JobStreamer, queue: asyncio.Queue, job_from_task: Job, grpc_servicer: GatewayMock
+    ):
+        grpc_servicer.active_jobs[job_from_task.key] = job_from_task
+
+        await job_stream_poller.activate_stream()
 
         job: Job = queue.get_nowait()
         assert job.key == job_from_task.key

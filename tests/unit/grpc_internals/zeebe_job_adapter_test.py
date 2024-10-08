@@ -7,6 +7,7 @@ from pyzeebe.errors import (
     ActivateJobsRequestInvalidError,
     JobAlreadyDeactivatedError,
     JobNotFoundError,
+    StreamActivateJobsRequestInvalidError,
 )
 from pyzeebe.grpc_internals.types import (
     CompleteJobResponse,
@@ -86,6 +87,53 @@ class TestActivateJobs:
     async def test_raises_on_invalid_max_jobs(self):
         with pytest.raises(ActivateJobsRequestInvalidError):
             jobs = self.activate_jobs(max_jobs_to_activate=0)
+            await jobs.__anext__()
+
+
+@pytest.mark.asyncio
+class TestStreamActivateJobs:
+    zeebe_job_adapter: ZeebeJobAdapter
+
+    @pytest.fixture(autouse=True)
+    def set_up(self, zeebe_adapter: ZeebeJobAdapter):
+        self.zeebe_job_adapter = zeebe_adapter
+
+    def stream_activate_jobs(
+        self,
+        task_type=str(uuid4()),
+        worker=str(uuid4()),
+        timeout=randint(10, 100),
+        request_timeout=100,
+        variables_to_fetch=[],
+        tenant_ids=None,
+    ):
+        return self.zeebe_job_adapter.stream_activate_jobs(
+            task_type, worker, timeout, variables_to_fetch, request_timeout, tenant_ids
+        )
+
+    async def test_returns_correct_amount_of_jobs(self, grpc_servicer: GatewayMock, task: Task):
+        active_jobs_count = randint(4, 100)
+        for _ in range(0, active_jobs_count):
+            job = random_job(task)
+            grpc_servicer.active_jobs[job.key] = job
+
+        jobs = self.stream_activate_jobs(task_type=task.type)
+
+        assert len([job async for job in jobs]) == active_jobs_count
+
+    async def test_raises_on_invalid_worker(self):
+        with pytest.raises(StreamActivateJobsRequestInvalidError):
+            jobs = self.stream_activate_jobs(worker=None)
+            await jobs.__anext__()
+
+    async def test_raises_on_invalid_job_timeout(self):
+        with pytest.raises(StreamActivateJobsRequestInvalidError):
+            jobs = self.stream_activate_jobs(timeout=0)
+            await jobs.__anext__()
+
+    async def test_raises_on_invalid_task_type(self):
+        with pytest.raises(StreamActivateJobsRequestInvalidError):
+            jobs = self.stream_activate_jobs(task_type=None)
             await jobs.__anext__()
 
 
