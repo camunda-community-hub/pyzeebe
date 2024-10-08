@@ -36,7 +36,7 @@ black = "^24.0.0"
 mypy = "^1.10.0"
 coveralls = "^3.3.1"
 responses = ">=0.23.2,<0.26.0"
-sphinx-rtd-theme = ">=1.2.2,<3.0.0"
+sphinx-rtd-theme = ">=1.2.2,<4.0.0"
 sphinx = ">=6,<8"
 
 [tool.poetry.group.stubs.dependencies]
