@@ -9,6 +9,7 @@ from zeebe_grpc.gateway_pb2 import (
     ActivateJobsRequest,
     CompleteJobRequest,
     FailJobRequest,
+    StreamActivatedJobsRequest,
     ThrowErrorRequest,
 )
 
@@ -16,6 +17,7 @@ from pyzeebe.errors import (
     ActivateJobsRequestInvalidError,
     JobAlreadyDeactivatedError,
     JobNotFoundError,
+    StreamActivateJobsRequestInvalidError,
 )
 from pyzeebe.grpc_internals.grpc_utils import is_error_status
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
@@ -61,6 +63,34 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
         except grpc.aio.AioRpcError as grpc_error:
             if is_error_status(grpc_error, grpc.StatusCode.INVALID_ARGUMENT):
                 raise ActivateJobsRequestInvalidError(task_type, worker, timeout, max_jobs_to_activate) from grpc_error
+            await self._handle_grpc_error(grpc_error)
+
+    async def stream_activate_jobs(
+        self,
+        task_type: str,
+        worker: str,
+        timeout: int,
+        variables_to_fetch: Iterable[str],
+        request_timeout: int,
+        tenant_ids: Optional[Iterable[str]] = None,
+    ) -> AsyncGenerator[Job, None]:
+        try:
+            async for raw_job in self._gateway_stub.StreamActivatedJobs(
+                StreamActivatedJobsRequest(
+                    type=task_type,
+                    worker=worker,
+                    timeout=timeout,
+                    fetchVariable=variables_to_fetch,
+                    tenantIds=tenant_ids or [],
+                ),
+                timeout=request_timeout,
+            ):
+                job = self._create_job_from_raw_job(raw_job)
+                logger.debug("Got job: %s from zeebe", job)
+                yield job
+        except grpc.aio.AioRpcError as grpc_error:
+            if is_error_status(grpc_error, grpc.StatusCode.INVALID_ARGUMENT):
+                raise StreamActivateJobsRequestInvalidError(task_type, worker, timeout) from grpc_error
             await self._handle_grpc_error(grpc_error)
 
     def _create_job_from_raw_job(self, response: ActivatedJob) -> Job:

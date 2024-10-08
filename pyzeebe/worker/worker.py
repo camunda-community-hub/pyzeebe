@@ -12,7 +12,7 @@ from pyzeebe.job.job import Job
 from pyzeebe.task import task_builder
 from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.worker.job_executor import JobExecutor
-from pyzeebe.worker.job_poller import JobPoller
+from pyzeebe.worker.job_poller import JobPoller, JobStreamer
 from pyzeebe.worker.task_router import ZeebeTaskRouter
 from pyzeebe.worker.task_state import TaskState
 
@@ -34,6 +34,7 @@ class ZeebeWorker(ZeebeTaskRouter):
         poll_retry_delay: int = 5,
         tenant_ids: Optional[List[str]] = None,
         exception_handler: Optional[ExceptionHandler] = None,
+        stream_enabled: bool = False,
     ):
         """
         Args:
@@ -47,6 +48,7 @@ class ZeebeWorker(ZeebeTaskRouter):
             watcher_max_errors_factor (int): Number of consecutive errors for a task watcher will accept before raising MaxConsecutiveTaskThreadError
             poll_retry_delay (int): The number of seconds to wait before attempting to poll again when reaching max amount of running jobs
             tenant_ids (List[str]): A list of tenant IDs for which to activate jobs. New in Zeebe 8.3.
+            stream_enabled (bool): Enables the job worker to stream jobs. It will still poll for older jobs, but streaming is favored. New in Zeebe 8.4.
         """
         super().__init__(before, after, exception_handler)
         self.zeebe_adapter = ZeebeAdapter(grpc_channel, max_connection_retries)
@@ -57,11 +59,13 @@ class ZeebeWorker(ZeebeTaskRouter):
         self.poll_retry_delay = poll_retry_delay
         self.tenant_ids = tenant_ids
         self._job_pollers: List[JobPoller] = []
+        self._job_streamers: List[JobStreamer] = []
         self._job_executors: List[JobExecutor] = []
         self._stop_event = anyio.Event()
+        self._stream_enabled = stream_enabled
 
     def _init_tasks(self) -> None:
-        self._job_executors, self._job_pollers = [], []
+        self._job_executors, self._job_pollers, self._job_streamers = [], [], []
 
         for task in self.tasks:
             jobs_queue: "asyncio.Queue[Job]" = asyncio.Queue()
@@ -82,6 +86,19 @@ class ZeebeWorker(ZeebeTaskRouter):
             self._job_pollers.append(poller)
             self._job_executors.append(executor)
 
+            if self._stream_enabled:
+                streamer = JobStreamer(
+                    self.zeebe_adapter,
+                    task,
+                    jobs_queue,
+                    self.name,
+                    self.request_timeout,
+                    task_state,
+                    self.poll_retry_delay,
+                    self.tenant_ids,
+                )
+                self._job_streamers.append(streamer)
+
     async def work(self) -> None:
         """
         Start the worker. The worker will poll zeebe for jobs of each task in a different thread.
@@ -99,6 +116,9 @@ class ZeebeWorker(ZeebeTaskRouter):
         async with anyio.create_task_group() as tg:
             for poller in self._job_pollers:
                 tg.start_soon(poller.poll)
+
+            for streamer in self._job_streamers:
+                tg.start_soon(streamer.poll)
 
             for executor in self._job_executors:
                 tg.start_soon(executor.execute)

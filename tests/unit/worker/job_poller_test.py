@@ -6,7 +6,7 @@ import pytest
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
-from pyzeebe.worker.job_poller import JobPoller
+from pyzeebe.worker.job_poller import JobPoller, JobStreamer
 from pyzeebe.worker.task_state import TaskState
 from tests.unit.utils.gateway_mock import GatewayMock
 from tests.unit.utils.random_utils import random_job
@@ -15,6 +15,13 @@ from tests.unit.utils.random_utils import random_job
 @pytest.fixture
 def job_poller(zeebe_adapter: ZeebeAdapter, task: Task, queue: asyncio.Queue, task_state: TaskState) -> JobPoller:
     return JobPoller(zeebe_adapter, task, queue, "test_worker", 100, task_state, 0, None)
+
+
+@pytest.fixture
+def job_stream_poller(
+    zeebe_adapter: ZeebeAdapter, task: Task, queue: asyncio.Queue, task_state: TaskState
+) -> JobStreamer:
+    return JobStreamer(zeebe_adapter, task, queue, "test_worker", 100, task_state, 0, [])
 
 
 @pytest.mark.asyncio
@@ -42,6 +49,33 @@ class TestPollOnce:
         await job_poller.poll_once()
 
         assert job_poller.task_state.count_active() == 1
+
+
+@pytest.mark.asyncio
+class TestStreamPollOnce:
+    async def test_one_job_is_polled(
+        self, job_stream_poller: JobStreamer, queue: asyncio.Queue, job_from_task: Job, grpc_servicer: GatewayMock
+    ):
+        grpc_servicer.active_jobs[job_from_task.key] = job_from_task
+
+        await job_stream_poller.poll_once()
+
+        job: Job = queue.get_nowait()
+        assert job.key == job_from_task.key
+
+    async def test_no_job_is_polled(self, job_stream_poller: JobStreamer, queue: asyncio.Queue):
+        await job_stream_poller.poll_once()
+
+        assert queue.empty()
+
+    async def test_job_is_added_to_task_state(
+        self, job_stream_poller: JobStreamer, job_from_task: Job, grpc_servicer: GatewayMock
+    ):
+        grpc_servicer.active_jobs[job_from_task.key] = job_from_task
+
+        await job_stream_poller.poll_once()
+
+        assert job_stream_poller.task_state.count_active() == 1
 
 
 class TestShouldPoll:

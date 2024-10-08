@@ -1,6 +1,7 @@
+import abc
 import asyncio
 import logging
-from typing import List, Optional
+from typing import Optional, final
 
 from pyzeebe.errors import (
     ActivateJobsRequestInvalidError,
@@ -17,17 +18,17 @@ from pyzeebe.worker.task_state import TaskState
 logger = logging.getLogger(__name__)
 
 
-class JobPoller:
+class JobPollerABC(abc.ABC):
     def __init__(
         self,
         zeebe_adapter: ZeebeJobAdapter,
         task: Task,
-        queue: "asyncio.Queue[Job]",
+        queue: asyncio.Queue[Job],
         worker_name: str,
         request_timeout: int,
         task_state: TaskState,
         poll_retry_delay: int,
-        tenant_ids: Optional[List[str]],
+        tenant_ids: Optional[list[str]],
     ) -> None:
         self.zeebe_adapter = zeebe_adapter
         self.task = task
@@ -43,6 +44,9 @@ class JobPoller:
         while self.should_poll():
             await self.activate_max_jobs()
 
+    @abc.abstractmethod
+    async def poll_once(self) -> None: ...
+
     async def activate_max_jobs(self) -> None:
         if self.calculate_max_jobs_to_activate() > 0:
             await self.poll_once()
@@ -54,6 +58,20 @@ class JobPoller:
             )
             await asyncio.sleep(self.poll_retry_delay)
 
+    def should_poll(self) -> bool:
+        return not self.stop_event.is_set() and (self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection)
+
+    def calculate_max_jobs_to_activate(self) -> int:
+        worker_max_jobs = self.task.config.max_running_jobs - self.task_state.count_active()
+        return min(worker_max_jobs, self.task.config.max_jobs_to_activate)
+
+    async def stop(self) -> None:
+        self.stop_event.set()
+        await self.queue.join()
+
+
+@final
+class JobPoller(JobPollerABC):
     async def poll_once(self) -> None:
         try:
             jobs = self.zeebe_adapter.activate_jobs(
@@ -83,13 +101,64 @@ class JobPoller:
             )
             await asyncio.sleep(5)
 
-    def should_poll(self) -> bool:
-        return not self.stop_event.is_set() and (self.zeebe_adapter.connected or self.zeebe_adapter.retrying_connection)
 
-    def calculate_max_jobs_to_activate(self) -> int:
-        worker_max_jobs = self.task.config.max_running_jobs - self.task_state.count_active()
-        return min(worker_max_jobs, self.task.config.max_jobs_to_activate)
+@final
+class JobStreamer(JobPollerABC):
+    def __init__(
+        self,
+        zeebe_adapter: ZeebeJobAdapter,
+        task: Task,
+        queue: asyncio.Queue[Job],
+        worker_name: str,
+        request_timeout: int,
+        task_state: TaskState,
+        poll_retry_delay: int,
+        tenant_ids: Optional[list[str]],
+    ) -> None:
+        super().__init__(
+            zeebe_adapter,
+            task,
+            queue,
+            worker_name,
+            request_timeout,
+            task_state,
+            poll_retry_delay,
+            tenant_ids,
+        )
+        self._create_stream()
+
+    def _create_stream(self) -> None:
+        self._stream = self.zeebe_adapter.stream_activate_jobs(
+            task_type=self.task.type,
+            worker=self.worker_name,
+            timeout=self.task.config.timeout_ms,
+            variables_to_fetch=self.task.config.variables_to_fetch or [],
+            request_timeout=self.request_timeout,
+            tenant_ids=self.tenant_ids,
+        )
+
+    async def poll_once(self) -> None:
+        try:
+            job = await self._stream.__anext__()
+            self.task_state.add(job)
+            await self.queue.put(job)
+        except StopAsyncIteration:
+            self._create_stream()
+        except ActivateJobsRequestInvalidError:
+            logger.warning("Activate job requests was invalid for task %s", self.task.type)
+            raise
+        except (
+            ZeebeBackPressureError,
+            ZeebeGatewayUnavailableError,
+            ZeebeInternalError,
+            ZeebeDeadlineExceeded,
+        ) as error:
+            logger.warning(
+                "Failed to activate jobs from the gateway. Exception: %s. Retrying in 5 seconds...",
+                repr(error),
+            )
+            await asyncio.sleep(5)
 
     async def stop(self) -> None:
-        self.stop_event.set()
-        await self.queue.join()
+        await self._stream.aclose()
+        await super().stop()
