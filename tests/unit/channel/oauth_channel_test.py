@@ -11,7 +11,7 @@ from pyzeebe.channel.oauth_channel import (
 
 @pytest.fixture
 def mock_oauth2metadataplugin():
-    with mock.patch("pyzeebe.credentials.oauth.OAuth2MetadataPlugin") as mock_credentials:
+    with mock.patch("pyzeebe.channel.oauth_channel.Oauth2ClientCredentialsMetadataPlugin") as mock_credentials:
         yield mock_credentials
 
 
@@ -26,6 +26,15 @@ def test_create_oauth2_client_credentials_channel(
     channel = create_oauth2_client_credentials_channel(grpc_address, client_id, client_secret, authorization_server)
 
     assert isinstance(channel, grpc.aio.Channel)
+    mock_oauth2metadataplugin.assert_called_once_with(
+        audience=None,
+        authorization_server=authorization_server,
+        client_id=client_id,
+        client_secret=client_secret,
+        expire_in=None,
+        leeway=60,
+        scope=None,
+    )
 
 
 def test_create_camunda_cloud_channel(
@@ -35,12 +44,13 @@ def test_create_camunda_cloud_channel(
     client_secret = "client_secret"
     cluster_id = "cluster_id"
     region = "bru-2"
-    scope = "Zeebe"
-    authorization_server = "https://login.cloud.camunda.io/oauth/token"
-    audience = "zeebe.camunda.io"
 
-    channel = create_camunda_cloud_channel(
-        client_id, client_secret, cluster_id, region, scope, authorization_server, audience
-    )
+    channel = create_camunda_cloud_channel(client_id, client_secret, cluster_id, region)
 
     assert isinstance(channel, grpc.aio.Channel)
+    mock_oauth2metadataplugin.assert_called_once_with(
+        audience="cluster_id.bru-2.zeebe.camunda.io",
+        authorization_server="https://login.cloud.camunda.io/oauth/token",
+        client_id=client_id,
+        client_secret=client_secret,
+    )
