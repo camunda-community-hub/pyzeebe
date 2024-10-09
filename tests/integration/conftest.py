@@ -1,6 +1,5 @@
 import asyncio
 import os
-from typing import Dict
 from uuid import uuid4
 
 import grpc
@@ -39,7 +38,7 @@ def task(zeebe_worker: ZeebeWorker, process_stats: ProcessStats):
         await job_controller.set_error_status(job, f"Failed to run task {job.type}. Reason: {exc}")
 
     @zeebe_worker.task("test", exception_handler)
-    async def task_handler(should_throw: bool, input: str, job: Job) -> Dict:
+    async def task_handler(should_throw: bool, input: str, job: Job) -> dict:
         process_stats.add_process_run(ProcessRun(job.process_instance_key, job.variables))
         if should_throw:
             raise Exception("Error thrown")
@@ -69,7 +68,7 @@ def process_name() -> str:
 
 
 @pytest.fixture
-def process_variables() -> Dict:
+def process_variables() -> dict:
     return {"input": str(uuid4()), "should_throw": False}
 
 

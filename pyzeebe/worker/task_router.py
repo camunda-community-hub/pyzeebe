@@ -1,16 +1,8 @@
+from __future__ import annotations
+
 import logging
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    Literal,
-    Optional,
-    Tuple,
-    TypeVar,
-    overload,
-)
+from collections.abc import Iterable
+from typing import Any, Callable, Literal, Optional, TypeVar, overload
 
 from typing_extensions import ParamSpec
 
@@ -24,7 +16,7 @@ from pyzeebe.task.types import TaskDecorator
 
 P = ParamSpec("P")
 R = TypeVar("R")
-RD = TypeVar("RD", bound=Optional[Dict[str, Any]])
+RD = TypeVar("RD", bound=Optional[dict[str, Any]])
 
 logger = logging.getLogger(__name__)
 
@@ -32,9 +24,9 @@ logger = logging.getLogger(__name__)
 class ZeebeTaskRouter:
     def __init__(
         self,
-        before: Optional[List[TaskDecorator]] = None,
-        after: Optional[List[TaskDecorator]] = None,
-        exception_handler: Optional[ExceptionHandler] = None,
+        before: list[TaskDecorator] | None = None,
+        after: list[TaskDecorator] | None = None,
+        exception_handler: ExceptionHandler | None = None,
     ):
         """
         Args:
@@ -43,21 +35,21 @@ class ZeebeTaskRouter:
             exception_handler (ExceptionHandler): Handler that will be called when a job fails.
         """
         self._exception_handler = exception_handler
-        self._before: List[TaskDecorator] = before or []
-        self._after: List[TaskDecorator] = after or []
-        self.tasks: List[Task] = []
+        self._before: list[TaskDecorator] = before or []
+        self._after: list[TaskDecorator] = after or []
+        self.tasks: list[Task] = []
 
     @overload
     def task(
         self,
         task_type: str,
-        exception_handler: Optional[ExceptionHandler] = None,
-        variables_to_fetch: Optional[Iterable[str]] = None,
+        exception_handler: ExceptionHandler | None = None,
+        variables_to_fetch: Iterable[str] | None = None,
         timeout_ms: int = 10000,
         max_jobs_to_activate: int = 32,
         max_running_jobs: int = 32,
-        before: Optional[List[TaskDecorator]] = None,
-        after: Optional[List[TaskDecorator]] = None,
+        before: list[TaskDecorator] | None = None,
+        after: list[TaskDecorator] | None = None,
         *,
         single_value: Literal[False] = False,
     ) -> Callable[[Function[P, RD]], Function[P, RD]]: ...
@@ -66,13 +58,13 @@ class ZeebeTaskRouter:
     def task(
         self,
         task_type: str,
-        exception_handler: Optional[ExceptionHandler] = None,
-        variables_to_fetch: Optional[Iterable[str]] = None,
+        exception_handler: ExceptionHandler | None = None,
+        variables_to_fetch: Iterable[str] | None = None,
         timeout_ms: int = 10000,
         max_jobs_to_activate: int = 32,
         max_running_jobs: int = 32,
-        before: Optional[List[TaskDecorator]] = None,
-        after: Optional[List[TaskDecorator]] = None,
+        before: list[TaskDecorator] | None = None,
+        after: list[TaskDecorator] | None = None,
         *,
         single_value: Literal[True],
         variable_name: str,
@@ -81,15 +73,15 @@ class ZeebeTaskRouter:
     def task(
         self,
         task_type: str,
-        exception_handler: Optional[ExceptionHandler] = None,
-        variables_to_fetch: Optional[Iterable[str]] = None,
+        exception_handler: ExceptionHandler | None = None,
+        variables_to_fetch: Iterable[str] | None = None,
         timeout_ms: int = 10000,
         max_jobs_to_activate: int = 32,
         max_running_jobs: int = 32,
-        before: Optional[List[TaskDecorator]] = None,
-        after: Optional[List[TaskDecorator]] = None,
+        before: list[TaskDecorator] | None = None,
+        after: list[TaskDecorator] | None = None,
         single_value: bool = False,
-        variable_name: Optional[str] = None,
+        variable_name: str | None = None,
     ) -> Callable[[Function[P, R]], Function[P, R]]:
         """
         Decorator to create a task
@@ -225,7 +217,7 @@ class ZeebeTaskRouter:
     def _get_task_index(self, task_type: str) -> int:
         return self._get_task_and_index(task_type)[1]
 
-    def _get_task_and_index(self, task_type: str) -> Tuple[Task, int]:
+    def _get_task_and_index(self, task_type: str) -> tuple[Task, int]:
         for index, task in enumerate(self.tasks):
             if task.type == task_type:
                 return task, index

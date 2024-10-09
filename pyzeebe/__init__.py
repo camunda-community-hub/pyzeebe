@@ -1,5 +1,10 @@
 from pyzeebe import errors
-from pyzeebe.channel import *
+from pyzeebe.channel import (
+    create_camunda_cloud_channel,
+    create_insecure_channel,
+    create_oauth2_client_credentials_channel,
+    create_secure_channel,
+)
 from pyzeebe.client.client import ZeebeClient
 from pyzeebe.client.sync_client import SyncZeebeClient
 from pyzeebe.credentials.base import CredentialsABC
@@ -18,6 +23,7 @@ __all__ = (
     "create_camunda_cloud_channel",
     "create_insecure_channel",
     "create_secure_channel",
+    "create_oauth2_client_credentials_channel",
     "ZeebeClient",
     "SyncZeebeClient",
     "Job",

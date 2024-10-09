@@ -3,8 +3,8 @@ from __future__ import annotations
 import functools
 import inspect
 import logging
-from inspect import Parameter
-from typing import Any, Callable, Dict, Sequence, Tuple, TypeVar
+from collections.abc import Sequence
+from typing import Any, TypeVar
 
 from typing_extensions import ParamSpec
 
@@ -65,10 +65,10 @@ def prepare_task_function(task_function: Function[P, R], task_config: TaskConfig
 
 async def run_original_task_function(
     task_function: DictFunction[...], task_config: TaskConfig, job: Job, job_controller: JobController
-) -> Tuple[Variables, bool]:
+) -> tuple[Variables, bool]:
     try:
         if task_config.variables_to_fetch is None:
-            variables: Dict[str, Any] = {}
+            variables: dict[str, Any] = {}
         elif task_wants_all_variables(task_config):
             if only_job_is_required_in_task_function(task_function):
                 variables = {}

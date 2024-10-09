@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import datetime
 import threading
-from typing import Any, Dict, Optional
+from typing import Any
 
 import requests
 
@@ -27,7 +29,7 @@ class CamundaIdentityCredentials(CredentialsABC):
         client_id: str,
         client_secret: str,
         audience: str = "zeebe-api",
-        refresh_threshold_seconds: int = 20
+        refresh_threshold_seconds: int = 20,
     ) -> None:
         self.oauth_url = oauth_url
         self.client_id = client_id
@@ -37,8 +39,8 @@ class CamundaIdentityCredentials(CredentialsABC):
         self._lock = threading.Lock()
         self._refresh_threshold = datetime.timedelta(seconds=refresh_threshold_seconds)
 
-        self._token: Optional[Dict[str, Any]] = None
-        self._expires_in: Optional[datetime.datetime] = None
+        self._token: dict[str, Any] | None = None
+        self._expires_in: datetime.datetime | None = None
 
     def _expired(self) -> bool:
         return (
@@ -83,4 +85,4 @@ class CamundaIdentityCredentials(CredentialsABC):
         with self._lock:
             if self._expired() is True:
                 self._refresh()
-            return (("authorization", "Bearer {}".format(self._token)),)
+            return (("authorization", f"Bearer {self._token}"),)

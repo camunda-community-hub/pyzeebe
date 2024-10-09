@@ -21,7 +21,14 @@ repos:
         language: python
         pass_filenames: false
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.2
+    rev: v3.17.0
     hooks:
       - id: pyupgrade
         args: [--py39-plus]
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args:
+          - --fix
+        exclude: ^(tests/.*|examples/.*|docs/.*)$

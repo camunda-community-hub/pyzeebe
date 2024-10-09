@@ -69,6 +69,25 @@ profile = "black"
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 
+[tool.ruff]
+target-version = "py39"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "C",   # flake8-comprehensions
+    "B",   # flake8-bugbear
+    "TID", # flake8-tidy-imports
+    "T20", # flake8-print
+    "ASYNC", # flake8-async
+    "FA",  # flake8-future-annotations
+]
+ignore = [
+    "E501",   # line too long, handled by black
+]
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

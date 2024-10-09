@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 
 class PyZeebeError(Exception):
@@ -21,17 +21,13 @@ class DuplicateTaskTypeError(PyZeebeError):
         self.task_type = task_type
 
 
-class MaxConsecutiveTaskThreadError(PyZeebeError):
-    pass
-
-
 class BusinessError(PyZeebeError):
     """
     Exception that can be raised with a user defined code,
     to be caught later by an error event in the Zeebe process
     """
 
-    def __init__(self, error_code: str, msg: Optional[str] = None) -> None:
+    def __init__(self, error_code: str, msg: str | None = None) -> None:
         if msg is None:
             msg = f"Business error with code {error_code}"
         super().__init__(msg)

@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import List, Optional, Union
 
 from pyzeebe.types import Variables
 
@@ -17,7 +18,7 @@ class CreateProcessInstanceResponse:
     #: needs a process instance key (e.g. CancelProcessInstanceRequest)
     process_instance_key: int
     #: the tenant ID of the created process instance
-    tenant_id: Optional[str]
+    tenant_id: str | None
 
 
 @dataclass(frozen=True)
@@ -35,7 +36,7 @@ class CreateProcessInstanceWithResultResponse:
     #: consisting of all visible variables to the root scope
     variables: Variables
     #: the tenant ID of the process definition
-    tenant_id: Optional[str]
+    tenant_id: str | None
 
 
 @dataclass(frozen=True)
@@ -58,7 +59,7 @@ class DeployResourceResponse:
         #: parsed
         resource_name: str
         #: the tenant ID of the deployed process
-        tenant_id: Optional[str]
+        tenant_id: str | None
 
     @dataclass(frozen=True)
     class DecisionMetadata:
@@ -79,7 +80,7 @@ class DeployResourceResponse:
         #: part of
         decision_requirements_key: int
         #: the tenant ID of the deployed decision
-        tenant_id: Optional[str]
+        tenant_id: str | None
 
     @dataclass(frozen=True)
     class DecisionRequirementsMetadata:
@@ -97,7 +98,7 @@ class DeployResourceResponse:
         #: requirements was parsed
         resource_name: str
         #: the tenant ID of the deployed decision requirements
-        tenant_id: Optional[str]
+        tenant_id: str | None
 
     @dataclass(frozen=True)
     class FormMetadata:
@@ -111,14 +112,14 @@ class DeployResourceResponse:
         #: the resource name
         resource_name: str
         #: the tenant ID of the deployed form
-        tenant_id: Optional[str]
+        tenant_id: str | None
 
     #: the unique key identifying the deployment
     key: int
     #: a list of deployed resources, e.g. processes
-    deployments: List[Union[ProcessMetadata, DecisionMetadata, DecisionRequirementsMetadata, FormMetadata]]
+    deployments: list[ProcessMetadata | DecisionMetadata | DecisionRequirementsMetadata | FormMetadata]
     #: the tenant ID of the deployed resources
-    tenant_id: Optional[str]
+    tenant_id: str | None
 
 
 @dataclass(frozen=True)
@@ -126,7 +127,7 @@ class PublishMessageResponse:
     #: the unique ID of the message that was published
     key: int
     #: the tenant ID of the message
-    tenant_id: Optional[str]
+    tenant_id: str | None
 
 
 @dataclass(frozen=True)

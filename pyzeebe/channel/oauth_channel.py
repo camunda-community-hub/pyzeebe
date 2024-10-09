@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from functools import partial
-from typing import Optional
 
 import grpc
 
@@ -13,12 +14,12 @@ def create_oauth2_client_credentials_channel(
     client_id: str,
     client_secret: str,
     authorization_server: str,
-    scope: Optional[str] = None,
-    audience: Optional[str] = None,
-    channel_credentials: grpc.ChannelCredentials = grpc.ssl_channel_credentials(),
-    channel_options: Optional[ChannelArgumentType] = None,
+    scope: str | None = None,
+    audience: str | None = None,
+    channel_credentials: grpc.ChannelCredentials | None = None,
+    channel_options: ChannelArgumentType | None = None,
     leeway: int = 60,
-    expire_in: Optional[int] = None,
+    expire_in: int | None = None,
 ) -> grpc.aio.Channel:
     """Create a gRPC channel for connecting to Camunda 8 (Self-Managed) with OAuth2ClientCredentials.
 
@@ -65,7 +66,7 @@ def create_oauth2_client_credentials_channel(
 
     call_credentials: grpc.CallCredentials = grpc.metadata_call_credentials(oauth2_client_credentials)
     composite_credentials: grpc.ChannelCredentials = grpc.composite_channel_credentials(
-        channel_credentials, call_credentials
+        channel_credentials or grpc.ssl_channel_credentials(), call_credentials
     )
 
     channel: grpc.aio.Channel = grpc.aio.secure_channel(
@@ -83,10 +84,10 @@ def create_camunda_cloud_channel(
     scope: str = "Zeebe",
     authorization_server: str = "https://login.cloud.camunda.io/oauth/token",
     audience: str = "zeebe.camunda.io",
-    channel_credentials: grpc.ChannelCredentials = grpc.ssl_channel_credentials(),
-    channel_options: Optional[ChannelArgumentType] = None,
+    channel_credentials: grpc.ChannelCredentials | None = None,
+    channel_options: ChannelArgumentType | None = None,
     leeway: int = 60,
-    expire_in: Optional[int] = None,
+    expire_in: int | None = None,
 ) -> grpc.aio.Channel:
     """Create a gRPC channel for connecting to Camunda 8 Cloud (SaaS).
 
@@ -139,9 +140,8 @@ def create_camunda_cloud_channel(
     oauth2_client_credentials._func_retrieve_token = func
 
     call_credentials: grpc.CallCredentials = grpc.metadata_call_credentials(oauth2_client_credentials)
-    # channel_credentials: grpc.ChannelCredentials = channel_credentials or grpc.ssl_channel_credentials()
     composite_credentials: grpc.ChannelCredentials = grpc.composite_channel_credentials(
-        channel_credentials, call_credentials
+        channel_credentials or grpc.ssl_channel_credentials(), call_credentials
     )
 
     channel: grpc.aio.Channel = grpc.aio.secure_channel(

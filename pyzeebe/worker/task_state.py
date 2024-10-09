@@ -1,5 +1,4 @@
 import logging
-from typing import List
 
 from pyzeebe import Job
 
@@ -8,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 class TaskState:
     def __init__(self) -> None:
-        self._active_jobs: List[int] = []
+        self._active_jobs: list[int] = []
 
     def remove(self, job: Job) -> None:
         try:

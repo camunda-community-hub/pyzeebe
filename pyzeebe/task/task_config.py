@@ -1,4 +1,6 @@
-from typing import Iterable, List, Optional
+from __future__ import annotations
+
+from collections.abc import Iterable
 
 from pyzeebe.errors import NoVariableNameGivenError
 from pyzeebe.function_tools import async_tools
@@ -7,21 +9,21 @@ from pyzeebe.task.types import AsyncTaskDecorator, TaskDecorator
 
 
 class TaskConfig:
-    before: List[AsyncTaskDecorator]
-    after: List[AsyncTaskDecorator]
+    before: list[AsyncTaskDecorator]
+    after: list[AsyncTaskDecorator]
 
     def __init__(
         self,
         type: str,
-        exception_handler: Optional[ExceptionHandler],
+        exception_handler: ExceptionHandler | None,
         timeout_ms: int,
         max_jobs_to_activate: int,
         max_running_jobs: int,
-        variables_to_fetch: Optional[Iterable[str]],
+        variables_to_fetch: Iterable[str] | None,
         single_value: bool,
         variable_name: str,
-        before: List[TaskDecorator],
-        after: List[TaskDecorator],
+        before: list[TaskDecorator],
+        after: list[TaskDecorator],
     ) -> None:
         if single_value and not variable_name:
             raise NoVariableNameGivenError(type)
@@ -36,7 +38,7 @@ class TaskConfig:
         self.variable_name = variable_name
         self.before = async_tools.asyncify_all_functions(before)
         self.after = async_tools.asyncify_all_functions(after)
-        self.job_parameter_name: Optional[str] = None
+        self.job_parameter_name: str | None = None
 
     def __repr__(self) -> str:
         return (

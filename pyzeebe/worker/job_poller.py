@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import asyncio
 import logging
-from typing import List, Optional
 
 from pyzeebe.errors import (
     ActivateJobsRequestInvalidError,
@@ -22,12 +23,12 @@ class JobPoller:
         self,
         zeebe_adapter: ZeebeJobAdapter,
         task: Task,
-        queue: "asyncio.Queue[Job]",
+        queue: asyncio.Queue[Job],
         worker_name: str,
         request_timeout: int,
         task_state: TaskState,
         poll_retry_delay: int,
-        tenant_ids: Optional[List[str]],
+        tenant_ids: list[str] | None,
     ) -> None:
         self.zeebe_adapter = zeebe_adapter
         self.task = task

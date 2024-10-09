@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import json
 import logging
 import types
-from typing import AsyncGenerator, Iterable, Optional
+from collections.abc import AsyncGenerator, Iterable
 
 import grpc
 from zeebe_grpc.gateway_pb2 import (
@@ -38,8 +40,8 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
         max_jobs_to_activate: int,
         variables_to_fetch: Iterable[str],
         request_timeout: int,
-        tenant_ids: Optional[Iterable[str]] = None,
-    ) -> AsyncGenerator[Job, None]:
+        tenant_ids: Iterable[str] | None = None,
+    ) -> AsyncGenerator[Job]:
         try:
             grpc_request_timeout = request_timeout / 1000 * 2 if request_timeout > 0 else DEFAULT_GRPC_REQUEST_TIMEOUT
             async for response in self._gateway_stub.ActivateJobs(

@@ -1,4 +1,6 @@
-from typing import Callable, List, Optional
+from __future__ import annotations
+
+from typing import Callable
 
 import pytest
 
@@ -30,7 +32,7 @@ class TestGetFunctionParameters:
             (dummy_functions.lambda_positional_and_keyword_params, ["x", "y"]),
         ],
     )
-    def test_get_params(self, fn: Callable, expected: Optional[List[str]]):
+    def test_get_params(self, fn: Callable, expected: list[str] | None):
         assert parameter_tools.get_parameters_from_function(fn) == expected
 
 

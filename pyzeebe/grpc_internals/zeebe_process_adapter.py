@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import json
 import os
-from typing import Callable, Dict, Iterable, List, NoReturn, Optional, Union
+from collections.abc import Iterable
+from typing import Callable, NoReturn
 
 import anyio
 import grpc
@@ -42,7 +45,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
         bpmn_process_id: str,
         version: int,
         variables: Variables,
-        tenant_id: Optional[str] = None,
+        tenant_id: str | None = None,
     ) -> CreateProcessInstanceResponse:
         try:
             response = await self._gateway_stub.CreateProcessInstance(
@@ -69,9 +72,9 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
         bpmn_process_id: str,
         version: int,
         variables: Variables,
-        timeout: int,
+        timeout: int,  # noqa: ASYNC109
         variables_to_fetch: Iterable[str],
-        tenant_id: Optional[str] = None,
+        tenant_id: str | None = None,
     ) -> CreateProcessInstanceWithResultResponse:
         try:
             response = await self._gateway_stub.CreateProcessInstanceWithResult(
@@ -125,9 +128,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
 
         return CancelProcessInstanceResponse()
 
-    async def deploy_resource(
-        self, *resource_file_path: str, tenant_id: Optional[str] = None
-    ) -> DeployResourceResponse:
+    async def deploy_resource(self, *resource_file_path: str, tenant_id: str | None = None) -> DeployResourceResponse:
         try:
             response = await self._gateway_stub.DeployResource(
                 DeployResourceRequest(
@@ -140,13 +141,11 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
                 raise ProcessInvalidError() from grpc_error
             await self._handle_grpc_error(grpc_error)
 
-        deployments: List[
-            Union[
-                DeployResourceResponse.ProcessMetadata,
-                DeployResourceResponse.DecisionMetadata,
-                DeployResourceResponse.DecisionRequirementsMetadata,
-                DeployResourceResponse.FormMetadata,
-            ]
+        deployments: list[
+            DeployResourceResponse.ProcessMetadata
+            | DeployResourceResponse.DecisionMetadata
+            | DeployResourceResponse.DecisionRequirementsMetadata
+            | DeployResourceResponse.FormMetadata
         ] = []
         for deployment in response.deployments:
             metadata_field = deployment.WhichOneof("Metadata")
@@ -205,16 +204,14 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
         )
 
 
-_METADATA_PARSERS: Dict[
+_METADATA_PARSERS: dict[
     str,
     Callable[
-        [Union[ProcessMetadata, DecisionMetadata, DecisionRequirementsMetadata, FormMetadata]],
-        Union[
-            DeployResourceResponse.ProcessMetadata,
-            DeployResourceResponse.DecisionMetadata,
-            DeployResourceResponse.DecisionRequirementsMetadata,
-            DeployResourceResponse.FormMetadata,
-        ],
+        [ProcessMetadata | DecisionMetadata | DecisionRequirementsMetadata | FormMetadata],
+        DeployResourceResponse.ProcessMetadata
+        | DeployResourceResponse.DecisionMetadata
+        | DeployResourceResponse.DecisionRequirementsMetadata
+        | DeployResourceResponse.FormMetadata,
     ],
 ] = {
     "process": ZeebeProcessAdapter._create_process_from_raw_process,
