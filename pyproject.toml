@@ -50,9 +50,9 @@ strict = true
 
 [[tool.mypy.overrides]]
 module = [
-  "grpc", 
-  "zeebe_grpc.gateway_pb2", 
-  "zeebe_grpc.gateway_pb2_grpc", 
+  "grpc",
+  "zeebe_grpc.gateway_pb2",
+  "zeebe_grpc.gateway_pb2_grpc",
 ]
 ignore_missing_imports = true
 

@@ -27,11 +27,11 @@ Run using event loop
 .. warning::
 
    Calling ``worker.work`` directly using ``asyncio.run`` will not work. When you create an async grpc channel a new event loop will automatically be created, which causes problems when running the worker (see: https://github.com/camunda-community-hub/pyzeebe/issues/198).
-   
+
    An easy workaround:
 
     .. code-block:: python
-    
+
         async def main():
             channel = create_insecure_channel()
             worker = ZeebeWorker(channel)
@@ -86,4 +86,3 @@ To stop a running worker:
     # Trigger this on some event (SIGTERM for example)
     async def shutdown():
         await worker.stop()
-
