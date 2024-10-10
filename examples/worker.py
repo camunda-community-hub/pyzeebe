@@ -1,5 +1,4 @@
 import asyncio
-from typing import Dict
 
 from pyzeebe import (
     Job,
@@ -52,14 +51,14 @@ worker.after(example_logging_task_decorator)
 
 # Create a task like this:
 @worker.task(task_type="test")
-def example_task() -> Dict:
-    return {"output": f"Hello world, test!"}
+def example_task() -> dict:
+    return {"output": "Hello world, test!"}
 
 
 # Or like this:
 @worker.task(task_type="test2")
-async def second_example_task() -> Dict:
-    return {"output": f"Hello world, test2!"}
+async def second_example_task() -> dict:
+    return {"output": "Hello world, test2!"}
 
 
 # Create a task that will return a single value (not a dict) like this:
@@ -98,7 +97,7 @@ async def exception_task():
     before=[example_logging_task_decorator],
     after=[example_logging_task_decorator],
 )
-async def decorator_task() -> Dict:
+async def decorator_task() -> dict:
     return {"output": "Hello world, test!"}
 
 

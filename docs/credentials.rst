@@ -9,7 +9,7 @@ Oauth2 Client Credentials Plugin
     :members:
     :special-members:
     :private-members:
-   
+
 Example:
 
 .. code-block:: python

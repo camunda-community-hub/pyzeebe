@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from pyzeebe.job.job_status import JobStatus
 from pyzeebe.types import Headers, Variables
@@ -23,7 +25,7 @@ class Job:
     retries: int
     deadline: int
     variables: Variables
-    tenant_id: Optional[str] = None
+    tenant_id: str | None = None
     status: JobStatus = JobStatus.Running
     task_result = None
 
@@ -40,7 +42,7 @@ class Job:
 
 
 class JobController:
-    def __init__(self, job: Job, zeebe_adapter: "ZeebeAdapter") -> None:
+    def __init__(self, job: Job, zeebe_adapter: ZeebeAdapter) -> None:
         self._job = job
         self._zeebe_adapter = zeebe_adapter
 
@@ -50,7 +52,7 @@ class JobController:
         """
         self._job._set_status(JobStatus.RunningAfterDecorators)
 
-    async def set_success_status(self, variables: Optional[Variables] = None) -> None:
+    async def set_success_status(self, variables: Variables | None = None) -> None:
         """
         Success status means that the job has been completed as intended.
 
@@ -67,7 +69,7 @@ class JobController:
         self,
         message: str,
         retry_back_off_ms: int = 0,
-        variables: Optional[Variables] = None,
+        variables: Variables | None = None,
     ) -> None:
         """
         Failure status means a technical error has occurred. If retried the job may succeed.
@@ -98,7 +100,7 @@ class JobController:
         self,
         message: str,
         error_code: str = "",
-        variables: Optional[Variables] = None,
+        variables: Variables | None = None,
     ) -> None:
         """
         Error status means that the job could not be completed because of a business error and won't ever be able to be completed.

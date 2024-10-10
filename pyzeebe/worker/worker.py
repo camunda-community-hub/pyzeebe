@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 import socket
-from typing import List, Optional
 
 import anyio
 import grpc
@@ -25,15 +26,14 @@ class ZeebeWorker(ZeebeTaskRouter):
     def __init__(
         self,
         grpc_channel: grpc.aio.Channel,
-        name: Optional[str] = None,
+        name: str | None = None,
         request_timeout: int = 0,
-        before: Optional[List[TaskDecorator]] = None,
-        after: Optional[List[TaskDecorator]] = None,
+        before: list[TaskDecorator] | None = None,
+        after: list[TaskDecorator] | None = None,
         max_connection_retries: int = 10,
-        watcher_max_errors_factor: int = 3,
         poll_retry_delay: int = 5,
-        tenant_ids: Optional[List[str]] = None,
-        exception_handler: Optional[ExceptionHandler] = None,
+        tenant_ids: list[str] | None = None,
+        exception_handler: ExceptionHandler | None = None,
     ):
         """
         Args:
@@ -44,7 +44,6 @@ class ZeebeWorker(ZeebeTaskRouter):
             after (List[TaskDecorator]): Decorators to be performed after each task
             exception_handler (ExceptionHandler): Handler that will be called when a job fails.
             max_connection_retries (int): Amount of connection retries before worker gives up on connecting to zeebe. To setup with infinite retries use -1
-            watcher_max_errors_factor (int): Number of consecutive errors for a task watcher will accept before raising MaxConsecutiveTaskThreadError
             poll_retry_delay (int): The number of seconds to wait before attempting to poll again when reaching max amount of running jobs
             tenant_ids (List[str]): A list of tenant IDs for which to activate jobs. New in Zeebe 8.3.
         """
@@ -52,19 +51,17 @@ class ZeebeWorker(ZeebeTaskRouter):
         self.zeebe_adapter = ZeebeAdapter(grpc_channel, max_connection_retries)
         self.name = name or socket.gethostname()
         self.request_timeout = request_timeout
-        self.watcher_max_errors_factor = watcher_max_errors_factor
-        self._watcher_thread = None
         self.poll_retry_delay = poll_retry_delay
         self.tenant_ids = tenant_ids
-        self._job_pollers: List[JobPoller] = []
-        self._job_executors: List[JobExecutor] = []
+        self._job_pollers: list[JobPoller] = []
+        self._job_executors: list[JobExecutor] = []
         self._stop_event = anyio.Event()
 
     def _init_tasks(self) -> None:
         self._job_executors, self._job_pollers = [], []
 
         for task in self.tasks:
-            jobs_queue: "asyncio.Queue[Job]" = asyncio.Queue()
+            jobs_queue: asyncio.Queue[Job] = asyncio.Queue()
             task_state = TaskState()
 
             poller = JobPoller(

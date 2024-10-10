@@ -113,6 +113,6 @@ class TestCamundaIdentityCredentials:
             oauth_url=url, client_id=client_id, client_secret=client_secret, refresh_threshold_seconds=10
         )
 
-        assert credentials.get_auth_metadata(Mock()) == (("authorization", f"Bearer test1"),)
-        assert credentials.get_auth_metadata(Mock()) == (("authorization", f"Bearer test2"),)
+        assert credentials.get_auth_metadata(Mock()) == (("authorization", "Bearer test1"),)
+        assert credentials.get_auth_metadata(Mock()) == (("authorization", "Bearer test2"),)
         assert mocked_responses.assert_call_count(url, 2)

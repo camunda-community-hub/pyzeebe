@@ -6,19 +6,19 @@ In order to instantiate a ZeebeWorker or ZeebeClient you will need to provide an
 This Channel can be configured with the parameters `channel_credentials` and `channel_options`.
 
 .. seealso::
-    
+
     `Python Channel Options <https://grpc.github.io/grpc/python/glossary.html#term-channel_arguments>`_
       Documentation of the available Python `grpc.aio.Channel` `options` (channel_arguments).
 
 
 .. note::
-    
+
     By default, channel_options is defined so that the grpc.keepalive_time_ms option is always set to 45_000 (45 seconds).
     Reference Camunda Docs `keep alive intervals <https://docs.camunda.io/docs/self-managed/zeebe-deployment/operations/setting-up-a-cluster/#keep-alive-intervals>`_.
 
     You can override the default `channel_options` by passing
     e.g. `channel_options = (("grpc.keepalive_time_ms", 60_000),)` - for a keepalive time of 60 seconds.
-    
+
 
 Pyzeebe provides a couple standard ways to achieve this:
 
@@ -81,7 +81,7 @@ Oauth2 Client Credentials Channel
 
 .. autofunction:: pyzeebe.channel.oauth_channel.create_oauth2_client_credentials_channel
 
-.. warning:: 
+.. warning::
     Some arguments are Optional and are highly dependent on your Authentication Server configuration,
     `scope` is usually required and is often optional `audience` .
 
@@ -181,5 +181,5 @@ Example:
 
     from pyzeebe.channel.camunda_cloud_channel import create_camunda_cloud_channel
 
-    
+
     channel = create_camunda_cloud_channel("client_id", "client_secret", "cluster_id")

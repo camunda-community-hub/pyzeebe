@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import json
-from typing import Optional
 
 import grpc
 from zeebe_grpc.gateway_pb2 import PublishMessageRequest
@@ -19,8 +20,8 @@ class ZeebeMessageAdapter(ZeebeAdapterBase):
         correlation_key: str,
         time_to_live_in_milliseconds: int,
         variables: Variables,
-        message_id: Optional[str] = None,
-        tenant_id: Optional[str] = None,
+        message_id: str | None = None,
+        tenant_id: str | None = None,
     ) -> PublishMessageResponse:
         try:
             response = await self._gateway_stub.PublishMessage(

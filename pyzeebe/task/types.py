@@ -1,4 +1,5 @@
-from typing import Awaitable, Callable, Union
+from collections.abc import Awaitable
+from typing import Callable, Union
 
 from pyzeebe import Job
 from pyzeebe.job.job import JobController

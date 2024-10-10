@@ -1,5 +1,5 @@
-import asyncio
-from typing import List
+from __future__ import annotations
+
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
@@ -11,7 +11,6 @@ from pyzeebe import ExceptionHandler, TaskDecorator, ZeebeTaskRouter
 from pyzeebe.errors import DuplicateTaskTypeError
 from pyzeebe.job.job import Job, JobController
 from pyzeebe.task.task import Task
-from pyzeebe.worker.job_executor import JobExecutor
 from pyzeebe.worker.job_poller import JobPoller
 from pyzeebe.worker.worker import ZeebeWorker
 
@@ -87,7 +86,7 @@ class TestIncludeRouter:
 
         assert zeebe_worker.get_task(task_type) is not None
 
-    def test_include_multiple_routers(self, zeebe_worker: ZeebeWorker, routers: List[ZeebeTaskRouter]):
+    def test_include_multiple_routers(self, zeebe_worker: ZeebeWorker, routers: list[ZeebeTaskRouter]):
         for router in routers:
             self.include_router_with_task(zeebe_worker, router)
 
@@ -270,7 +269,7 @@ class TestWorker:
         poller_mock = AsyncMock(spec_set=JobPoller, poll=AsyncMock(side_effect=[Exception("test_exception")]))
         zeebe_worker._job_pollers = [poller_mock]
 
-        with pytest.raises(Exception, match=r"unhandled errors in a TaskGroup \(1 sub-exception\)") as err:
+        with pytest.raises(Exception, match=r"unhandled errors in a TaskGroup \(1 sub-exception\)"):
             await zeebe_worker.work()
 
         poller_mock.poll.assert_awaited_once()
@@ -290,7 +289,7 @@ class TestWorker:
         poller2_mock = AsyncMock(spec_set=JobPoller, poll=AsyncMock(wraps=poll2))
         zeebe_worker._job_pollers = [poller_mock, poller2_mock]
 
-        with pytest.raises(Exception, match=r"unhandled errors in a TaskGroup \(1 sub-exception\)") as err:
+        with pytest.raises(Exception, match=r"unhandled errors in a TaskGroup \(1 sub-exception\)"):
             await zeebe_worker.work()
 
         poller_mock.poll.assert_awaited_once()

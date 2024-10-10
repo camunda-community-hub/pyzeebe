@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 import grpc
 from oauthlib import oauth2
@@ -24,7 +24,7 @@ def create_camunda_cloud_channel(
     client_secret: str,
     cluster_id: str,
     region: str = "bru-2",
-    channel_options: Optional[ChannelArgumentType] = None,
+    channel_options: ChannelArgumentType | None = None,
 ) -> grpc.aio.Channel:
     """
     Create channel connected to a Camunda Cloud cluster

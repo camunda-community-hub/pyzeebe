@@ -1,11 +1,24 @@
 import json
 from random import randint
-from typing import Dict, List
 from unittest.mock import patch
 from uuid import uuid4
 
 import grpc
-from zeebe_grpc.gateway_pb2 import *
+from zeebe_grpc.gateway_pb2 import (
+    ActivatedJob,
+    ActivateJobsResponse,
+    CancelProcessInstanceResponse,
+    CompleteJobResponse,
+    CreateProcessInstanceResponse,
+    CreateProcessInstanceWithResultResponse,
+    DecisionMetadata,
+    Deployment,
+    DeployResourceResponse,
+    FailJobResponse,
+    FormMetadata,
+    ProcessMetadata,
+    PublishMessageResponse,
+)
 from zeebe_grpc.gateway_pb2_grpc import GatewayServicer
 
 from pyzeebe.job.job import Job
@@ -25,7 +38,7 @@ class GatewayMock(GatewayServicer):
     def __init__(self):
         self.deployed_processes = {}
         self.active_processes = {}
-        self.active_jobs: Dict[int, Job] = {}
+        self.active_jobs: dict[int, Job] = {}
         self.messages = {}
 
     def ActivateJobs(self, request, context):
@@ -195,7 +208,7 @@ class GatewayMock(GatewayServicer):
             self.messages[request.messageId] = request.correlationKey
         return PublishMessageResponse()
 
-    def mock_deploy_process(self, bpmn_process_id: str, version: int, tasks: List[Task]):
+    def mock_deploy_process(self, bpmn_process_id: str, version: int, tasks: list[Task]):
         self.deployed_processes[bpmn_process_id] = {
             "bpmn_process_id": bpmn_process_id,
             "version": version,

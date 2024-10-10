@@ -1,11 +1,9 @@
-from typing import Dict
-
 from pyzeebe import ZeebeClient
 from tests.integration.utils import ProcessStats
 from tests.integration.utils.wait_for_process import wait_for_process_with_variables
 
 
-async def test_publish_message(zeebe_client: ZeebeClient, process_stats: ProcessStats, process_variables: Dict):
+async def test_publish_message(zeebe_client: ZeebeClient, process_stats: ProcessStats, process_variables: dict):
     initial_amount_of_processes = process_stats.get_process_runs()
 
     await zeebe_client.publish_message("start_test_process", correlation_key="", variables=process_variables)

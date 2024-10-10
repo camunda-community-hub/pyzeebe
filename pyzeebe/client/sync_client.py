@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import asyncio
-from typing import List, Optional
 
 import grpc
 
@@ -22,20 +23,20 @@ class SyncZeebeClient:
     def run_process(
         self,
         bpmn_process_id: str,
-        variables: Optional[Variables] = None,
+        variables: Variables | None = None,
         version: int = -1,
-        tenant_id: Optional[str] = None,
+        tenant_id: str | None = None,
     ) -> CreateProcessInstanceResponse:
         return self.loop.run_until_complete(self.client.run_process(bpmn_process_id, variables, version, tenant_id))
 
     def run_process_with_result(
         self,
         bpmn_process_id: str,
-        variables: Optional[Variables] = None,
+        variables: Variables | None = None,
         version: int = -1,
         timeout: int = 0,
-        variables_to_fetch: Optional[List[str]] = None,
-        tenant_id: Optional[str] = None,
+        variables_to_fetch: list[str] | None = None,
+        tenant_id: str | None = None,
     ) -> CreateProcessInstanceWithResultResponse:
         return self.loop.run_until_complete(
             self.client.run_process_with_result(
@@ -46,17 +47,17 @@ class SyncZeebeClient:
     def cancel_process_instance(self, process_instance_key: int) -> CancelProcessInstanceResponse:
         return self.loop.run_until_complete(self.client.cancel_process_instance(process_instance_key))
 
-    def deploy_resource(self, *resource_file_path: str, tenant_id: Optional[str] = None) -> DeployResourceResponse:
+    def deploy_resource(self, *resource_file_path: str, tenant_id: str | None = None) -> DeployResourceResponse:
         return self.loop.run_until_complete(self.client.deploy_resource(*resource_file_path, tenant_id=tenant_id))
 
     def publish_message(
         self,
         name: str,
         correlation_key: str,
-        variables: Optional[Variables] = None,
+        variables: Variables | None = None,
         time_to_live_in_milliseconds: int = 60000,
-        message_id: Optional[str] = None,
-        tenant_id: Optional[str] = None,
+        message_id: str | None = None,
+        tenant_id: str | None = None,
     ) -> PublishMessageResponse:
         return self.loop.run_until_complete(
             self.client.publish_message(
