@@ -81,9 +81,9 @@ def create_camunda_cloud_channel(
     client_secret: str,
     cluster_id: str,
     region: str = "bru-2",
-    scope: str = "Zeebe",
     authorization_server: str = "https://login.cloud.camunda.io/oauth/token",
-    audience: str = "zeebe.camunda.io",
+    scope: str | None = None,
+    audience: str | None = "zeebe.camunda.io",
     channel_credentials: grpc.ChannelCredentials | None = None,
     channel_options: ChannelArgumentType | None = None,
     leeway: int = 60,
@@ -96,10 +96,10 @@ def create_camunda_cloud_channel(
         client_secret (str): The client secret.
         cluster_id (str): The ID of the cluster to connect to.
         region (Optional[str]): The region of the cluster. Defaults to "bru-2".
-        scope (Optional[str]): The scope of the access request. Defaults to "Zeebe".
         authorization_server (Optional[str]): The authorization server issuing access tokens
             to the client after successfully authenticating the client.
             Defaults to "https://login.cloud.camunda.io/oauth/token".
+        scope (Optional[str]): The scope of the access request. Can be set to CAMUNDA_CLUSTER_ID. Defaults to None.
         audience (Optional[str]): The audience for authentication. Defaults to "zeebe.camunda.io".
 
         channel_credentials (grpc.ChannelCredentials): The gRPC channel credentials.
