@@ -56,10 +56,10 @@ def _create_camunda_cloud_credentials(
 ) -> grpc.ChannelCredentials:
     try:
         access_token = _get_access_token(
-            "https://login.cloud.camunda.io/oauth/token",
-            client_id,
-            client_secret,
-            f"{cluster_id}.{region}.zeebe.camunda.io",
+            url="https://login.cloud.camunda.io/oauth/token",
+            client_id=client_id,
+            client_secret=client_secret,
+            audience="zeebe.camunda.io",
         )
         return _create_oauth_credentials(access_token)
     except InvalidOAuthCredentialsError as oauth_error:
