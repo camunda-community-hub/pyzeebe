@@ -1,11 +1,9 @@
 import copy
 from typing import Callable
-from unittest.mock import MagicMock
 
 import pytest
 
 from pyzeebe import Job, JobController, TaskDecorator
-from pyzeebe.function_tools.parameter_tools import get_parameters_from_function
 from pyzeebe.job.job_status import JobStatus
 from pyzeebe.task import task_builder
 from pyzeebe.task.task import Task

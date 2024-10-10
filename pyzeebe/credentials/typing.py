@@ -1,6 +1,6 @@
-from typing import Protocol, Tuple, Union
+from typing import Protocol, Union
 
-AuthMetadata = Tuple[Tuple[str, Union[str, bytes]], ...]
+AuthMetadata = tuple[tuple[str, Union[str, bytes]], ...]
 
 
 class CallContext(Protocol):

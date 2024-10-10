@@ -31,7 +31,7 @@ Tasks can be regular or async functions. If given a regular function, pyzeebe wi
 .. note::
 
     Make sure not to call any blocking function in an async task. This would slow the entire worker down.
-    
+
     Do:
 
     .. code-block:: python
@@ -87,7 +87,7 @@ This tells Zeebe that the job failed. The job will then be retried (if configure
 
 .. note::
     The exception handler can also be set via :py:class:`pyzeebe.ZeebeWorker` or :py:class:`pyzeebe.ZeebeTaskRouter`.
-    Pyzeebe will try to find the exception handler in the following order: 
+    Pyzeebe will try to find the exception handler in the following order:
     ``Worker`` -> ``Router`` -> ``Task``  -> :py:func:`pyzeebe.default_exception_handler`
 
 

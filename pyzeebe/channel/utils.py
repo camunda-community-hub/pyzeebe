@@ -1,11 +1,12 @@
+from __future__ import annotations
+
 import os
-from typing import Optional
 
 DEFAULT_ZEEBE_ADDRESS = "localhost:26500"
 
 
 def create_address(
-    grpc_address: Optional[str] = None,
+    grpc_address: str | None = None,
 ) -> str:
     if grpc_address:
         return grpc_address

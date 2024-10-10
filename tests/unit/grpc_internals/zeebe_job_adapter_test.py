@@ -1,5 +1,4 @@
 from random import randint
-from typing import Dict
 from uuid import uuid4
 
 import pytest
@@ -29,7 +28,7 @@ def random_message() -> str:
     return str(uuid4())
 
 
-def random_variables() -> Dict:
+def random_variables() -> dict:
     return {str(uuid4()): str(uuid4())}
 
 

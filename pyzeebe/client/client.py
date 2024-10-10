@@ -1,4 +1,6 @@
-from typing import Iterable, Optional
+from __future__ import annotations
+
+from collections.abc import Iterable
 
 import grpc
 
@@ -28,9 +30,9 @@ class ZeebeClient:
     async def run_process(
         self,
         bpmn_process_id: str,
-        variables: Optional[Variables] = None,
+        variables: Variables | None = None,
         version: int = -1,
-        tenant_id: Optional[str] = None,
+        tenant_id: str | None = None,
     ) -> CreateProcessInstanceResponse:
         """
         Run process
@@ -61,11 +63,11 @@ class ZeebeClient:
     async def run_process_with_result(
         self,
         bpmn_process_id: str,
-        variables: Optional[Variables] = None,
+        variables: Variables | None = None,
         version: int = -1,
         timeout: int = 0,
-        variables_to_fetch: Optional[Iterable[str]] = None,
-        tenant_id: Optional[str] = None,
+        variables_to_fetch: Iterable[str] | None = None,
+        tenant_id: str | None = None,
     ) -> CreateProcessInstanceWithResultResponse:
         """
         Run process and wait for the result.
@@ -121,9 +123,7 @@ class ZeebeClient:
         """
         return await self.zeebe_adapter.cancel_process_instance(process_instance_key=process_instance_key)
 
-    async def deploy_resource(
-        self, *resource_file_path: str, tenant_id: Optional[str] = None
-    ) -> DeployResourceResponse:
+    async def deploy_resource(self, *resource_file_path: str, tenant_id: str | None = None) -> DeployResourceResponse:
         """
         Deploy one or more processes
 
@@ -150,10 +150,10 @@ class ZeebeClient:
         self,
         name: str,
         correlation_key: str,
-        variables: Optional[Variables] = None,
+        variables: Variables | None = None,
         time_to_live_in_milliseconds: int = 60000,
-        message_id: Optional[str] = None,
-        tenant_id: Optional[str] = None,
+        message_id: str | None = None,
+        tenant_id: str | None = None,
     ) -> PublishMessageResponse:
         """
         Publish a message

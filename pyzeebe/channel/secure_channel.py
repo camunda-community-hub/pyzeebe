@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 import grpc
 
@@ -8,9 +8,9 @@ from pyzeebe.types import ChannelArgumentType
 
 
 def create_secure_channel(
-    grpc_address: Optional[str] = None,
-    channel_options: Optional[ChannelArgumentType] = None,
-    channel_credentials: Optional[grpc.ChannelCredentials] = None,
+    grpc_address: str | None = None,
+    channel_options: ChannelArgumentType | None = None,
+    channel_credentials: grpc.ChannelCredentials | None = None,
 ) -> grpc.aio.Channel:
     """
     Create a secure channel

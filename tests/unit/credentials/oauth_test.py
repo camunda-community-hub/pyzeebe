@@ -6,9 +6,7 @@ from unittest import mock
 from unittest.mock import MagicMock, PropertyMock
 from uuid import uuid4
 
-import grpc
 import pytest
-from grpc.aio._typing import ChannelArgumentType
 from oauthlib import oauth2
 from oauthlib.oauth2 import OAuth2Error
 from requests import Response

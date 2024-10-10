@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import functools
-from typing import Any, Iterable, List, TypeVar
+from collections.abc import Iterable
+from typing import Any, TypeVar
 
 from typing_extensions import ParamSpec, TypeIs
 
@@ -12,7 +13,7 @@ P = ParamSpec("P")
 R = TypeVar("R")
 
 
-def asyncify_all_functions(functions: Iterable[Function[..., Any]]) -> List[AsyncFunction[..., Any]]:
+def asyncify_all_functions(functions: Iterable[Function[..., Any]]) -> list[AsyncFunction[..., Any]]:
     async_functions: list[AsyncFunction[..., Any]] = []
     for function in functions:
         if not is_async_function(function):

@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from random import randint
-from typing import Optional
 from uuid import uuid4
 
 from pyzeebe.job.job import Job
@@ -14,7 +15,7 @@ def random_job(
     task: Task = task_builder.build_task(
         lambda x: {"x": x}, TaskConfig("test", lambda: None, 10000, 32, 32, [], False, "", [], [])
     ),
-    variables: Optional[dict] = None,
+    variables: dict | None = None,
 ) -> Job:
     return Job(
         type=task.type,

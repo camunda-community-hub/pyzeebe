@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import json
 import logging
 import time
 import timeit
 from functools import partial
-from typing import Any, Dict, Optional
+from typing import Any
 
 import grpc
 import requests
@@ -15,10 +17,10 @@ logger = logging.getLogger(__name__)
 
 def _sign_request(
     callback: grpc.AuthMetadataPluginCallback,
-    token: Optional[str],
-    error: Optional[Exception],
+    token: str | None,
+    error: Exception | None,
 ) -> None:
-    metadata = (("authorization", "Bearer {}".format(token)),)
+    metadata = (("authorization", f"Bearer {token}"),)
     callback(metadata, error)
 
 
@@ -35,9 +37,9 @@ class OAuth2MetadataPlugin(grpc.AuthMetadataPlugin):  # type: ignore[misc]
     def __init__(
         self,
         oauth2session: OAuth2Session,
-        func_retrieve_token: partial[Dict[str, Any]],
+        func_retrieve_token: partial[dict[str, Any]],
         leeway: int = 60,
-        expire_in: Optional[int] = None,
+        expire_in: int | None = None,
     ) -> None:
         """AuthMetadataPlugin for OAuth2 Authentication.
 
@@ -52,10 +54,10 @@ class OAuth2MetadataPlugin(grpc.AuthMetadataPlugin):  # type: ignore[misc]
                 Should only be used if the token does not contain an "expires_in" attribute.
         """
         self._oauth: OAuth2Session = oauth2session
-        self._func_retrieve_token: partial[Dict[str, Any]] = func_retrieve_token
+        self._func_retrieve_token: partial[dict[str, Any]] = func_retrieve_token
 
         self._leeway: int = leeway
-        self._expires_in: Optional[int] = expire_in
+        self._expires_in: int | None = expire_in
         if self._expires_in is not None:
             # NOTE: "expires_in" is only RECOMMENDED
             # https://datatracker.ietf.org/doc/html/rfc6749#section-5.1
@@ -143,10 +145,10 @@ class Oauth2ClientCredentialsMetadataPlugin(OAuth2MetadataPlugin):
         client_id: str,
         client_secret: str,
         authorization_server: str,
-        scope: Optional[str] = None,
-        audience: Optional[str] = None,
+        scope: str | None = None,
+        audience: str | None = None,
         leeway: int = 60,
-        expire_in: Optional[int] = None,
+        expire_in: int | None = None,
     ):
         """AuthMetadataPlugin for OAuth2 Client Credentials Authentication based on Oauth2MetadataPlugin.
 
@@ -168,10 +170,10 @@ class Oauth2ClientCredentialsMetadataPlugin(OAuth2MetadataPlugin):
         self.client_id: str = client_id
         self.client_secret: str = client_secret
         self.authorization_server: str = authorization_server
-        self.scope: Optional[str] = scope
-        self.audience: Optional[str] = audience
+        self.scope: str | None = scope
+        self.audience: str | None = audience
         self.leeway: int = leeway
-        self.expire_in: Optional[int] = expire_in
+        self.expire_in: int | None = expire_in
 
         client = oauth2.BackendApplicationClient(client_id=self.client_id, scope=self.scope)
         oauth2session = OAuth2Session(client=client)
