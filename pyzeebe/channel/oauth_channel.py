@@ -8,9 +8,9 @@ from pyzeebe.channel.channel_options import get_channel_options
 from pyzeebe.channel.utils import (
     get_camunda_client_id,
     get_camunda_client_secret,
-    get_camunda_cloud_cluster_id,
-    get_camunda_cloud_cluster_region,
     get_camunda_cloud_hostname,
+    get_camunda_cluster_id,
+    get_camunda_cluster_region,
     get_camunda_credentials_scopes,
     get_camunda_oauth_url,
     get_camunda_token_audience,
@@ -153,8 +153,8 @@ def create_camunda_cloud_channel(
         grpc.aio.Channel: The gRPC channel for connecting to Camunda Cloud.
     """
 
-    cluster_id = get_camunda_cloud_cluster_id(cluster_id)
-    region = get_camunda_cloud_cluster_region(region)
+    cluster_id = get_camunda_cluster_id(cluster_id)
+    region = get_camunda_cluster_region(region)
 
     oauth2_client_credentials = Oauth2ClientCredentialsMetadataPlugin(
         client_id=get_camunda_client_id(client_id),

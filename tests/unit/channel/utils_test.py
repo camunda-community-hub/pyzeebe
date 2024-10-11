@@ -8,9 +8,9 @@ from pyzeebe.channel.utils import (
     DEFAULT_ZEEBE_ADDRESS,
     get_camunda_client_id,
     get_camunda_client_secret,
-    get_camunda_cloud_cluster_id,
-    get_camunda_cloud_cluster_region,
     get_camunda_cloud_hostname,
+    get_camunda_cluster_id,
+    get_camunda_cluster_region,
     get_camunda_credentials_scopes,
     get_camunda_oauth_url,
     get_camunda_token_audience,
@@ -140,38 +140,38 @@ class TestGetCamundaClientSecret:
 class TestGetCamundaCloudClusterId:
     @patch.dict(os.environ, {"CAMUNDA_CLUSTER_ID": "CAMUNDA_CLUSTER_ID"})
     def test_is_calculated_from_parameters_as_highest_priority(self):
-        result = get_camunda_cloud_cluster_id("cluster_id_param")
+        result = get_camunda_cluster_id("cluster_id_param")
 
         assert result == "cluster_id_param"
 
     @patch.dict(os.environ, {"CAMUNDA_CLUSTER_ID": "CAMUNDA_CLUSTER_ID"})
     def test_is_calculated_from_camunda_environment_variable_as_second_priority(self):
-        result = get_camunda_cloud_cluster_id(None)
+        result = get_camunda_cluster_id(None)
 
         assert result == "CAMUNDA_CLUSTER_ID"
 
     @patch.dict(os.environ, {})
     def test_none_has_third_highest_priority(self):
-        result = get_camunda_cloud_cluster_id(None)
+        result = get_camunda_cluster_id(None)
         assert result is None
 
 
 class TestGetCamundaCloudClusterRegion:
     @patch.dict(os.environ, {"CAMUNDA_CLUSTER_REGION": "CAMUNDA_CLUSTER_REGION"})
     def test_is_calculated_from_parameters_as_highest_priority(self):
-        result = get_camunda_cloud_cluster_region("cluster_region_param")
+        result = get_camunda_cluster_region("cluster_region_param")
 
         assert result == "cluster_region_param"
 
     @patch.dict(os.environ, {"CAMUNDA_CLUSTER_REGION": "CAMUNDA_CLUSTER_REGION"})
     def test_is_calculated_from_camunda_environment_variable_as_second_priority(self):
-        result = get_camunda_cloud_cluster_region(None)
+        result = get_camunda_cluster_region(None)
 
         assert result == "CAMUNDA_CLUSTER_REGION"
 
     @patch.dict(os.environ, {})
     def test_bru_2_has_third_highest_priority(self):
-        result = get_camunda_cloud_cluster_region(None)
+        result = get_camunda_cluster_region(None)
         assert result == "bru-2"
 
 

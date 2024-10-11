@@ -69,7 +69,7 @@ def get_camunda_client_secret(client_secret: str | None) -> str:
         str: The client secret.
             Default: Value from CAMUNDA_CLIENT_SECRET or ZEEBE_CLIENT_SECRET environment variable
     """
-    ret = client_secret or os.getenv("CAMUNDA_CLIENT_SECRET", os.getenv("ZEEBE_CLIENT_SECRET"))
+    ret = client_secret or os.getenv("CAMUNDA_CLIENT_SECRET") or os.getenv("ZEEBE_CLIENT_SECRET")
 
     if not ret:
         raise ValueError(
@@ -79,7 +79,7 @@ def get_camunda_client_secret(client_secret: str | None) -> str:
     return ret
 
 
-def get_camunda_cloud_cluster_id(cluster_id: str | None) -> str | None:
+def get_camunda_cluster_id(cluster_id: str | None) -> str | None:
     """
     Args:
         cluster_id (str, optional): The camunda cluster id provided as parameter.
@@ -92,7 +92,7 @@ def get_camunda_cloud_cluster_id(cluster_id: str | None) -> str | None:
     return cluster_id or os.getenv("CAMUNDA_CLUSTER_ID")
 
 
-def get_camunda_cloud_cluster_region(cluster_region: str | None) -> str:
+def get_camunda_cluster_region(cluster_region: str | None) -> str:
     """
     Args:
         cluster_region (str, optional): The camunda cluster region provided as parameter.
@@ -119,7 +119,8 @@ def get_camunda_token_audience(token_audience: str | None) -> str | None:
 
     return (
         token_audience
-        or os.getenv("CAMUNDA_TOKEN_AUDIENCE", os.getenv("ZEEBE_TOKEN_AUDIENCE"))
+        or os.getenv("CAMUNDA_TOKEN_AUDIENCE")
+        or os.getenv("ZEEBE_TOKEN_AUDIENCE")
         or get_camunda_cloud_hostname(None, None)
     )
 
@@ -134,8 +135,8 @@ def get_camunda_cloud_hostname(cluster_id: str | None, cluster_region: str | Non
         str: The token audience for camunda cloud or none if cluster_id or cluster_region is not provided.
     """
 
-    cluster_id = get_camunda_cloud_cluster_id(cluster_id)
-    cluster_region = get_camunda_cloud_cluster_region(cluster_region)
+    cluster_id = get_camunda_cluster_id(cluster_id)
+    cluster_region = get_camunda_cluster_region(cluster_region)
 
     if (not cluster_id) or (not cluster_region):
         return None
