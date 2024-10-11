@@ -89,9 +89,7 @@ class TestCamundaCloudChannel:
         cluster_id: str,
         region: str,
     ):
-        expected_request_body = (
-            f"client_id={client_id}&client_secret={client_secret}&audience={cluster_id}.{region}.zeebe.camunda.io"
-        )
+        expected_request_body = f"client_id={client_id}&client_secret={client_secret}&audience=zeebe.camunda.io"
 
         create_camunda_cloud_channel(client_id, client_secret, cluster_id, region)
 
