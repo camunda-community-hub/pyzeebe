@@ -11,7 +11,6 @@ from pyzeebe.channel.utils import (
     get_camunda_cloud_hostname,
     get_camunda_cluster_id,
     get_camunda_cluster_region,
-    get_camunda_credentials_scopes,
     get_camunda_oauth_url,
     get_camunda_token_audience,
     get_zeebe_address,
@@ -228,26 +227,6 @@ class TestGetCamundaTokenAudience:
     @patch.dict(os.environ, {})
     def test_is_none_as_fifth_highest_priority(self):
         result = get_camunda_token_audience(None)
-
-        assert result is None
-
-
-class TestGetCamundaCredentialsScopes:
-    @patch.dict(os.environ, {"CAMUNDA_CREDENTIALS_SCOPES": "CAMUNDA_CREDENTIALS_SCOPES"})
-    def test_is_calculated_from_parameters_as_highest_priority(self):
-        result = get_camunda_credentials_scopes("camunda_credentials_scopes_param")
-
-        assert result == "camunda_credentials_scopes_param"
-
-    @patch.dict(os.environ, {"CAMUNDA_CREDENTIALS_SCOPES": "CAMUNDA_CREDENTIALS_SCOPES"})
-    def test_is_calculated_from_camunda_credentials_scopes_environment_variable_as_second_highest_priority(self):
-        result = get_camunda_credentials_scopes(None)
-
-        assert result == "CAMUNDA_CREDENTIALS_SCOPES"
-
-    @patch.dict(os.environ, {})
-    def test_is_none_as_third_highest_priority(self):
-        result = get_camunda_credentials_scopes(None)
 
         assert result is None
 

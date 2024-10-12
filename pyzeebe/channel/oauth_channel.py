@@ -11,7 +11,6 @@ from pyzeebe.channel.utils import (
     get_camunda_cloud_hostname,
     get_camunda_cluster_id,
     get_camunda_cluster_region,
-    get_camunda_credentials_scopes,
     get_camunda_oauth_url,
     get_camunda_token_audience,
     get_zeebe_address,
@@ -50,7 +49,6 @@ def create_oauth2_client_credentials_channel(
             to the client after successfully authenticating the client.
             Defaults to value from CAMUNDA_OAUTH_URL or ZEEBE_AUTHORIZATION_SERVER_URL environment variable
         scope (str | None): The scope of the access request.
-            Defaults to value from CAMUNDA_CREDENTIALS_SCOPES environment variable.
         audience (str | None): The audience for authentication.
             Defaults to value from CAMUNDA_TOKEN_AUDIENCE or ZEEBE_TOKEN_AUDIENCE environment variable
 
@@ -81,7 +79,7 @@ def create_oauth2_client_credentials_channel(
         client_id=get_camunda_client_id(client_id),
         client_secret=get_camunda_client_secret(client_secret),
         authorization_server=authorization_server or "",
-        scope=get_camunda_credentials_scopes(scope),
+        scope=scope,
         audience=get_camunda_token_audience(audience),
         leeway=leeway,
         expire_in=expire_in,
@@ -126,7 +124,6 @@ def create_camunda_cloud_channel(
         region (str | None): The region of the cluster.
             Defaults to value from CAMUNDA_CLUSTER_REGION environment variable or 'bru-2'.
         scope (str | None): The scope of the access request.
-            Defaults to value from CAMUNDA_CREDENTIALS_SCOPES environment variable or 'Zeebe'.
         authorization_server (str | None): The authorization server issuing access tokens
             to the client after successfully authenticating the client.
             Defaults to value from CAMUNDA_OAUTH_URL
@@ -161,7 +158,7 @@ def create_camunda_cloud_channel(
         client_secret=get_camunda_client_secret(client_secret),
         authorization_server=get_camunda_oauth_url(authorization_server)
         or "https://login.cloud.camunda.io/oauth/token",
-        scope=get_camunda_credentials_scopes(scope) or "Zeebe",
+        scope=scope,
         audience=get_camunda_token_audience(audience) or "zeebe.camunda.io",
         leeway=leeway,
         expire_in=expire_in,

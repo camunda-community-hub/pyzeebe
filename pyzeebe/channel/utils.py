@@ -142,16 +142,3 @@ def get_camunda_cloud_hostname(cluster_id: str | None, cluster_region: str | Non
         return None
 
     return f"{cluster_id}.{cluster_region}.zeebe.camunda.io"
-
-
-def get_camunda_credentials_scopes(scopes: str | None) -> str | None:
-    """
-    Args:
-        scopes (str, optional): The camunda credentials scopes as single string.
-
-    Returns:
-        str: The camunda cedential scopes string.
-            Default: Value from CAMUNDA_CREDENTIALS_SCOPES
-    """
-
-    return scopes or os.getenv("CAMUNDA_CREDENTIALS_SCOPES")
