@@ -150,25 +150,32 @@ def create_camunda_cloud_channel(
         grpc.aio.Channel: The gRPC channel for connecting to Camunda Cloud.
     """
 
+    client_id = get_camunda_client_id(client_id)
+    client_secret = get_camunda_client_secret(client_secret)
+    audience = get_camunda_token_audience(audience) or "zeebe.camunda.io"
+    authorization_server = get_camunda_oauth_url(authorization_server) or "https://login.cloud.camunda.io/oauth/token"
     cluster_id = get_camunda_cluster_id(cluster_id)
     region = get_camunda_cluster_region(region)
 
     oauth2_client_credentials = Oauth2ClientCredentialsMetadataPlugin(
-        client_id=get_camunda_client_id(client_id),
-        client_secret=get_camunda_client_secret(client_secret),
-        authorization_server=get_camunda_oauth_url(authorization_server)
-        or "https://login.cloud.camunda.io/oauth/token",
+        client_id=client_id,
+        client_secret=client_secret,
+        authorization_server=authorization_server,
         scope=scope,
-        audience=get_camunda_token_audience(audience) or "zeebe.camunda.io",
+        audience=audience,
         leeway=leeway,
         expire_in=expire_in,
     )
 
-    # NOTE: Overwrite the _oauth.fetch_token method to include client_id in the request body
-    oauth2_client_credentials._func_retrieve_token = partial(
-        oauth2_client_credentials._func_retrieve_token,
+    # NOTE: Overwrite the _oauth.fetch_token method to include client_id, client_secret in the request body
+    func = partial(
+        oauth2_client_credentials._oauth.fetch_token,
         include_client_id=True,
+        token_url=authorization_server,
+        client_secret=client_secret,
+        audience=audience,
     )
+    oauth2_client_credentials._func_retrieve_token = func
 
     call_credentials: grpc.CallCredentials = grpc.metadata_call_credentials(oauth2_client_credentials)
     composite_credentials: grpc.ChannelCredentials = grpc.composite_channel_credentials(
