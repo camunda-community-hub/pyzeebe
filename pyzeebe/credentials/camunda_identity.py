@@ -15,11 +15,16 @@ class CamundaIdentityCredentials(CredentialsABC):
     """Credentials client for Camunda Platform.
 
     Args:
-        oauth_url (str): The Keycloak auth endpoint url.
-        client_id (str): The client id provided by Camunda Platform
-        client_secret (str): The client secret provided by Camunda Platform
-        audience (str): Audience for Zeebe. Default: zeebe-api
-        refresh_threshold_seconds (int): Will try to refresh token if it expires in this number of seconds or less. Default: 20
+        oauth_url (str, optional): The Keycloak auth endpoint url.
+            Default: Value from CAMUNDA_OAUTH_URL or ZEEBE_AUTHORIZATION_SERVER_URL environment variable or 'https://login.cloud.camunda.io/oauth/token'
+        client_id (str, optional): The client id provided by Camunda Platform.
+            Default: Value from CAMUNDA_CLIENT_ID or ZEEBE_CLIENT_ID environment variable
+        client_secret (str, optional): The client secret provided by Camunda Platform.
+            Default: Value from CAMUNDA_CLIENT_SECRET or ZEEBE_CLIENT_SECRET environment variable
+        audience (str, optional): Audience for Zeebe.
+            Default: Value from CAMUNDA_TOKEN_AUDIENCE or ZEEBE_TOKEN_AUDIENCE environment variable or 'zeebe-api'
+        refresh_threshold_seconds (int): Will try to refresh token if it expires in this number of seconds or less.
+            Default: 20
     """
 
     def __init__(
