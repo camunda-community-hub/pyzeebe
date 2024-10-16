@@ -55,8 +55,7 @@ class DeployResourceResponse:
         version: int
         #: the assigned key, which acts as a unique identifier for this process
         process_definition_key: int
-        #: the resource name (see: ProcessRequestObject.name) from which this process was
-        #: parsed
+        #: the resource name from which this process was parsed
         resource_name: str
         #: the tenant ID of the deployed process
         tenant_id: str | None
@@ -94,7 +93,7 @@ class DeployResourceResponse:
         #: the assigned decision requirements key, which acts as a unique identifier
         #: for this decision requirements
         decision_requirements_key: int
-        #: the resource name (see: Resource.name) from which this decision
+        #: the resource name from which this decision
         #: requirements was parsed
         resource_name: str
         #: the tenant ID of the deployed decision requirements

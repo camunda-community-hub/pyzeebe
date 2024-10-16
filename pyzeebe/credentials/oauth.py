@@ -12,6 +12,8 @@ import requests
 from oauthlib import oauth2
 from requests_oauthlib import OAuth2Session
 
+from pyzeebe.errors import InvalidOAuthCredentialsError
+
 logger = logging.getLogger(__name__)
 
 
@@ -29,9 +31,9 @@ class OAuth2MetadataPlugin(grpc.AuthMetadataPlugin):  # type: ignore[misc]
 
     Implements the AuthMetadataPlugin interface for OAuth2 Authentication based on oauthlib and requests_oauthlib.
 
-    https://datatracker.ietf.org/doc/html/rfc6749
-    https://oauthlib.readthedocs.io/en/latest/oauth2/oauth2.html
-    https://requests-oauthlib.readthedocs.io/en/latest/oauth2_workflow.html
+    - https://datatracker.ietf.org/doc/html/rfc6749
+    - https://oauthlib.readthedocs.io/en/latest/oauth2/oauth2.html
+    - https://requests-oauthlib.readthedocs.io/en/latest/oauth2_workflow.html
     """
 
     def __init__(
@@ -44,7 +46,7 @@ class OAuth2MetadataPlugin(grpc.AuthMetadataPlugin):  # type: ignore[misc]
         """AuthMetadataPlugin for OAuth2 Authentication.
 
         Args:
-            oauth2session (OAuth2Session): The OAuth2Session object.
+            oauth2session (requests_oauthlib.OAuth2Session): The OAuth2Session object.
             func_fetch_token (Callable): The function to fetch the token.
 
             leeway (int): The number of seconds to consider the token as expired before the actual expiration time.
@@ -111,7 +113,7 @@ class OAuth2MetadataPlugin(grpc.AuthMetadataPlugin):  # type: ignore[misc]
 
         except oauth2.OAuth2Error as e:
             logger.exception(str(e))
-            raise e
+            raise InvalidOAuthCredentialsError(str(e)) from e
 
     def _no_expiration(self, r: requests.Response) -> requests.Response:
         """
@@ -136,8 +138,8 @@ class OAuth2MetadataPlugin(grpc.AuthMetadataPlugin):  # type: ignore[misc]
 class Oauth2ClientCredentialsMetadataPlugin(OAuth2MetadataPlugin):
     """AuthMetadataPlugin for OAuth2 Client Credentials Authentication based on Oauth2MetadataPlugin.
 
-    https://oauth.net/2/grant-types/client-credentials/
-    https://datatracker.ietf.org/doc/html/rfc6749#section-11.2.2
+    - https://oauth.net/2/grant-types/client-credentials/
+    - https://datatracker.ietf.org/doc/html/rfc6749#section-11.2.2
     """
 
     def __init__(

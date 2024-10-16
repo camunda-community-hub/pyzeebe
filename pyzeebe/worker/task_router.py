@@ -30,8 +30,8 @@ class ZeebeTaskRouter:
     ):
         """
         Args:
-            before (List[TaskDecorator]): Decorators to be performed before each task
-            after (List[TaskDecorator]): Decorators to be performed after each task
+            before (list[TaskDecorator]): Decorators to be performed before each task
+            after (list[TaskDecorator]): Decorators to be performed after each task
             exception_handler (ExceptionHandler): Handler that will be called when a job fails.
         """
         self._exception_handler = exception_handler
@@ -94,8 +94,8 @@ class ZeebeTaskRouter:
                                 on the worker and retry it. Default: 10000 (10 seconds).
             max_jobs_to_activate (int):  Maximum amount of jobs the worker will activate in one request to the Zeebe gateway. Default: 32
             max_running_jobs (int): Maximum amount of jobs that will run simultaneously. Default: 32
-            before (List[TaskDecorator]): All decorators which should be performed before the task.
-            after (List[TaskDecorator]): All decorators which should be performed after the task.
+            before (list[TaskDecorator]): All decorators which should be performed before the task.
+            after (list[TaskDecorator]): All decorators which should be performed after the task.
             single_value (bool): If the function returns a single value (int, string, list) and not a dictionary set
                                  this to True. Default: False
             variable_name (str): If single_value then this will be the variable name given to zeebe:

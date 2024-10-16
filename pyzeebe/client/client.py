@@ -77,7 +77,7 @@ class ZeebeClient:
             variables (dict): A dictionary containing all the starting variables the process needs. Must be JSONable.
             version (int): The version of the process. Default: -1 (latest)
             timeout (int): How long to wait until a timeout occurs. Default: 0 (Zeebe default timeout)
-            variables_to_fetch (List[str]): Which variables to get from the finished process
+            variables_to_fetch (list[str]): Which variables to get from the finished process
             tenant_id (str): The tenant ID of the process definition. New in Zeebe 8.3.
 
         Returns:

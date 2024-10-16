@@ -16,6 +16,7 @@ from pyzeebe.credentials.oauth import (
     Oauth2ClientCredentialsMetadataPlugin,
     OAuth2MetadataPlugin,
 )
+from pyzeebe.errors.credentials_errors import InvalidOAuthCredentialsError
 
 
 @pytest.fixture
@@ -222,7 +223,7 @@ class TestOAuth2MetadataPlugin:
 
         oauth2mp.__call__(mock_context, mock_callback)
 
-        with pytest.raises(OAuth2Error, match="Error fetching token"):
+        with pytest.raises(InvalidOAuthCredentialsError, match="Error fetching token"):
             oauth2mp.retrieve_token()
 
 

@@ -40,12 +40,12 @@ class ZeebeWorker(ZeebeTaskRouter):
             grpc_channel (grpc.aio.Channel): GRPC Channel connected to a Zeebe gateway
             name (str): Name of zeebe worker
             request_timeout (int): Longpolling timeout for getting tasks from zeebe. If 0 default value is used
-            before (List[TaskDecorator]): Decorators to be performed before each task
-            after (List[TaskDecorator]): Decorators to be performed after each task
+            before (list[TaskDecorator]): Decorators to be performed before each task
+            after (list[TaskDecorator]): Decorators to be performed after each task
             exception_handler (ExceptionHandler): Handler that will be called when a job fails.
             max_connection_retries (int): Amount of connection retries before worker gives up on connecting to zeebe. To setup with infinite retries use -1
             poll_retry_delay (int): The number of seconds to wait before attempting to poll again when reaching max amount of running jobs
-            tenant_ids (List[str]): A list of tenant IDs for which to activate jobs. New in Zeebe 8.3.
+            tenant_ids (list[str]): A list of tenant IDs for which to activate jobs. New in Zeebe 8.3.
         """
         super().__init__(before, after, exception_handler)
         self.zeebe_adapter = ZeebeAdapter(grpc_channel, max_connection_retries)
@@ -61,7 +61,7 @@ class ZeebeWorker(ZeebeTaskRouter):
         self._job_executors, self._job_pollers = [], []
 
         for task in self.tasks:
-            jobs_queue: asyncio.Queue[Job] = asyncio.Queue()
+            jobs_queue = asyncio.Queue[Job]()
             task_state = TaskState()
 
             poller = JobPoller(
@@ -81,7 +81,7 @@ class ZeebeWorker(ZeebeTaskRouter):
 
     async def work(self) -> None:
         """
-        Start the worker. The worker will poll zeebe for jobs of each task in a different thread.
+        Start the worker. The worker will poll zeebe for jobs of each task in a different asyncio task.
 
         Raises:
             ActivateJobsRequestInvalidError: If one of the worker's task has invalid types
