@@ -5,6 +5,8 @@ Zeebe Adapter Reference
 .. autoclass:: pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter
    :members:
    :undoc-members:
+   :special-members: __init__
+   :inherited-members:
 
 ==========================
 Zeebe GRPC Responses

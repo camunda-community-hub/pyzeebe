@@ -26,9 +26,9 @@ Run using event loop
 
 .. warning::
 
-   Calling ``worker.work`` directly using ``asyncio.run`` will not work. When you create an async grpc channel a new event loop will automatically be created, which causes problems when running the worker (see: https://github.com/camunda-community-hub/pyzeebe/issues/198).
+    Calling ``worker.work`` directly using ``asyncio.run`` will not work. When you create an async grpc channel a new event loop will automatically be created, which causes problems when running the worker (see: https://github.com/camunda-community-hub/pyzeebe/issues/198).
 
-   An easy workaround:
+    An easy workaround:
 
     .. code-block:: python
 

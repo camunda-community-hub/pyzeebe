@@ -8,11 +8,13 @@ This means that all methods that :py:class:`ZeebeTaskRouter` has will also appea
 .. autoclass:: pyzeebe.ZeebeTaskRouter
    :members:
    :undoc-members:
+   :special-members: __init__
 
 
 .. autoclass:: pyzeebe.ZeebeWorker
    :members:
    :undoc-members:
+   :special-members: __init__
 
 
 .. autoclass:: pyzeebe.Job

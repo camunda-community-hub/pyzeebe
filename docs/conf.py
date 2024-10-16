@@ -70,4 +70,7 @@ master_doc = "index"
 # Looks for objects in external projects
 intersphinx_mapping = {
     "grpc": ("https://grpc.github.io/grpc/python/", None),
+    "requests": ("https://requests.readthedocs.io/en/latest/", None),
+    "requests_oauthlib": ("https://requests-oauthlib.readthedocs.io/en/latest/", None),
+    "python": ("https://docs.python.org/3/", None),
 }
