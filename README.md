@@ -10,7 +10,6 @@
 ![PyPI](https://img.shields.io/pypi/v/pyzeebe)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyzeebe)
 
-[![Documentation Status](https://readthedocs.org/projects/pyzeebe/badge/?version=latest)](https://pyzeebe.readthedocs.io/en/latest/?badge=stable)
 
 # Pyzeebe
 
@@ -31,7 +30,7 @@ To install:
 
 `pip install pyzeebe`
 
-For full documentation please visit: https://pyzeebe.readthedocs.io/en/stable/
+For full documentation please visit: https://camunda-community-hub.github.io/pyzeebe/
 
 ## Usage
 
