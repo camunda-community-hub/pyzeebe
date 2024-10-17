@@ -1,7 +1,4 @@
-from .credentials_errors import (
-    InvalidCamundaCloudCredentialsError,
-    InvalidOAuthCredentialsError,
-)
+from .credentials_errors import InvalidOAuthCredentialsError
 from .job_errors import (
     ActivateJobsRequestInvalidError,
     JobAlreadyDeactivatedError,
@@ -32,7 +29,6 @@ from .zeebe_errors import (
 )
 
 __all__ = (
-    "InvalidCamundaCloudCredentialsError",
     "InvalidOAuthCredentialsError",
     "ActivateJobsRequestInvalidError",
     "JobAlreadyDeactivatedError",

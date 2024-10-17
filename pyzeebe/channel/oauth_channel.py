@@ -23,8 +23,8 @@ def create_oauth2_client_credentials_channel(
 ) -> grpc.aio.Channel:
     """Create a gRPC channel for connecting to Camunda 8 (Self-Managed) with OAuth2ClientCredentials.
 
-    https://oauth.net/2/grant-types/client-credentials/
-    https://datatracker.ietf.org/doc/html/rfc6749#section-11.2.2
+    - https://oauth.net/2/grant-types/client-credentials/
+    - https://datatracker.ietf.org/doc/html/rfc6749#section-11.2.2
 
     Args:
         grpc_address (str): Zeebe Gateway Address.
@@ -49,9 +49,6 @@ def create_oauth2_client_credentials_channel(
 
     Returns:
         grpc.aio.Channel: A gRPC channel connected to the Zeebe Gateway.
-
-    Raises:
-        InvalidOAuthCredentialsError: One of the provided camunda credentials is not correct
     """
 
     oauth2_client_credentials = Oauth2ClientCredentialsMetadataPlugin(

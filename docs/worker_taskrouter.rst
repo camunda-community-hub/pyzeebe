@@ -17,7 +17,7 @@ Create a Router
 Create a task with a Router
 ---------------------------
 
-Creating a task with a router is the exact same process as wiht a :py:class:`ZeebeWorker` instance.
+Creating a task with a router is the exact same process as wiht a :py:class:`.ZeebeWorker` instance.
 
 .. code-block:: python
 
@@ -28,7 +28,7 @@ Creating a task with a router is the exact same process as wiht a :py:class:`Zee
 
 .. note::
 
-    The :py:class:`ZeebeTaskRouter` :py:func:`task` decorator has all the capabities of the :py:class:`ZeebeWorker` class.
+    The :py:meth:`.ZeebeTaskRouter.task` decorator has all the capabities of the :py:class:`.ZeebeWorker` class.
 
 Merge Router tasks to a worker
 ------------------------------

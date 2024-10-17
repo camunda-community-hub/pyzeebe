@@ -26,7 +26,7 @@ This is a task that does nothing. It receives no parameters and also doesn't ret
 Async/Sync Tasks
 ----------------
 
-Tasks can be regular or async functions. If given a regular function, pyzeebe will convert it into an async one by running `asyncio.run_in_executor`
+Tasks can be regular or async functions. If given a regular function, pyzeebe will convert it into an async one by running :py:meth:`asyncio.loop.run_in_executor`
 
 .. note::
 
@@ -57,9 +57,10 @@ An exception handler's signature:
 
 .. code-block:: python
 
-    Callable[[Exception, Job], Awaitable[None]]
+    Callable[[Exception, Job, JobController], Awaitable[None]]
 
-In other words: an exception handler is a function that receives an :class:`Exception` and :py:class:`Job` instance (a pyzeebe class).
+In other words: an exception handler is a function that receives an :class:`Exception`,
+:py:class:`.Job` instance and :py:class:`.JobController` (a pyzeebe class).
 
 The exception handler is called when the task has failed.
 

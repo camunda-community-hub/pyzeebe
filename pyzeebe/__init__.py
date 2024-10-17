@@ -7,9 +7,6 @@ from pyzeebe.channel import (
 )
 from pyzeebe.client.client import ZeebeClient
 from pyzeebe.client.sync_client import SyncZeebeClient
-from pyzeebe.credentials.base import CredentialsABC
-from pyzeebe.credentials.camunda_identity import CamundaIdentityCredentials
-from pyzeebe.credentials.plugins import AuthMetadataPlugin
 from pyzeebe.job.job import Job, JobController
 from pyzeebe.job.job_status import JobStatus
 from pyzeebe.task.exception_handler import ExceptionHandler, default_exception_handler
@@ -35,7 +32,4 @@ __all__ = (
     "ZeebeTaskRouter",
     "default_exception_handler",
     "ZeebeWorker",
-    "CredentialsABC",
-    "CamundaIdentityCredentials",
-    "AuthMetadataPlugin",
 )
