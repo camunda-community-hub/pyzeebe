@@ -1,7 +1,10 @@
-name: Lint pyzeebe
+name: Lint
 
-on: [push, pull_request]
-
+on:
+  pull_request:
+  push:
+    branches:
+      - master
 
 jobs:
   type-checking:
