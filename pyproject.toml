@@ -1,13 +1,16 @@
 [tool.poetry]
 name = "pyzeebe"
-version = "4.0.0rc8"
+version = "4.0.0"
 description = "Zeebe client api"
 authors = ["Jonatan Martens <jonatanmartenstav@gmail.com>"]
+maintainers = [
+    "Dmitriy <dimastbk@proton.me>",
+]
 license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/camunda-community-hub/pyzeebe"
 repository = "https://github.com/camunda-community-hub/pyzeebe"
-documentation = "https://pyzeebe.readthedocs.io/en/latest"
+documentation = "https://camunda-community-hub.github.io/pyzeebe/"
 keywords = ["zeebe", "workflow", "workflow-engine"]
 classifiers = [
     "Programming Language :: Python :: 3",
