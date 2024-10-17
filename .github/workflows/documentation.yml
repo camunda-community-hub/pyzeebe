@@ -1,0 +1,47 @@
+name: Documentation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+      - name: Init python poetry action
+        uses: abatilo/actions-poetry@v3.0.0
+        with:
+          poetry-version: 1.8.3
+      - name: Install dependencies
+        run: poetry install
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+      - name: Sphinx build
+        run: poetry run sphinx-build --define html_baseurl="${{ steps.pages.outputs.base_url }}" docs _site/
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    needs: build
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

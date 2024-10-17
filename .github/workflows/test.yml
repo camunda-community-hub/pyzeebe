@@ -1,6 +1,10 @@
 name: Test pyzeebe
 
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches:
+      - master
 
 jobs:
   # 3.6, 3.7 and 3.8 only for passing branch rules
