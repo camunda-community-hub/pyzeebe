@@ -6,9 +6,9 @@ import grpc
 
 from pyzeebe.channel.channel_options import get_channel_options
 from pyzeebe.channel.utils import (
+    get_camunda_address,
     get_camunda_client_id,
     get_camunda_client_secret,
-    get_camunda_cloud_hostname,
     get_camunda_cluster_id,
     get_camunda_cluster_region,
     get_camunda_oauth_url,
@@ -16,16 +16,16 @@ from pyzeebe.channel.utils import (
     get_zeebe_address,
 )
 from pyzeebe.credentials.oauth import Oauth2ClientCredentialsMetadataPlugin
-from pyzeebe.types import ChannelArgumentType
+from pyzeebe.types import ChannelArgumentType, Unset
 
 
 def create_oauth2_client_credentials_channel(
-    grpc_address: str | None = None,
-    client_id: str | None = None,
-    client_secret: str | None = None,
-    authorization_server: str | None = None,
-    scope: str | None = None,
-    audience: str | None = None,
+    grpc_address: str = Unset,
+    client_id: str = Unset,
+    client_secret: str = Unset,
+    authorization_server: str = Unset,
+    scope: str | None = Unset,
+    audience: str | None = Unset,
     channel_credentials: grpc.ChannelCredentials = grpc.ssl_channel_credentials(),
     channel_options: ChannelArgumentType | None = None,
     leeway: int = 60,
@@ -33,23 +33,23 @@ def create_oauth2_client_credentials_channel(
 ) -> grpc.aio.Channel:
     """Create a gRPC channel for connecting to Camunda 8 (Self-Managed) with OAuth2ClientCredentials.
 
-    - https://oauth.net/2/grant-types/client-credentials/
-    - https://datatracker.ietf.org/doc/html/rfc6749#section-11.2.2
+    https://oauth.net/2/grant-types/client-credentials/
+    https://datatracker.ietf.org/doc/html/rfc6749#section-11.2.2
 
     Args:
-        grpc_address (str | None): Zeebe Gateway Address.
+        grpc_address (str, optional): Zeebe Gateway Address.
             Defaults to value from ZEEBE_ADDRESS environment variable
                     or "{CAMUNDA_CLUSTER_ID}.{CAMUNDA_CLUSTER_REGION}.zeebe.camunda.io:443"
                     or "localhost:26500".
-        client_id (str | None): The client id.
+        client_id (str, optional): The client id.
             Defaults to value from CAMUNDA_CLIENT_ID or ZEEBE_CLIENT_ID environment variable
-        client_secret (str | None): The client secret.
+        client_secret (str, optional): The client secret.
             Defaults to value from CAMUNDA_CLIENT_SECRET or ZEEBE_CLIENT_SECRET environment variable
-        authorization_server (str | None): The authorization server issuing access tokens
+        authorization_server (str, optional): The authorization server issuing access tokens
             to the client after successfully authenticating the client.
             Defaults to value from CAMUNDA_OAUTH_URL or ZEEBE_AUTHORIZATION_SERVER_URL environment variable
-        scope (str | None): The scope of the access request.
-        audience (str | None): The audience for authentication.
+        scope (str | None, optional): The scope of the access request.
+        audience (str | None, optional): The audience for authentication.
             Defaults to value from CAMUNDA_TOKEN_AUDIENCE or ZEEBE_TOKEN_AUDIENCE environment variable
 
         channel_credentials (grpc.ChannelCredentials): The gRPC channel credentials.
@@ -65,19 +65,35 @@ def create_oauth2_client_credentials_channel(
 
     Returns:
         grpc.aio.Channel: A gRPC channel connected to the Zeebe Gateway.
+
+    Raises:
+        InvalidOAuthCredentialsError: One of the provided camunda credentials is not correct
     """
 
-    authorization_server = get_camunda_oauth_url(authorization_server)
+    if grpc_address is Unset:
+        grpc_address = get_zeebe_address()
 
-    if not authorization_server:
-        raise ValueError("ZEEBE_AUTHORIZATION_SERVER_URL is not configured")
+    if client_id is Unset:
+        client_id = get_camunda_client_id()
+
+    if client_secret is Unset:
+        client_secret = get_camunda_client_secret()
+
+    if authorization_server is Unset:
+        authorization_server = get_camunda_oauth_url()
+
+    if scope is Unset:
+        scope = None
+
+    if audience is Unset:
+        audience = get_camunda_token_audience()
 
     oauth2_client_credentials = Oauth2ClientCredentialsMetadataPlugin(
-        client_id=get_camunda_client_id(client_id),
-        client_secret=get_camunda_client_secret(client_secret),
-        authorization_server=authorization_server or "",
+        client_id=client_id,
+        client_secret=client_secret,
+        authorization_server=authorization_server,
         scope=scope,
-        audience=get_camunda_token_audience(audience),
+        audience=audience,
         leeway=leeway,
         expire_in=expire_in,
     )
@@ -88,7 +104,7 @@ def create_oauth2_client_credentials_channel(
     )
 
     channel: grpc.aio.Channel = grpc.aio.secure_channel(
-        target=get_zeebe_address(grpc_address),
+        target=grpc_address,
         credentials=composite_credentials,
         options=get_channel_options(channel_options),
     )
@@ -97,13 +113,13 @@ def create_oauth2_client_credentials_channel(
 
 
 def create_camunda_cloud_channel(
-    client_id: str | None = None,
-    client_secret: str | None = None,
-    cluster_id: str | None = None,
-    region: str | None = None,
-    scope: str | None = None,
-    authorization_server: str | None = None,
-    audience: str | None = None,
+    client_id: str = Unset,
+    client_secret: str = Unset,
+    cluster_id: str = Unset,
+    region: str = Unset,
+    authorization_server: str = Unset,
+    scope: str | None = Unset,
+    audience: str | None = Unset,
     channel_credentials: grpc.ChannelCredentials = grpc.ssl_channel_credentials(),
     channel_options: ChannelArgumentType | None = None,
     leeway: int = 60,
@@ -112,24 +128,23 @@ def create_camunda_cloud_channel(
     """Create a gRPC channel for connecting to Camunda 8 Cloud (SaaS).
 
     Args:
-        client_id (str | None): The client id.
+        client_id (str, optional): The client id.
             Defaults to value from CAMUNDA_CLIENT_ID or ZEEBE_CLIENT_ID environment variable.
-        client_secret (str | None): The client secret.
+        client_secret (str, optional): The client secret.
             Defaults to value from CAMUNDA_CLIENT_SECRET or ZEEBE_CLIENT_SECRET environment variable.
-        cluster_id (str | None): The ID of the cluster to connect to.
+        cluster_id (str, optional): The ID of the cluster to connect to.
             Defaults to value from CAMUNDA_CLUSTER_ID environment variable.
-        region (str | None): The region of the cluster.
+        region (str, optional): The region of the cluster.
             Defaults to value from CAMUNDA_CLUSTER_REGION environment variable or 'bru-2'.
-        scope (str | None): The scope of the access request.
-        authorization_server (str | None): The authorization server issuing access tokens
+        authorization_server (str, optional): The authorization server issuing access tokens
             to the client after successfully authenticating the client.
             Defaults to value from CAMUNDA_OAUTH_URL
                 or ZEEBE_AUTHORIZATION_SERVER_URL environment variable
                 or "https://login.cloud.camunda.io/oauth/token".
-        audience (str | None): The audience for authentication.
+        scope (str | None, optional): The scope of the access request.
+        audience (str | None, optional): The audience for authentication.
             Defaults to value from CAMUNDA_TOKEN_AUDIENCE
                 or ZEEBE_TOKEN_AUDIENCE environment variable
-                or "{cluster_id}.{region}.zeebe.camunda.io"
                 or "zeebe.camunda.io".
 
         channel_credentials (grpc.ChannelCredentials): The gRPC channel credentials.
@@ -147,12 +162,26 @@ def create_camunda_cloud_channel(
         grpc.aio.Channel: The gRPC channel for connecting to Camunda Cloud.
     """
 
-    client_id = get_camunda_client_id(client_id)
-    client_secret = get_camunda_client_secret(client_secret)
-    audience = get_camunda_token_audience(audience) or "zeebe.camunda.io"
-    authorization_server = get_camunda_oauth_url(authorization_server) or "https://login.cloud.camunda.io/oauth/token"
-    cluster_id = get_camunda_cluster_id(cluster_id)
-    region = get_camunda_cluster_region(region)
+    if client_id is Unset:
+        client_id = get_camunda_client_id()
+
+    if client_secret is Unset:
+        client_secret = get_camunda_client_secret()
+
+    if cluster_id is Unset:
+        cluster_id = get_camunda_cluster_id()
+
+    if region is Unset:
+        region = get_camunda_cluster_region("bru-2")
+
+    if authorization_server is Unset:
+        authorization_server = get_camunda_oauth_url("https://login.cloud.camunda.io/oauth/token")
+
+    if scope is Unset:
+        scope = None
+
+    if audience is Unset:
+        audience = get_camunda_token_audience("zeebe.camunda.io")
 
     oauth2_client_credentials = Oauth2ClientCredentialsMetadataPlugin(
         client_id=client_id,
@@ -179,11 +208,7 @@ def create_camunda_cloud_channel(
         channel_credentials or grpc.ssl_channel_credentials(), call_credentials
     )
 
-    grpc_hostname = get_camunda_cloud_hostname(cluster_id, region)
-    if grpc_hostname:
-        grpc_address = f"{grpc_hostname}:443"
-    else:
-        grpc_address = get_zeebe_address(None)
+    grpc_address = get_camunda_address(cluster_id=cluster_id, cluster_region=region)
 
     channel: grpc.aio.Channel = grpc.aio.secure_channel(
         target=grpc_address, credentials=composite_credentials, options=get_channel_options(channel_options)

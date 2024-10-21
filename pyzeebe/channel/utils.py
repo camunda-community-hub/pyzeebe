@@ -5,140 +5,123 @@ import os
 DEFAULT_ZEEBE_ADDRESS = "localhost:26500"
 
 
-def get_zeebe_address(grpc_address: str | None = None) -> str:
+def get_zeebe_address(default_value: str | None = None) -> str:
     """
     Args:
-        grpc_address (str, optional): zeebe grpc server address.
-
-    Returns:
-        str: The zeebe grpc server address.
-            Default: Value from ZEEBE_ADDRESS environment variable
-                    or "{CAMUNDA_CLUSTER_ID}.{CAMUNDA_CLUSTER_REGION}.zeebe.camunda.io"
-                    or "localhost:26500"
+        default_value (str, optional): Default value to be used if no other value was discovered.
+    Returns: Value from ZEEBE_ADDRESS environment variable
+            or provided default_value
+            or "localhost:26500"
     """
 
-    if grpc_address:
-        return grpc_address
-
-    camunda_cloud_address = None
-    camunda_cloud_hostname = get_camunda_cloud_hostname(None, None)
-
-    if camunda_cloud_hostname:
-        camunda_cloud_address = f"{camunda_cloud_hostname}:443"
-
-    return os.getenv("ZEEBE_ADDRESS", camunda_cloud_address or DEFAULT_ZEEBE_ADDRESS)
+    return os.getenv("ZEEBE_ADDRESS") or default_value or DEFAULT_ZEEBE_ADDRESS
 
 
-def get_camunda_oauth_url(oauth_url: str | None) -> str | None:
+def get_camunda_oauth_url(default_value: str | None = None) -> str:
     """
     Args:
-        oauth_url (str, optional): The camunda platform authorization server url provided as parameter.
-
-    Returns:
-        str: The camunda platform authorization server url.
-            Default: Value from CAMUNDA_OAUTH_URL or ZEEBE_AUTHORIZATION_SERVER_URL environment variable
+        default_value (str, optional): Default value to be used if no other value was discovered.
+    Returns: The camunda platform authorization server url.
+            Default: Value from CAMUNDA_OAUTH_URL
+                    or ZEEBE_AUTHORIZATION_SERVER_URL environment variable
+                    or provided default_value
     """
-    return oauth_url or os.getenv("CAMUNDA_OAUTH_URL", os.getenv("ZEEBE_AUTHORIZATION_SERVER_URL"))
+    r = os.getenv("CAMUNDA_OAUTH_URL") or os.getenv("ZEEBE_AUTHORIZATION_SERVER_URL") or default_value
+
+    if r is None:
+        raise EnvironmentError("No CAMUNDA_OAUTH_URL or ZEEBE_AUTHORIZATION_SERVER_URL provided!")
+
+    return r
 
 
-def get_camunda_client_id(client_id: str | None) -> str:
+def get_camunda_client_id() -> str:
     """
-    Args:
-        client_id (str, optional): The client id provided as parameter.
-
-    Returns:
-        str: The client id.
+    Returns: The client id.
             Default: Value from CAMUNDA_CLIENT_ID or ZEEBE_CLIENT_ID environment variable
     """
-    ret = client_id or os.getenv("CAMUNDA_CLIENT_ID", os.getenv("ZEEBE_CLIENT_ID"))
+    r = os.getenv("CAMUNDA_CLIENT_ID") or os.getenv("ZEEBE_CLIENT_ID")
 
-    if not ret:
-        raise ValueError(
-            "parameter client_id or one of the environment variables CAMUNDA_CLIENT_ID or ZEEBE_CLIENT_ID must be provided!"
-        )
+    if r is None:
+        raise EnvironmentError("No CAMUNDA_CLIENT_ID or ZEEBE_CLIENT_ID provided!")
 
-    return ret
+    return r
 
 
-def get_camunda_client_secret(client_secret: str | None) -> str:
+def get_camunda_client_secret() -> str:
     """
-    Args:
-        client_secret (str, optional): The client secret provided as parameter.
-
     Returns:
         str: The client secret.
             Default: Value from CAMUNDA_CLIENT_SECRET or ZEEBE_CLIENT_SECRET environment variable
     """
-    ret = client_secret or os.getenv("CAMUNDA_CLIENT_SECRET") or os.getenv("ZEEBE_CLIENT_SECRET")
 
-    if not ret:
-        raise ValueError(
-            "parameter client_secret or one of the environment variables CAMUNDA_CLIENT_SECRET or ZEEBE_CLIENT_SECRET must be provided!"
-        )
+    r = os.getenv("CAMUNDA_CLIENT_SECRET") or os.getenv("ZEEBE_CLIENT_SECRET")
 
-    return ret
+    if r is None:
+        raise EnvironmentError("No CAMUNDA_CLIENT_SECRET or ZEEBE_CLIENT_SECRET provided!")
+
+    return r
 
 
-def get_camunda_cluster_id(cluster_id: str | None) -> str | None:
+def get_camunda_cluster_id() -> str:
     """
-    Args:
-        cluster_id (str, optional): The camunda cluster id provided as parameter.
-
-    Returns:
-        str: The camunda cluster id.
+    Returns: The camunda cluster id.
             Default: Value from CAMUNDA_CLUSTER_ID environment variable
     """
 
-    return cluster_id or os.getenv("CAMUNDA_CLUSTER_ID")
+    r = os.getenv("CAMUNDA_CLUSTER_ID")
+
+    if r is None:
+        raise EnvironmentError("No CAMUNDA_CLUSTER_ID provided!")
+
+    return r
 
 
-def get_camunda_cluster_region(cluster_region: str | None) -> str:
+def get_camunda_cluster_region(default_value: str | None = None) -> str:
     """
     Args:
-        cluster_region (str, optional): The camunda cluster region provided as parameter.
-
-    Returns:
-        str: The camunda cluster region.
-            Default: Value from CAMUNDA_CLUSTER_REGION environment variable or 'bru-2'
+        default_value (str, optional): Default value to be used if no other value was discovered.
+    Returns: The camunda cluster region.
+            Default: Value from CAMUNDA_CLUSTER_REGION environment variable
     """
 
-    return cluster_region or os.getenv("CAMUNDA_CLUSTER_REGION") or "bru-2"
+    r = os.getenv("CAMUNDA_CLUSTER_REGION") or default_value
+
+    if r is None:
+        raise EnvironmentError("No CAMUNDA_CLUSTER_REGION provided!")
+
+    return r
 
 
-def get_camunda_token_audience(token_audience: str | None) -> str | None:
+def get_camunda_token_audience(default_value: str | None = None) -> str:
     """
     Args:
-        token_audience (str, optional): The token audience provided as parameter.
-
-    Returns:
-        str: The token audience.
+        default_value (str, optional): Default value to be used if no other value was discovered.
+    Returns: The token audience.
             Default: Value from CAMUNDA_TOKEN_AUDIENCE
                      or ZEEBE_TOKEN_AUDIENCE environment variable
-                     or camunda cloud token audience if camunda cluster_id is available
+                     or provided default_value
     """
+    r = os.getenv("CAMUNDA_TOKEN_AUDIENCE") or os.getenv("ZEEBE_TOKEN_AUDIENCE") or default_value
 
-    return (
-        token_audience
-        or os.getenv("CAMUNDA_TOKEN_AUDIENCE")
-        or os.getenv("ZEEBE_TOKEN_AUDIENCE")
-        or get_camunda_cloud_hostname(None, None)
-    )
+    if r is None:
+        raise EnvironmentError("No CAMUNDA_TOKEN_AUDIENCE or ZEEBE_TOKEN_AUDIENCE provided!")
+
+    return r
 
 
-def get_camunda_cloud_hostname(cluster_id: str | None, cluster_region: str | None) -> str | None:
+def get_camunda_address(cluster_id: str | None = None, cluster_region: str | None = None) -> str:
     """
     Args:
         cluster_id (str, optional): The camunda cluster id provided as parameter.
+            Default: Value from CAMUNDA_CLUSTER_ID environment variable or None
         cluster_region (str, optional): The camunda cluster region provided as parameter.
-
+            Default: Value from CAMUNDA_CLUSTER_REGION environment variable.
     Returns:
-        str: The token audience for camunda cloud or none if cluster_id or cluster_region is not provided.
+        str: The Camunda Cloud grpc server address.
     """
 
-    cluster_id = get_camunda_cluster_id(cluster_id)
-    cluster_region = get_camunda_cluster_region(cluster_region)
+    if (cluster_id is None) or (cluster_region is None):
+        raise EnvironmentError("The cluster_id and cluster_region must be provided!")
 
-    if (not cluster_id) or (not cluster_region):
-        return None
-
-    return f"{cluster_id}.{cluster_region}.zeebe.camunda.io"
+    # if (cluster_id is not None) and (cluster_region is not None):  # and
+    return f"{cluster_id}.{cluster_region}.zeebe.camunda.io:443"

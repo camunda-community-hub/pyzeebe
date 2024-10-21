@@ -26,7 +26,7 @@ def create_secure_channel(
     Returns:
         grpc.aio.Channel: A GRPC Channel connected to the Zeebe gateway.
     """
-    grpc_address = get_zeebe_address(grpc_address=grpc_address)
+    grpc_address = grpc_address or get_zeebe_address()
     credentials = channel_credentials or grpc.ssl_channel_credentials()
     return grpc.aio.secure_channel(
         target=grpc_address, credentials=credentials, options=get_channel_options(channel_options)
