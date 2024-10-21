@@ -4,11 +4,11 @@ import grpc
 
 from pyzeebe.channel.channel_options import get_channel_options
 from pyzeebe.channel.utils import get_zeebe_address
-from pyzeebe.types import ChannelArgumentType
+from pyzeebe.types import ChannelArgumentType, Unset
 
 
 def create_insecure_channel(
-    grpc_address: str | None = None, channel_options: ChannelArgumentType | None = None
+    grpc_address: str = Unset, channel_options: ChannelArgumentType | None = None
 ) -> grpc.aio.Channel:
     """
     Create an insecure channel
@@ -22,5 +22,7 @@ def create_insecure_channel(
     Returns:
         grpc.aio.Channel: A GRPC Channel connected to the Zeebe gateway.
     """
-    grpc_address = grpc_address or get_zeebe_address()
+    if grpc_address is Unset:
+        grpc_address = get_zeebe_address()
+
     return grpc.aio.insecure_channel(target=grpc_address, options=get_channel_options(channel_options))
