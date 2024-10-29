@@ -1,3 +1,4 @@
+import os
 from unittest.mock import Mock, patch
 
 import grpc
@@ -36,3 +37,13 @@ class TestCreateSecureChannel:
 
         secure_channel_call = secure_channel_mock.mock_calls[0]
         assert secure_channel_call.kwargs["target"] == get_zeebe_address()
+
+    @patch.dict(
+        os.environ,
+        {"ZEEBE_ADDRESS": "ZEEBE_ADDRESS"},
+    )
+    def test_uses_zeebe_address_environment_variable(self, secure_channel_mock: Mock):
+        create_secure_channel()
+
+        secure_channel_call = secure_channel_mock.mock_calls[0]
+        assert secure_channel_call.kwargs["target"] == "ZEEBE_ADDRESS"
