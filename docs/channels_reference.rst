@@ -26,3 +26,23 @@ Credentials
     :members:
     :special-members:
     :private-members:
+
+
+Utilities (Environment)
+-----------------------
+
+.. autofunction:: pyzeebe.channel.utils.get_zeebe_address
+
+.. autofunction:: pyzeebe.channel.utils.get_camunda_oauth_url
+
+.. autofunction:: pyzeebe.channel.utils.get_camunda_client_id
+
+.. autofunction:: pyzeebe.channel.utils.get_camunda_client_secret
+
+.. autofunction:: pyzeebe.channel.utils.get_camunda_cluster_id
+
+.. autofunction:: pyzeebe.channel.utils.get_camunda_cluster_region
+
+.. autofunction:: pyzeebe.channel.utils.get_camunda_token_audience
+
+.. autofunction:: pyzeebe.channel.utils.get_camunda_address
