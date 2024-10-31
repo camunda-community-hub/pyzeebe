@@ -22,10 +22,11 @@ This variables is used across all types of channels:
   
   :Usage:        
     Used in both secure and insecure channel configurations.
-    :func:`pyzeebe.create_insecure_channel` and :func:`pyzeebe.create_secure_channel`.
+    :func:`pyzeebe.create_insecure_channel`
+    :func:`pyzeebe.create_secure_channel`
   
   :Default:      
-    `"localhost:26500"`
+    ``"localhost:26500"``
 
 Common OAuth2 Variables
 -----------------------
@@ -38,7 +39,8 @@ These variables are specifically for connecting to generic OAuth2 or Camunda Clo
   
   :Usage:        
     Required for OAuth2 and Camunda Cloud channels.
-    :func:`pyzeebe.create_oauth2_client_credentials_channel` and :func:`pyzeebe.create_camunda_cloud_channel`.
+    :func:`pyzeebe.create_oauth2_client_credentials_channel`
+    :func:`pyzeebe.create_camunda_cloud_channel`
 
 **CAMUNDA_CLIENT_SECRET** / **ZEEBE_CLIENT_SECRET**
   :Description:  
@@ -46,7 +48,8 @@ These variables are specifically for connecting to generic OAuth2 or Camunda Clo
   
   :Usage:        
     Required for OAuth2 and Camunda Cloud channels.
-    :func:`pyzeebe.create_oauth2_client_credentials_channel` and :func:`pyzeebe.create_camunda_cloud_channel`.
+    :func:`pyzeebe.create_oauth2_client_credentials_channel`
+    :func:`pyzeebe.create_camunda_cloud_channel`
 
 OAuth2 Variables (Self-Managed)
 -------------------------------
@@ -59,7 +62,7 @@ These variables are primarily used for OAuth2 authentication in self-managed Cam
   
   :Usage:        
     Required if channel initialization argument was not specified.
-    :func:`pyzeebe.create_oauth2_client_credentials_channel`.
+    :func:`pyzeebe.create_oauth2_client_credentials_channel`
 
 **CAMUNDA_TOKEN_AUDIENCE** / **ZEEBE_TOKEN_AUDIENCE**
   :Description:  
@@ -67,10 +70,10 @@ These variables are primarily used for OAuth2 authentication in self-managed Cam
   
   :Usage:        
     Used when creating OAuth2 or Camunda Cloud channels.
+    :func:`pyzeebe.create_oauth2_client_credentials_channel`
   
   :Default:      
-    None if not provided.
-    :func:`pyzeebe.create_oauth2_client_credentials_channel`.
+    ``None`` if not provided.
 
 Camunda Cloud Variables (SaaS)
 ------------------------------
@@ -83,10 +86,10 @@ These variables are specifically for connecting to Camunda Cloud instances.
   
   :Usage:        
     Used in the OAuth2 and Camunda Cloud channel configurations.
+    :func:`pyzeebe.create_camunda_cloud_channel`
   
   :Default:      
-    `"https://login.cloud.camunda.io/oauth/token"` if not specified.
-    :func:`pyzeebe.create_camunda_cloud_channel`.
+    ``"https://login.cloud.camunda.io/oauth/token"`` if not specified.
 
 **CAMUNDA_CLUSTER_ID**
   :Description:  
@@ -94,7 +97,7 @@ These variables are specifically for connecting to Camunda Cloud instances.
   
   :Usage:        
     Required if channel initialization argument was not specified.
-    :func:`pyzeebe.create_camunda_cloud_channel`.
+    :func:`pyzeebe.create_camunda_cloud_channel`
 
 **CAMUNDA_CLUSTER_REGION**
   :Description:  
@@ -102,10 +105,10 @@ These variables are specifically for connecting to Camunda Cloud instances.
   
   :Usage:        
     Required for Camunda Cloud channels.
+    :func:`pyzeebe.create_camunda_cloud_channel`
   
   :Default:      
-    `"bru-2"` if not provided.
-    :func:`pyzeebe.create_camunda_cloud_channel`.
+    ``"bru-2"`` if not provided.
 
 **CAMUNDA_TOKEN_AUDIENCE** / **ZEEBE_TOKEN_AUDIENCE**
   :Description:  
@@ -113,8 +116,8 @@ These variables are specifically for connecting to Camunda Cloud instances.
   
   :Usage:        
     Used when creating OAuth2 or Camunda Cloud channels.
+    :func:`pyzeebe.create_camunda_cloud_channel`
   
   :Default:      
-    `"zeebe.camunda.io"` if not provided.
-    :func:`pyzeebe.create_camunda_cloud_channel`.
+    ``"zeebe.camunda.io"`` if not provided.
 
