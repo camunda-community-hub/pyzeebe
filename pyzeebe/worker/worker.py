@@ -48,14 +48,15 @@ class ZeebeWorker(ZeebeTaskRouter):
             tenant_ids (list[str]): A list of tenant IDs for which to activate jobs. New in Zeebe 8.3.
         """
         super().__init__(before, after, exception_handler)
+        self._stop_event = anyio.Event()
         self.zeebe_adapter = ZeebeAdapter(grpc_channel, max_connection_retries)
+        self.zeebe_adapter.add_disconnect_callback(self._stop_event.set)
         self.name = name or socket.gethostname()
         self.request_timeout = request_timeout
         self.poll_retry_delay = poll_retry_delay
         self.tenant_ids = tenant_ids
         self._job_pollers: list[JobPoller] = []
         self._job_executors: list[JobExecutor] = []
-        self._stop_event = anyio.Event()
 
     def _init_tasks(self) -> None:
         self._job_executors, self._job_pollers = [], []
@@ -110,11 +111,12 @@ class ZeebeWorker(ZeebeTaskRouter):
         """
         Stop the worker. This will emit a signal asking tasks to complete the current task and stop polling for new.
         """
-        for poller in self._job_pollers:
-            await poller.stop()
+        async with anyio.create_task_group() as tg:
+            for poller in self._job_pollers:
+                tg.start_soon(poller.stop)
 
-        for executor in self._job_executors:
-            await executor.stop()
+            for executor in self._job_executors:
+                tg.start_soon(executor.stop)
 
         self._stop_event.set()
 
