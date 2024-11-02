@@ -21,10 +21,14 @@ class ZeebeAdapterBase:
     def __init__(self, grpc_channel: grpc.aio.Channel, max_connection_retries: int = -1):
         self._channel = grpc_channel
         self._gateway_stub = GatewayStub(grpc_channel)
-        self.connected = True
+        self._connected = True
         self.retrying_connection = False
         self._max_connection_retries = max_connection_retries
         self._current_connection_retries = 0
+
+    @property
+    def connected(self) -> bool:
+        return self._connected
 
     def _should_retry(self) -> bool:
         return self._max_connection_retries == -1 or self._current_connection_retries < self._max_connection_retries
@@ -44,6 +48,8 @@ class ZeebeAdapterBase:
             await self._channel.close()
         except Exception as exception:
             logger.exception("Failed to close channel, %s exception was raised", type(exception).__name__)
+        finally:
+            self._connected = False
 
 
 def _create_pyzeebe_error_from_grpc_error(grpc_error: grpc.aio.AioRpcError) -> PyZeebeError:
