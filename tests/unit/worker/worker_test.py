@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
@@ -277,12 +278,12 @@ class TestWorker:
     async def test_second_poller_should_cancel(self, zeebe_worker: ZeebeWorker):
         zeebe_worker._init_tasks = Mock()
 
-        poller2_cancel_event = anyio.Event()
+        poller2_cancel_event = asyncio.Event()
 
         async def poll2():
             try:
-                await anyio.Event().wait()
-            except anyio.get_cancelled_exc_class():
+                await asyncio.Event().wait()
+            except asyncio.CancelledError:
                 poller2_cancel_event.set()
 
         poller_mock = AsyncMock(spec_set=JobPoller, poll=AsyncMock(side_effect=[Exception("test_exception")]))

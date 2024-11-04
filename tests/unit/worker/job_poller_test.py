@@ -46,13 +46,13 @@ class TestPollOnce:
 
 class TestShouldPoll:
     def test_should_poll_returns_expected_result_when_disconnected(self, job_poller: JobPoller):
-        job_poller.zeebe_adapter.connected = False
+        job_poller.zeebe_adapter._connected = False
         job_poller.zeebe_adapter.retrying_connection = False
 
         assert not job_poller.should_poll()
 
     def test_continues_polling_when_retrying_connection(self, job_poller: JobPoller):
-        job_poller.zeebe_adapter.connected = False
+        job_poller.zeebe_adapter._connected = False
         job_poller.zeebe_adapter.retrying_connection = True
 
         assert job_poller.should_poll()
