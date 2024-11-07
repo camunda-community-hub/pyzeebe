@@ -5,7 +5,7 @@ import os
 DEFAULT_ZEEBE_ADDRESS = "localhost:26500"
 
 
-def get_zeebe_address(default: str = None) -> str:
+def get_zeebe_address(default: str | None = None) -> str:
     """
     Get the Zeebe Gateway Address.
 
@@ -18,7 +18,7 @@ def get_zeebe_address(default: str = None) -> str:
     return os.getenv("ZEEBE_ADDRESS") or default or DEFAULT_ZEEBE_ADDRESS
 
 
-def get_camunda_oauth_url(default: str = None) -> str:
+def get_camunda_oauth_url(default: str | None = None) -> str:
     """
     Get the Camunda OAuth URL or Zeebe Authorization Server URL.
 
@@ -93,7 +93,7 @@ def get_camunda_cluster_id() -> str:
     return r
 
 
-def get_camunda_cluster_region(default: str = None) -> str:
+def get_camunda_cluster_region(default: str | None = None) -> str:
     """
     Get the Camunda Cluster Region.
 
@@ -114,7 +114,7 @@ def get_camunda_cluster_region(default: str = None) -> str:
     return r
 
 
-def get_camunda_token_audience(default: str = None) -> str:
+def get_camunda_token_audience(default: str | None = None) -> str:
     """
     Get the Camunda Token Audience.
 
@@ -141,9 +141,7 @@ def get_camunda_address(cluster_id: str | None = None, cluster_region: str | Non
 
     Args:
         cluster_id (str, optional): The Camunda cluster ID provided as parameter.
-            Default: Value from CAMUNDA_CLUSTER_ID environment variable or None.
         cluster_region (str, optional): The Camunda cluster region provided as parameter.
-            Default: Value from CAMUNDA_CLUSTER_REGION environment variable.
 
     Returns:
         str: The Camunda Cloud gRPC server address.
