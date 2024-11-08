@@ -39,8 +39,8 @@ def create_oauth2_client_credentials_channel(
     Args:
         grpc_address (str, optional): Zeebe Gateway Address.
             Defaults to value from ZEEBE_ADDRESS environment variable
-                    or "{CAMUNDA_CLUSTER_ID}.{CAMUNDA_CLUSTER_REGION}.zeebe.camunda.io:443"
-                    or "localhost:26500".
+            or "{CAMUNDA_CLUSTER_ID}.{CAMUNDA_CLUSTER_REGION}.zeebe.camunda.io:443"
+            or "localhost:26500".
         client_id (str, optional): The client id.
             Defaults to value from CAMUNDA_CLIENT_ID or ZEEBE_CLIENT_ID environment variable
         client_secret (str, optional): The client secret.
@@ -139,13 +139,13 @@ def create_camunda_cloud_channel(
         authorization_server (str, optional): The authorization server issuing access tokens
             to the client after successfully authenticating the client.
             Defaults to value from CAMUNDA_OAUTH_URL
-                or ZEEBE_AUTHORIZATION_SERVER_URL environment variable
-                or "https://login.cloud.camunda.io/oauth/token".
+            or ZEEBE_AUTHORIZATION_SERVER_URL environment variable
+            or "https://login.cloud.camunda.io/oauth/token".
         scope (str | None, optional): The scope of the access request.
         audience (str | None, optional): The audience for authentication.
             Defaults to value from CAMUNDA_TOKEN_AUDIENCE
-                or ZEEBE_TOKEN_AUDIENCE environment variable
-                or "zeebe.camunda.io".
+            or ZEEBE_TOKEN_AUDIENCE environment variable
+            or "zeebe.camunda.io".
 
         channel_credentials (grpc.ChannelCredentials): The gRPC channel credentials.
             Defaults to grpc.ssl_channel_credentials().
