@@ -1,3 +1,4 @@
+import os
 from unittest import mock
 
 import grpc
@@ -42,6 +43,24 @@ def test_create_oauth2_client_credentials_channel(
     assert isinstance(channel, grpc.aio.Channel)
 
 
+@mock.patch.dict(
+    os.environ,
+    {
+        "ZEEBE_ADDRESS": "ZEEBE_ADDRESS",
+        "CAMUNDA_CLIENT_ID": "CAMUNDA_CLIENT_ID",
+        "CAMUNDA_CLIENT_SECRET": "CAMUNDA_CLIENT_SECRET",
+        "CAMUNDA_OAUTH_URL": "CAMUNDA_OAUTH_URL",
+        "CAMUNDA_TOKEN_AUDIENCE": "CAMUNDA_TOKEN_AUDIENCE",
+    },
+)
+def test_create_oauth2_client_credentials_channel_using_environment_variables(
+    mock_oauth2metadataplugin,
+):
+    channel = create_oauth2_client_credentials_channel()
+
+    assert isinstance(channel, grpc.aio.Channel)
+
+
 def test_create_camunda_cloud_channel(
     mock_oauth2metadataplugin,
 ):
@@ -66,5 +85,22 @@ def test_create_camunda_cloud_channel(
         leeway=60,
         expire_in=None,
     )
+
+    assert isinstance(channel, grpc.aio.Channel)
+
+
+@mock.patch.dict(
+    os.environ,
+    {
+        "CAMUNDA_CLUSTER_ID": "CAMUNDA_CLUSTER_ID",
+        "CAMUNDA_CLUSTER_REGION": "CAMUNDA_CLUSTER_REGION",
+        "CAMUNDA_CLIENT_ID": "CAMUNDA_CLIENT_ID",
+        "CAMUNDA_CLIENT_SECRET": "CAMUNDA_CLIENT_SECRET",
+    },
+)
+def test_create_camunda_cloud_channel_using_environment_variables(
+    mock_oauth2metadataplugin,
+):
+    channel = create_camunda_cloud_channel()
 
     assert isinstance(channel, grpc.aio.Channel)

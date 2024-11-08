@@ -19,10 +19,6 @@ This Channel can be configured with the parameters `channel_credentials` and `ch
     You can override the default `channel_options` by passing
     e.g. `channel_options = (("grpc.keepalive_time_ms", 60_000),)` - for a keepalive time of 60 seconds.
 
-
-Pyzeebe provides a couple standard ways to achieve this:
-
-
 Insecure
 --------
 
@@ -150,6 +146,12 @@ Example:
     )
 
 This method use the :py:class:`.Oauth2ClientCredentialsMetadataPlugin` under the hood.
+
+Configuration
+-------------
+
+It is possible to omit any arguments to the channel initialization functions and instead provide environment variables.
+See :doc:`Channels Configuration <channels_configuration>` for additional details.
 
 Custom Oauth2 Authorization Flow
 ---------------------------------
