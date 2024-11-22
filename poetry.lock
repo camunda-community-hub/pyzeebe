@@ -1276,13 +1276,13 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "zeebe-grpc"
-version = "8.4.0"
+version = "8.4.13"
 description = "zeebe Python gRPC Gateway"
 optional = false
 python-versions = "*"
 files = [
-    {file = "zeebe_grpc-8.4.0-py3-none-any.whl", hash = "sha256:d83e2f76a3eafa10298200b0c1c4f37ee9eca84902a973516c6293d88bd16a23"},
-    {file = "zeebe_grpc-8.4.0.tar.gz", hash = "sha256:ff84f11df4c519937d877a9b253b8b9e7492b5d1661f2dd7b9a62f0dc131ac7c"},
+    {file = "zeebe_grpc-8.4.13-py3-none-any.whl", hash = "sha256:eeff91bb9b1cbb4844590ea0381ee5f9bfc87d2848d95d8fdfd3de693706e6ca"},
+    {file = "zeebe_grpc-8.4.13.tar.gz", hash = "sha256:6036494373e06c1fe31d90a335d13ed60b7d0c8c2af2b46b31440ab5259c29cc"},
 ]
 
 [package.dependencies]
