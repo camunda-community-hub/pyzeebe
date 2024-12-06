@@ -25,6 +25,7 @@ from .zeebe_errors import (
     UnknownGrpcStatusCodeError,
     ZeebeBackPressureError,
     ZeebeDeadlineExceeded,
+    ZeebeError,
     ZeebeGatewayUnavailableError,
     ZeebeInternalError,
 )
@@ -52,4 +53,5 @@ __all__ = (
     "ZeebeDeadlineExceeded",
     "ZeebeGatewayUnavailableError",
     "ZeebeInternalError",
+    "ZeebeError",
 )
