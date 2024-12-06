@@ -34,6 +34,8 @@ All ``pyzeebe`` errors inherit from :py:class:`PyZeebeError`
 
 .. autoexception:: pyzeebe.errors.InvalidJSONError
 
+.. autoexception:: pyzeebe.errors.ZeebeError
+
 .. autoexception:: pyzeebe.errors.ZeebeBackPressureError
 
 .. autoexception:: pyzeebe.errors.ZeebeGatewayUnavailableError
