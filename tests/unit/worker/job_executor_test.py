@@ -1,4 +1,5 @@
 import asyncio
+import json
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -80,3 +81,31 @@ class TestCreateJobCallback:
 
         task_done_mock.assert_called_once()
         remove_from_task_state_mock.assert_called_once_with(job_from_task)
+
+    def test_signals_that_job_is_done_with_exception(
+        self, job_executor: JobExecutor, job_from_task: Job, caplog: pytest.LogCaptureFixture
+    ):
+        task_done_mock = Mock()
+        remove_from_task_state_mock = Mock()
+        job_executor.jobs.task_done = task_done_mock
+        job_executor.task_state.remove = remove_from_task_state_mock
+
+        callback = create_job_callback(job_executor, job_from_task)
+
+        exception = None
+        try:
+            json.dumps({"foo": object})
+        except TypeError as err:
+            exception = err
+
+        assert exception
+
+        fut = asyncio.Future()
+        fut.set_exception(exception)
+        callback(fut)
+
+        task_done_mock.assert_called_once()
+        remove_from_task_state_mock.assert_called_once_with(job_from_task)
+
+        assert len(caplog.records) == 1
+        assert caplog.records[0].getMessage().startswith("Error in job executor. Task:")
