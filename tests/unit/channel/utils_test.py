@@ -15,6 +15,7 @@ from pyzeebe.channel.utils import (
     get_camunda_token_audience,
     get_zeebe_address,
 )
+from pyzeebe.errors import SettingsError
 
 
 class TestGetZeebeAddress:
@@ -62,7 +63,7 @@ class TestGetCamundaOauthUrl:
 
     @patch.dict(os.environ, {})
     def test_none_has_fourth_highest_priority(self):
-        with pytest.raises(EnvironmentError):
+        with pytest.raises(SettingsError):
             get_camunda_oauth_url()
 
 
@@ -81,7 +82,7 @@ class TestGetCamundaClientId:
 
     @patch.dict(os.environ, {})
     def test_throw_exception_if_not_configured(self):
-        with pytest.raises(EnvironmentError):
+        with pytest.raises(SettingsError):
             get_camunda_client_id()
 
 
@@ -102,7 +103,7 @@ class TestGetCamundaClientSecret:
 
     @patch.dict(os.environ, {})
     def test_throw_exception_if_not_configured(self):
-        with pytest.raises(EnvironmentError):
+        with pytest.raises(SettingsError):
             get_camunda_client_secret()
 
 
@@ -114,7 +115,7 @@ class TestGetCamundaCloudClusterId:
         assert result == "CAMUNDA_CLUSTER_ID"
 
     def test_environment_error(self):
-        with pytest.raises(EnvironmentError):
+        with pytest.raises(SettingsError):
             get_camunda_cluster_id()
 
 
@@ -132,7 +133,7 @@ class TestGetCamundaCloudClusterRegion:
 
     @patch.dict(os.environ, {})
     def test_raises_environment_error_if_no_default_value_as_fallback_provided(self):
-        with pytest.raises(EnvironmentError):
+        with pytest.raises(SettingsError):
             get_camunda_cluster_region()
 
 
@@ -167,7 +168,7 @@ class TestGetCamundaTokenAudience:
 
     @patch.dict(os.environ, {})
     def test_raises_environment_error_as_fourth_highest_priority(self):
-        with pytest.raises(EnvironmentError):
+        with pytest.raises(SettingsError):
             get_camunda_token_audience()
 
 
@@ -178,13 +179,13 @@ class TestGetCamundaAddress:
         assert result == f"cluster_id_param.camunda_region_param.zeebe.camunda.io:443"
 
     def test_raises_error_if_cluster_id_is_none(self):
-        with pytest.raises(EnvironmentError):
+        with pytest.raises(SettingsError):
             get_camunda_address(None, "camunda_region_param")
 
     def test_raises_error_if_cluster_region_is_none(self):
-        with pytest.raises(EnvironmentError):
+        with pytest.raises(SettingsError):
             get_camunda_address("cluster_id_param", None)
 
     def test_raises_error_if_all_args_are_none(self):
-        with pytest.raises(EnvironmentError):
+        with pytest.raises(SettingsError):
             get_camunda_address(None, None)
