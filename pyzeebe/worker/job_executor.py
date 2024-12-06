@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 from typing import Callable
@@ -14,7 +16,7 @@ AsyncTaskCallback = Callable[["asyncio.Future[None]"], None]
 
 
 class JobExecutor:
-    def __init__(self, task: Task, jobs: "asyncio.Queue[Job]", task_state: TaskState, zeebe_adapter: ZeebeAdapter):
+    def __init__(self, task: Task, jobs: asyncio.Queue[Job], task_state: TaskState, zeebe_adapter: ZeebeAdapter):
         self.task = task
         self.jobs = jobs
         self.task_state = task_state
@@ -45,7 +47,11 @@ class JobExecutor:
 
 
 def create_job_callback(job_executor: JobExecutor, job: Job) -> AsyncTaskCallback:
-    def callback(_: "asyncio.Future[None]") -> None:
+    def callback(fut: asyncio.Future[None]) -> None:
+        err = fut.done() and not fut.cancelled() and fut.exception()
+        if err:
+            logger.exception("Error in job executor. Task: %s. Error: %s.", job.type, err, exc_info=err)
+
         job_executor.jobs.task_done()
         job_executor.task_state.remove(job)
 
