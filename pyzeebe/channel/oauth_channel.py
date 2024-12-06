@@ -26,7 +26,7 @@ def create_oauth2_client_credentials_channel(
     authorization_server: str = Unset,
     scope: str | None = Unset,
     audience: str | None = Unset,
-    channel_credentials: grpc.ChannelCredentials = grpc.ssl_channel_credentials(),
+    channel_credentials: grpc.ChannelCredentials | None = None,
     channel_options: ChannelArgumentType | None = None,
     leeway: int = 60,
     expire_in: int | None = None,
@@ -52,8 +52,8 @@ def create_oauth2_client_credentials_channel(
         audience (str | None, optional): The audience for authentication.
             Defaults to value from CAMUNDA_TOKEN_AUDIENCE or ZEEBE_TOKEN_AUDIENCE environment variable
 
-        channel_credentials (grpc.ChannelCredentials): The gRPC channel credentials.
-            Defaults to grpc.ssl_channel_credentials().
+        channel_credentials (grpc.ChannelCredentials | None): The gRPC channel credentials.
+            Defaults to `grpc.ssl_channel_credentials`.
         channel_options (ChannelArgumentType | None): Additional options for the gRPC channel.
             Defaults to None.
             See https://grpc.github.io/grpc/python/glossary.html#term-channel_arguments
@@ -120,7 +120,7 @@ def create_camunda_cloud_channel(
     authorization_server: str = Unset,
     scope: str | None = Unset,
     audience: str | None = Unset,
-    channel_credentials: grpc.ChannelCredentials = grpc.ssl_channel_credentials(),
+    channel_credentials: grpc.ChannelCredentials | None = None,
     channel_options: ChannelArgumentType | None = None,
     leeway: int = 60,
     expire_in: int | None = None,
@@ -147,8 +147,8 @@ def create_camunda_cloud_channel(
             or ZEEBE_TOKEN_AUDIENCE environment variable
             or "zeebe.camunda.io".
 
-        channel_credentials (grpc.ChannelCredentials): The gRPC channel credentials.
-            Defaults to grpc.ssl_channel_credentials().
+        channel_credentials (grpc.ChannelCredentials | None): The gRPC channel credentials.
+            Defaults to `grpc.ssl_channel_credentials`.
         channel_options (ChannelArgumentType | None): Additional options for the gRPC channel.
             Defaults to None.
             See https://grpc.github.io/grpc/python/glossary.html#term-channel_arguments

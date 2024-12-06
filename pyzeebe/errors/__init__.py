@@ -18,6 +18,7 @@ from .pyzeebe_errors import (
     DuplicateTaskTypeError,
     NoVariableNameGivenError,
     PyZeebeError,
+    SettingsError,
     TaskNotFoundError,
 )
 from .zeebe_errors import (
@@ -44,6 +45,7 @@ __all__ = (
     "DuplicateTaskTypeError",
     "NoVariableNameGivenError",
     "PyZeebeError",
+    "SettingsError",
     "TaskNotFoundError",
     "UnknownGrpcStatusCodeError",
     "ZeebeBackPressureError",

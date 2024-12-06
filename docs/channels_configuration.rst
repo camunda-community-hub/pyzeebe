@@ -17,15 +17,15 @@ Common Variables
 This variables is used across all types of channels:
 
 **ZEEBE_ADDRESS**
-  :Description:  
+  :Description:
     The default address of the Zeebe Gateway.
-  
-  :Usage:        
+
+  :Usage:
     Used in both secure and insecure channel configurations.
     :func:`pyzeebe.create_insecure_channel`
     :func:`pyzeebe.create_secure_channel`
-  
-  :Default:      
+
+  :Default:
     ``"localhost:26500"``
 
 Common OAuth2 Variables
@@ -34,19 +34,19 @@ Common OAuth2 Variables
 These variables are specifically for connecting to generic OAuth2 or Camunda Cloud instances.
 
 **CAMUNDA_CLIENT_ID** / **ZEEBE_CLIENT_ID**
-  :Description:  
+  :Description:
     The client ID required for OAuth2 client credential authentication.
-  
-  :Usage:        
+
+  :Usage:
     Required for OAuth2 and Camunda Cloud channels.
     :func:`pyzeebe.create_oauth2_client_credentials_channel`
     :func:`pyzeebe.create_camunda_cloud_channel`
 
 **CAMUNDA_CLIENT_SECRET** / **ZEEBE_CLIENT_SECRET**
-  :Description:  
+  :Description:
     The client secret for the OAuth2 client.
-  
-  :Usage:        
+
+  :Usage:
     Required for OAuth2 and Camunda Cloud channels.
     :func:`pyzeebe.create_oauth2_client_credentials_channel`
     :func:`pyzeebe.create_camunda_cloud_channel`
@@ -57,22 +57,22 @@ OAuth2 Variables (Self-Managed)
 These variables are primarily used for OAuth2 authentication in self-managed Camunda 8 instances.
 
 **CAMUNDA_OAUTH_URL** / **ZEEBE_AUTHORIZATION_SERVER_URL**
-  :Description:  
+  :Description:
     Specifies the URL of the authorization server issuing access tokens to the client.
-  
-  :Usage:        
+
+  :Usage:
     Required if channel initialization argument was not specified.
     :func:`pyzeebe.create_oauth2_client_credentials_channel`
 
 **CAMUNDA_TOKEN_AUDIENCE** / **ZEEBE_TOKEN_AUDIENCE**
-  :Description:  
+  :Description:
     Specifies the audience for the OAuth2 token.
-  
-  :Usage:        
+
+  :Usage:
     Used when creating OAuth2 or Camunda Cloud channels.
     :func:`pyzeebe.create_oauth2_client_credentials_channel`
-  
-  :Default:      
+
+  :Default:
     ``None`` if not provided.
 
 Camunda Cloud Variables (SaaS)
@@ -81,43 +81,42 @@ Camunda Cloud Variables (SaaS)
 These variables are specifically for connecting to Camunda Cloud instances.
 
 **CAMUNDA_OAUTH_URL** / **ZEEBE_AUTHORIZATION_SERVER_URL**
-  :Description:  
+  :Description:
     Specifies the URL of the authorization server issuing access tokens to the client.
-  
-  :Usage:        
+
+  :Usage:
     Used in the OAuth2 and Camunda Cloud channel configurations.
     :func:`pyzeebe.create_camunda_cloud_channel`
-  
-  :Default:      
+
+  :Default:
     ``"https://login.cloud.camunda.io/oauth/token"`` if not specified.
 
 **CAMUNDA_CLUSTER_ID**
-  :Description:  
+  :Description:
     The unique identifier for the Camunda Cloud cluster to connect to.
-  
-  :Usage:        
+
+  :Usage:
     Required if channel initialization argument was not specified.
     :func:`pyzeebe.create_camunda_cloud_channel`
 
 **CAMUNDA_CLUSTER_REGION**
-  :Description:  
+  :Description:
     The region where the Camunda Cloud cluster is hosted.
-  
-  :Usage:        
+
+  :Usage:
     Required for Camunda Cloud channels.
     :func:`pyzeebe.create_camunda_cloud_channel`
-  
-  :Default:      
+
+  :Default:
     ``"bru-2"`` if not provided.
 
 **CAMUNDA_TOKEN_AUDIENCE** / **ZEEBE_TOKEN_AUDIENCE**
-  :Description:  
+  :Description:
     Specifies the audience for the OAuth2 token.
-  
-  :Usage:        
+
+  :Usage:
     Used when creating OAuth2 or Camunda Cloud channels.
     :func:`pyzeebe.create_camunda_cloud_channel`
-  
-  :Default:      
-    ``"zeebe.camunda.io"`` if not provided.
 
+  :Default:
+    ``"zeebe.camunda.io"`` if not provided.

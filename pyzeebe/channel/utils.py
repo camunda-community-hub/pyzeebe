@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import os
 
+from pyzeebe.errors import SettingsError
+
 DEFAULT_ZEEBE_ADDRESS = "localhost:26500"
 
 
@@ -29,12 +31,12 @@ def get_camunda_oauth_url(default: str | None = None) -> str:
         str: CAMUNDA_OAUTH_URL or ZEEBE_AUTHORIZATION_SERVER_URL environment variable or provided default
 
     Raises:
-        EnvironmentError: If neither CAMUNDA_OAUTH_URL nor ZEEBE_AUTHORIZATION_SERVER_URL is provided.
+        SettingsError: If neither CAMUNDA_OAUTH_URL nor ZEEBE_AUTHORIZATION_SERVER_URL is provided.
     """
     r = os.getenv("CAMUNDA_OAUTH_URL") or os.getenv("ZEEBE_AUTHORIZATION_SERVER_URL") or default
 
     if r is None:
-        raise EnvironmentError("No CAMUNDA_OAUTH_URL or ZEEBE_AUTHORIZATION_SERVER_URL provided!")
+        raise SettingsError("No CAMUNDA_OAUTH_URL or ZEEBE_AUTHORIZATION_SERVER_URL provided!")
 
     return r
 
@@ -47,12 +49,12 @@ def get_camunda_client_id() -> str:
         str: CAMUNDA_CLIENT_ID or ZEEBE_CLIENT_ID environment variable
 
     Raises:
-        EnvironmentError: If neither CAMUNDA_CLIENT_ID nor ZEEBE_CLIENT_ID is provided.
+        SettingsError: If neither CAMUNDA_CLIENT_ID nor ZEEBE_CLIENT_ID is provided.
     """
     r = os.getenv("CAMUNDA_CLIENT_ID") or os.getenv("ZEEBE_CLIENT_ID")
 
     if r is None:
-        raise EnvironmentError("No CAMUNDA_CLIENT_ID or ZEEBE_CLIENT_ID provided!")
+        raise SettingsError("No CAMUNDA_CLIENT_ID or ZEEBE_CLIENT_ID provided!")
 
     return r
 
@@ -65,12 +67,12 @@ def get_camunda_client_secret() -> str:
         str: CAMUNDA_CLIENT_SECRET or ZEEBE_CLIENT_SECRET environment variable
 
     Raises:
-        EnvironmentError: If neither CAMUNDA_CLIENT_SECRET nor ZEEBE_CLIENT_SECRET is provided.
+        SettingsError: If neither CAMUNDA_CLIENT_SECRET nor ZEEBE_CLIENT_SECRET is provided.
     """
     r = os.getenv("CAMUNDA_CLIENT_SECRET") or os.getenv("ZEEBE_CLIENT_SECRET")
 
     if r is None:
-        raise EnvironmentError("No CAMUNDA_CLIENT_SECRET or ZEEBE_CLIENT_SECRET provided!")
+        raise SettingsError("No CAMUNDA_CLIENT_SECRET or ZEEBE_CLIENT_SECRET provided!")
 
     return r
 
@@ -83,12 +85,12 @@ def get_camunda_cluster_id() -> str:
         str: CAMUNDA_CLUSTER_ID environment variable
 
     Raises:
-        EnvironmentError: If CAMUNDA_CLUSTER_ID is not provided.
+        SettingsError: If CAMUNDA_CLUSTER_ID is not provided.
     """
     r = os.getenv("CAMUNDA_CLUSTER_ID")
 
     if r is None:
-        raise EnvironmentError("No CAMUNDA_CLUSTER_ID provided!")
+        raise SettingsError("No CAMUNDA_CLUSTER_ID provided!")
 
     return r
 
@@ -104,12 +106,12 @@ def get_camunda_cluster_region(default: str | None = None) -> str:
         str: CAMUNDA_CLUSTER_REGION environment variable or provided default
 
     Raises:
-        EnvironmentError: If CAMUNDA_CLUSTER_REGION is not provided.
+        SettingsError: If CAMUNDA_CLUSTER_REGION is not provided.
     """
     r = os.getenv("CAMUNDA_CLUSTER_REGION") or default
 
     if r is None:
-        raise EnvironmentError("No CAMUNDA_CLUSTER_REGION provided!")
+        raise SettingsError("No CAMUNDA_CLUSTER_REGION provided!")
 
     return r
 
@@ -125,12 +127,12 @@ def get_camunda_token_audience(default: str | None = None) -> str:
         str: CAMUNDA_TOKEN_AUDIENCE or ZEEBE_TOKEN_AUDIENCE environment variable or provided default
 
     Raises:
-        EnvironmentError: If neither CAMUNDA_TOKEN_AUDIENCE nor ZEEBE_TOKEN_AUDIENCE is provided.
+        SettingsError: If neither CAMUNDA_TOKEN_AUDIENCE nor ZEEBE_TOKEN_AUDIENCE is provided.
     """
     r = os.getenv("CAMUNDA_TOKEN_AUDIENCE") or os.getenv("ZEEBE_TOKEN_AUDIENCE") or default
 
     if r is None:
-        raise EnvironmentError("No CAMUNDA_TOKEN_AUDIENCE or ZEEBE_TOKEN_AUDIENCE provided!")
+        raise SettingsError("No CAMUNDA_TOKEN_AUDIENCE or ZEEBE_TOKEN_AUDIENCE provided!")
 
     return r
 
@@ -147,9 +149,9 @@ def get_camunda_address(cluster_id: str | None = None, cluster_region: str | Non
         str: The Camunda Cloud gRPC server address.
 
     Raises:
-        EnvironmentError: If either cluster_id or cluster_region is not provided.
+        SettingsError: If either cluster_id or cluster_region is not provided.
     """
     if (cluster_id is None) or (cluster_region is None):
-        raise EnvironmentError("The cluster_id and cluster_region must be provided!")
+        raise SettingsError("The cluster_id and cluster_region must be provided!")
 
     return f"{cluster_id}.{cluster_region}.zeebe.camunda.io:443"
