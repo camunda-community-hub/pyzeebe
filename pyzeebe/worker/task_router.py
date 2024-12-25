@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from typing import Any, Callable, Literal, Optional, TypeVar, overload
 
 from typing_extensions import ParamSpec
@@ -16,7 +16,7 @@ from pyzeebe.task.types import TaskDecorator
 
 P = ParamSpec("P")
 R = TypeVar("R")
-RD = TypeVar("RD", bound=Optional[dict[str, Any]])
+RD = TypeVar("RD", bound=Optional[Mapping[str, Any]])
 
 logger = logging.getLogger(__name__)
 

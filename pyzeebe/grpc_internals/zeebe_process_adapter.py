@@ -206,13 +206,10 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
 
 _METADATA_PARSERS: dict[
     str,
-    Callable[
-        [ProcessMetadata | DecisionMetadata | DecisionRequirementsMetadata | FormMetadata],
-        DeployResourceResponse.ProcessMetadata
-        | DeployResourceResponse.DecisionMetadata
-        | DeployResourceResponse.DecisionRequirementsMetadata
-        | DeployResourceResponse.FormMetadata,
-    ],
+    Callable[[ProcessMetadata], DeployResourceResponse.ProcessMetadata]
+    | Callable[[DecisionMetadata], DeployResourceResponse.DecisionMetadata]
+    | Callable[[DecisionRequirementsMetadata], DeployResourceResponse.DecisionRequirementsMetadata]
+    | Callable[[FormMetadata], DeployResourceResponse.FormMetadata],
 ] = {
     "process": ZeebeProcessAdapter._create_process_from_raw_process,
     "decision": ZeebeProcessAdapter._create_decision_from_raw_decision,
