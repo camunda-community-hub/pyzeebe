@@ -3,7 +3,9 @@ name = "pyzeebe"
 version = "4.2.0"
 description = "Zeebe client api"
 authors = ["Jonatan Martens <jonatanmartenstav@gmail.com>"]
-maintainers = ["Dmitriy <dimastbk@proton.me>"]
+maintainers = [
+    "Dmitriy <dimastbk@proton.me>",
+]
 license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/camunda-community-hub/pyzeebe"
@@ -13,9 +15,11 @@ keywords = ["zeebe", "workflow", "workflow-engine"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
+    "Operating System :: OS Independent"
 ]
-packages = [{ include = "pyzeebe" }]
+packages = [
+    { include = "pyzeebe" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -78,25 +82,27 @@ extend_skip_glob = ["*_pb2.py", "*_pb2_grpc.py", "*.pyi"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-markers = ["e2e: end to end tests"]
+markers = [
+    "e2e: end to end tests",
+]
 
 [tool.ruff]
 target-version = "py39"
 
 [tool.ruff.lint]
 select = [
-    "E",     # pycodestyle errors
-    "W",     # pycodestyle warnings
-    "F",     # pyflakes
-    "C",     # flake8-comprehensions
-    "B",     # flake8-bugbear
-    "TID",   # flake8-tidy-imports
-    "T20",   # flake8-print
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "C",   # flake8-comprehensions
+    "B",   # flake8-bugbear
+    "TID", # flake8-tidy-imports
+    "T20", # flake8-print
     "ASYNC", # flake8-async
-    "FA",    # flake8-future-annotations
+    "FA",  # flake8-future-annotations
 ]
 ignore = [
-    "E501", # line too long, handled by black
+    "E501",   # line too long, handled by black
 ]
 
 [build-system]
