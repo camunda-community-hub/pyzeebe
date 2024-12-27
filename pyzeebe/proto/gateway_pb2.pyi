@@ -215,16 +215,22 @@ class CancelProcessInstanceRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
     PROCESSINSTANCEKEY_FIELD_NUMBER: builtins.int
+    OPERATIONREFERENCE_FIELD_NUMBER: builtins.int
     processInstanceKey: builtins.int
     """the process instance key (as, for example, obtained from
     CreateProcessInstanceResponse)
     """
+    operationReference: builtins.int
+    """a reference key chosen by the user and will be part of all records resulted from this operation"""
     def __init__(
         self,
         *,
         processInstanceKey: builtins.int = ...,
+        operationReference: builtins.int | None = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing.Literal["processInstanceKey", b"processInstanceKey"]) -> None: ...
+    def HasField(self, field_name: typing.Literal["_operationReference", b"_operationReference", "operationReference", b"operationReference"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing.Literal["_operationReference", b"_operationReference", "operationReference", b"operationReference", "processInstanceKey", b"processInstanceKey"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing.Literal["_operationReference", b"_operationReference"]) -> typing.Literal["operationReference"] | None: ...
 
 global___CancelProcessInstanceRequest = CancelProcessInstanceRequest
 
@@ -278,6 +284,7 @@ class CreateProcessInstanceRequest(google.protobuf.message.Message):
     VARIABLES_FIELD_NUMBER: builtins.int
     STARTINSTRUCTIONS_FIELD_NUMBER: builtins.int
     TENANTID_FIELD_NUMBER: builtins.int
+    OPERATIONREFERENCE_FIELD_NUMBER: builtins.int
     processDefinitionKey: builtins.int
     """the unique key identifying the process definition (e.g. returned from a process
     in the DeployProcessResponse message)
@@ -295,6 +302,8 @@ class CreateProcessInstanceRequest(google.protobuf.message.Message):
     """
     tenantId: builtins.str
     """the tenant id of the process definition"""
+    operationReference: builtins.int
+    """a reference key chosen by the user and will be part of all records resulted from this operation"""
     @property
     def startInstructions(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ProcessInstanceCreationStartInstruction]:
         """List of start instructions. If empty (default) the process instance
@@ -311,8 +320,11 @@ class CreateProcessInstanceRequest(google.protobuf.message.Message):
         variables: builtins.str = ...,
         startInstructions: collections.abc.Iterable[global___ProcessInstanceCreationStartInstruction] | None = ...,
         tenantId: builtins.str = ...,
+        operationReference: builtins.int | None = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing.Literal["bpmnProcessId", b"bpmnProcessId", "processDefinitionKey", b"processDefinitionKey", "startInstructions", b"startInstructions", "tenantId", b"tenantId", "variables", b"variables", "version", b"version"]) -> None: ...
+    def HasField(self, field_name: typing.Literal["_operationReference", b"_operationReference", "operationReference", b"operationReference"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing.Literal["_operationReference", b"_operationReference", "bpmnProcessId", b"bpmnProcessId", "operationReference", b"operationReference", "processDefinitionKey", b"processDefinitionKey", "startInstructions", b"startInstructions", "tenantId", b"tenantId", "variables", b"variables", "version", b"version"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing.Literal["_operationReference", b"_operationReference"]) -> typing.Literal["operationReference"] | None: ...
 
 global___CreateProcessInstanceRequest = CreateProcessInstanceRequest
 
@@ -497,6 +509,7 @@ class EvaluateDecisionResponse(google.protobuf.message.Message):
     FAILEDDECISIONID_FIELD_NUMBER: builtins.int
     FAILUREMESSAGE_FIELD_NUMBER: builtins.int
     TENANTID_FIELD_NUMBER: builtins.int
+    DECISIONINSTANCEKEY_FIELD_NUMBER: builtins.int
     decisionKey: builtins.int
     """the unique key identifying the decision which was evaluated (e.g. returned
     from a decision in the DeployResourceResponse message)
@@ -528,6 +541,8 @@ class EvaluateDecisionResponse(google.protobuf.message.Message):
     """an optional message describing why the decision which was evaluated failed"""
     tenantId: builtins.str
     """the tenant identifier of the evaluated decision"""
+    decisionInstanceKey: builtins.int
+    """the unique key identifying this decision evaluation"""
     @property
     def evaluatedDecisions(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___EvaluatedDecision]:
         """a list of decisions that were evaluated within the requested decision evaluation"""
@@ -546,8 +561,9 @@ class EvaluateDecisionResponse(google.protobuf.message.Message):
         failedDecisionId: builtins.str = ...,
         failureMessage: builtins.str = ...,
         tenantId: builtins.str = ...,
+        decisionInstanceKey: builtins.int = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing.Literal["decisionId", b"decisionId", "decisionKey", b"decisionKey", "decisionName", b"decisionName", "decisionOutput", b"decisionOutput", "decisionRequirementsId", b"decisionRequirementsId", "decisionRequirementsKey", b"decisionRequirementsKey", "decisionVersion", b"decisionVersion", "evaluatedDecisions", b"evaluatedDecisions", "failedDecisionId", b"failedDecisionId", "failureMessage", b"failureMessage", "tenantId", b"tenantId"]) -> None: ...
+    def ClearField(self, field_name: typing.Literal["decisionId", b"decisionId", "decisionInstanceKey", b"decisionInstanceKey", "decisionKey", b"decisionKey", "decisionName", b"decisionName", "decisionOutput", b"decisionOutput", "decisionRequirementsId", b"decisionRequirementsId", "decisionRequirementsKey", b"decisionRequirementsKey", "decisionVersion", b"decisionVersion", "evaluatedDecisions", b"evaluatedDecisions", "failedDecisionId", b"failedDecisionId", "failureMessage", b"failureMessage", "tenantId", b"tenantId"]) -> None: ...
 
 global___EvaluateDecisionResponse = EvaluateDecisionResponse
 
@@ -1166,14 +1182,20 @@ class ResolveIncidentRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
     INCIDENTKEY_FIELD_NUMBER: builtins.int
+    OPERATIONREFERENCE_FIELD_NUMBER: builtins.int
     incidentKey: builtins.int
     """the unique ID of the incident to resolve"""
+    operationReference: builtins.int
+    """a reference key chosen by the user and will be part of all records resulted from this operation"""
     def __init__(
         self,
         *,
         incidentKey: builtins.int = ...,
+        operationReference: builtins.int | None = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing.Literal["incidentKey", b"incidentKey"]) -> None: ...
+    def HasField(self, field_name: typing.Literal["_operationReference", b"_operationReference", "operationReference", b"operationReference"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing.Literal["_operationReference", b"_operationReference", "incidentKey", b"incidentKey", "operationReference", b"operationReference"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing.Literal["_operationReference", b"_operationReference"]) -> typing.Literal["operationReference"] | None: ...
 
 global___ResolveIncidentRequest = ResolveIncidentRequest
 
@@ -1329,17 +1351,23 @@ class UpdateJobRetriesRequest(google.protobuf.message.Message):
 
     JOBKEY_FIELD_NUMBER: builtins.int
     RETRIES_FIELD_NUMBER: builtins.int
+    OPERATIONREFERENCE_FIELD_NUMBER: builtins.int
     jobKey: builtins.int
     """the unique job identifier, as obtained through ActivateJobs"""
     retries: builtins.int
     """the new amount of retries for the job; must be positive"""
+    operationReference: builtins.int
+    """a reference key chosen by the user and will be part of all records resulted from this operation"""
     def __init__(
         self,
         *,
         jobKey: builtins.int = ...,
         retries: builtins.int = ...,
+        operationReference: builtins.int | None = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing.Literal["jobKey", b"jobKey", "retries", b"retries"]) -> None: ...
+    def HasField(self, field_name: typing.Literal["_operationReference", b"_operationReference", "operationReference", b"operationReference"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing.Literal["_operationReference", b"_operationReference", "jobKey", b"jobKey", "operationReference", b"operationReference", "retries", b"retries"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing.Literal["_operationReference", b"_operationReference"]) -> typing.Literal["operationReference"] | None: ...
 
 global___UpdateJobRetriesRequest = UpdateJobRetriesRequest
 
@@ -1359,17 +1387,23 @@ class UpdateJobTimeoutRequest(google.protobuf.message.Message):
 
     JOBKEY_FIELD_NUMBER: builtins.int
     TIMEOUT_FIELD_NUMBER: builtins.int
+    OPERATIONREFERENCE_FIELD_NUMBER: builtins.int
     jobKey: builtins.int
     """the unique job identifier, as obtained from ActivateJobsResponse"""
     timeout: builtins.int
     """the duration of the new timeout in ms, starting from the current moment"""
+    operationReference: builtins.int
+    """a reference key chosen by the user and will be part of all records resulted from this operation"""
     def __init__(
         self,
         *,
         jobKey: builtins.int = ...,
         timeout: builtins.int = ...,
+        operationReference: builtins.int | None = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing.Literal["jobKey", b"jobKey", "timeout", b"timeout"]) -> None: ...
+    def HasField(self, field_name: typing.Literal["_operationReference", b"_operationReference", "operationReference", b"operationReference"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing.Literal["_operationReference", b"_operationReference", "jobKey", b"jobKey", "operationReference", b"operationReference", "timeout", b"timeout"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing.Literal["_operationReference", b"_operationReference"]) -> typing.Literal["operationReference"] | None: ...
 
 global___UpdateJobTimeoutRequest = UpdateJobTimeoutRequest
 
@@ -1390,6 +1424,7 @@ class SetVariablesRequest(google.protobuf.message.Message):
     ELEMENTINSTANCEKEY_FIELD_NUMBER: builtins.int
     VARIABLES_FIELD_NUMBER: builtins.int
     LOCAL_FIELD_NUMBER: builtins.int
+    OPERATIONREFERENCE_FIELD_NUMBER: builtins.int
     elementInstanceKey: builtins.int
     """the unique identifier of a particular element; can be the process instance key (as
     obtained during instance creation), or a given element, such as a service task (see
@@ -1408,14 +1443,19 @@ class SetVariablesRequest(google.protobuf.message.Message):
     be unchanged, and scope 2 will now be `{ "bar" : 1, "foo" 5 }`. if local was false, however,
     then scope 1 would be `{ "foo": 5 }`, and scope 2 would be `{ "bar" : 1 }`.
     """
+    operationReference: builtins.int
+    """a reference key chosen by the user and will be part of all records resulted from this operation"""
     def __init__(
         self,
         *,
         elementInstanceKey: builtins.int = ...,
         variables: builtins.str = ...,
         local: builtins.bool = ...,
+        operationReference: builtins.int | None = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing.Literal["elementInstanceKey", b"elementInstanceKey", "local", b"local", "variables", b"variables"]) -> None: ...
+    def HasField(self, field_name: typing.Literal["_operationReference", b"_operationReference", "operationReference", b"operationReference"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing.Literal["_operationReference", b"_operationReference", "elementInstanceKey", b"elementInstanceKey", "local", b"local", "operationReference", b"operationReference", "variables", b"variables"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing.Literal["_operationReference", b"_operationReference"]) -> typing.Literal["operationReference"] | None: ...
 
 global___SetVariablesRequest = SetVariablesRequest
 
@@ -1508,8 +1548,11 @@ class ModifyProcessInstanceRequest(google.protobuf.message.Message):
     PROCESSINSTANCEKEY_FIELD_NUMBER: builtins.int
     ACTIVATEINSTRUCTIONS_FIELD_NUMBER: builtins.int
     TERMINATEINSTRUCTIONS_FIELD_NUMBER: builtins.int
+    OPERATIONREFERENCE_FIELD_NUMBER: builtins.int
     processInstanceKey: builtins.int
     """the key of the process instance that should be modified"""
+    operationReference: builtins.int
+    """a reference key chosen by the user and will be part of all records resulted from this operation"""
     @property
     def activateInstructions(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ModifyProcessInstanceRequest.ActivateInstruction]:
         """instructions describing which elements should be activated in which scopes,
@@ -1526,8 +1569,11 @@ class ModifyProcessInstanceRequest(google.protobuf.message.Message):
         processInstanceKey: builtins.int = ...,
         activateInstructions: collections.abc.Iterable[global___ModifyProcessInstanceRequest.ActivateInstruction] | None = ...,
         terminateInstructions: collections.abc.Iterable[global___ModifyProcessInstanceRequest.TerminateInstruction] | None = ...,
+        operationReference: builtins.int | None = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing.Literal["activateInstructions", b"activateInstructions", "processInstanceKey", b"processInstanceKey", "terminateInstructions", b"terminateInstructions"]) -> None: ...
+    def HasField(self, field_name: typing.Literal["_operationReference", b"_operationReference", "operationReference", b"operationReference"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing.Literal["_operationReference", b"_operationReference", "activateInstructions", b"activateInstructions", "operationReference", b"operationReference", "processInstanceKey", b"processInstanceKey", "terminateInstructions", b"terminateInstructions"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing.Literal["_operationReference", b"_operationReference"]) -> typing.Literal["operationReference"] | None: ...
 
 global___ModifyProcessInstanceRequest = ModifyProcessInstanceRequest
 
@@ -1585,8 +1631,11 @@ class MigrateProcessInstanceRequest(google.protobuf.message.Message):
 
     PROCESSINSTANCEKEY_FIELD_NUMBER: builtins.int
     MIGRATIONPLAN_FIELD_NUMBER: builtins.int
+    OPERATIONREFERENCE_FIELD_NUMBER: builtins.int
     processInstanceKey: builtins.int
     """key of the process instance to migrate"""
+    operationReference: builtins.int
+    """a reference key chosen by the user and will be part of all records resulted from this operation"""
     @property
     def migrationPlan(self) -> global___MigrateProcessInstanceRequest.MigrationPlan:
         """the migration plan that defines target process and element mappings"""
@@ -1596,9 +1645,11 @@ class MigrateProcessInstanceRequest(google.protobuf.message.Message):
         *,
         processInstanceKey: builtins.int = ...,
         migrationPlan: global___MigrateProcessInstanceRequest.MigrationPlan | None = ...,
+        operationReference: builtins.int | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing.Literal["migrationPlan", b"migrationPlan"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing.Literal["migrationPlan", b"migrationPlan", "processInstanceKey", b"processInstanceKey"]) -> None: ...
+    def HasField(self, field_name: typing.Literal["_operationReference", b"_operationReference", "migrationPlan", b"migrationPlan", "operationReference", b"operationReference"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing.Literal["_operationReference", b"_operationReference", "migrationPlan", b"migrationPlan", "operationReference", b"operationReference", "processInstanceKey", b"processInstanceKey"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing.Literal["_operationReference", b"_operationReference"]) -> typing.Literal["operationReference"] | None: ...
 
 global___MigrateProcessInstanceRequest = MigrateProcessInstanceRequest
 
@@ -1617,16 +1668,22 @@ class DeleteResourceRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
     RESOURCEKEY_FIELD_NUMBER: builtins.int
+    OPERATIONREFERENCE_FIELD_NUMBER: builtins.int
     resourceKey: builtins.int
     """The key of the resource that should be deleted. This can either be the key
     of a process definition, the key of a decision requirements definition or the key of a form.
     """
+    operationReference: builtins.int
+    """a reference key chosen by the user and will be part of all records resulted from this operation"""
     def __init__(
         self,
         *,
         resourceKey: builtins.int = ...,
+        operationReference: builtins.int | None = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing.Literal["resourceKey", b"resourceKey"]) -> None: ...
+    def HasField(self, field_name: typing.Literal["_operationReference", b"_operationReference", "operationReference", b"operationReference"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing.Literal["_operationReference", b"_operationReference", "operationReference", b"operationReference", "resourceKey", b"resourceKey"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing.Literal["_operationReference", b"_operationReference"]) -> typing.Literal["operationReference"] | None: ...
 
 global___DeleteResourceRequest = DeleteResourceRequest
 

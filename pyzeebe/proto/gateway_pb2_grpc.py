@@ -169,6 +169,12 @@ class GatewayServicer(object):
         INVALID_ARGUMENT:
         - type is blank (empty string, null)
         - timeout less than 1
+        - If multi-tenancy is enabled, and tenantIds is empty (empty list)
+        - If multi-tenancy is enabled, and an invalid tenant ID is provided. A tenant ID is considered invalid if:
+        - The tenant ID is blank (empty string, null)
+        - The tenant ID is longer than 31 characters
+        - The tenant ID contains anything other than alphanumeric characters, dot (.), dash (-), or underscore (_)
+        - If multi-tenancy is disabled, and tenantIds is not empty (empty list), or has an ID other than <default>
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -427,9 +433,12 @@ class GatewayServicer(object):
         FAILED_PRECONDITION:
         - not all active elements in the given process instance are mapped to the elements in the target process definition
         - a mapping instruction changes the type of an element or event
+        - a mapping instruction changes the implementation of a task
+        - a mapping instruction detaches a boundary event from an active element
         - a mapping instruction refers to an unsupported element (i.e. some elements will be supported later on)
         - a mapping instruction refers to element in unsupported scenarios.
         (i.e. migration is not supported when process instance or target process elements contains event subscriptions)
+        - multiple mapping instructions target the same boundary event
 
         INVALID_ARGUMENT:
         - A `sourceElementId` does not refer to an element in the process instance's process definition
