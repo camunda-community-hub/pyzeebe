@@ -13,6 +13,7 @@ repos:
         entry: black
         language: python
         files: \.py$
+        exclude: ^(.*pb2.*|.*\.pyi)$
   - repo: local
     hooks:
       - id: isort
@@ -20,6 +21,7 @@ repos:
         entry: isort
         language: python
         files: \.py$
+        exclude: ^(.*pb2.*|.*\.pyi)$
   - repo: local
     hooks:
       - id: mypy
@@ -32,10 +34,11 @@ repos:
     hooks:
       - id: pyupgrade
         args: [--py39-plus]
+        exclude: ^(.*pb2.*|.*\.pyi)$
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.6.9
     hooks:
       - id: ruff
         args:
           - --fix
-        exclude: ^(tests/.*|examples/.*|docs/.*)$
+        exclude: ^(tests/.*|examples/.*|docs/.*|.*pb2.*|.*\.pyi)$

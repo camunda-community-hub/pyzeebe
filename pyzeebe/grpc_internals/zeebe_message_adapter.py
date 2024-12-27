@@ -3,11 +3,11 @@ from __future__ import annotations
 import json
 
 import grpc
-from zeebe_grpc.gateway_pb2 import PublishMessageRequest
 
 from pyzeebe.errors import MessageAlreadyExistsError
 from pyzeebe.grpc_internals.grpc_utils import is_error_status
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
+from pyzeebe.proto.gateway_pb2 import PublishMessageRequest
 from pyzeebe.types import Variables
 
 from .types import PublishMessageResponse
@@ -28,10 +28,10 @@ class ZeebeMessageAdapter(ZeebeAdapterBase):
                 PublishMessageRequest(
                     name=name,
                     correlationKey=correlation_key,
-                    messageId=message_id,
+                    messageId=message_id,  # type: ignore[arg-type]
                     timeToLive=time_to_live_in_milliseconds,
                     variables=json.dumps(variables),
-                    tenantId=tenant_id,
+                    tenantId=tenant_id,  # type: ignore[arg-type]
                 )
             )
         except grpc.aio.AioRpcError as grpc_error:

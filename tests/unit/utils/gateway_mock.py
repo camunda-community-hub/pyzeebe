@@ -4,7 +4,10 @@ from unittest.mock import patch
 from uuid import uuid4
 
 import grpc
-from zeebe_grpc.gateway_pb2 import (
+
+from pyzeebe.job.job import Job
+from pyzeebe.job.job_status import JobStatus
+from pyzeebe.proto.gateway_pb2 import (
     ActivatedJob,
     ActivateJobsResponse,
     CancelProcessInstanceResponse,
@@ -19,10 +22,7 @@ from zeebe_grpc.gateway_pb2 import (
     ProcessMetadata,
     PublishMessageResponse,
 )
-from zeebe_grpc.gateway_pb2_grpc import GatewayServicer
-
-from pyzeebe.job.job import Job
-from pyzeebe.job.job_status import JobStatus
+from pyzeebe.proto.gateway_pb2_grpc import GatewayServicer
 from pyzeebe.task.task import Task
 from tests.unit.utils.random_utils import RANDOM_RANGE, random_job
 

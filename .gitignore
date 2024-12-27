@@ -145,3 +145,5 @@ cython_debug/
 
 # pycharm
 .idea
+
+zeebe_grpc/

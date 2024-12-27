@@ -7,17 +7,6 @@ from typing import Callable, NoReturn
 
 import anyio
 import grpc
-from zeebe_grpc.gateway_pb2 import (
-    CancelProcessInstanceRequest,
-    CreateProcessInstanceRequest,
-    CreateProcessInstanceWithResultRequest,
-    DecisionMetadata,
-    DecisionRequirementsMetadata,
-    DeployResourceRequest,
-    FormMetadata,
-    ProcessMetadata,
-    Resource,
-)
 
 from pyzeebe.errors import (
     InvalidJSONError,
@@ -29,6 +18,17 @@ from pyzeebe.errors import (
 )
 from pyzeebe.grpc_internals.grpc_utils import is_error_status
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
+from pyzeebe.proto.gateway_pb2 import (
+    CancelProcessInstanceRequest,
+    CreateProcessInstanceRequest,
+    CreateProcessInstanceWithResultRequest,
+    DecisionMetadata,
+    DecisionRequirementsMetadata,
+    DeployResourceRequest,
+    FormMetadata,
+    ProcessMetadata,
+    Resource,
+)
 from pyzeebe.types import Variables
 
 from .types import (
@@ -53,7 +53,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
                     bpmnProcessId=bpmn_process_id,
                     version=version,
                     variables=json.dumps(variables),
-                    tenantId=tenant_id,
+                    tenantId=tenant_id,  # type: ignore[arg-type]
                 )
             )
         except grpc.aio.AioRpcError as grpc_error:
@@ -83,7 +83,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
                         bpmnProcessId=bpmn_process_id,
                         version=version,
                         variables=json.dumps(variables),
-                        tenantId=tenant_id,
+                        tenantId=tenant_id,  # type: ignore[arg-type]
                     ),
                     requestTimeout=timeout,
                     fetchVariables=variables_to_fetch,
@@ -133,7 +133,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
             response = await self._gateway_stub.DeployResource(
                 DeployResourceRequest(
                     resources=[await result for result in map(_create_resource_request, resource_file_path)],
-                    tenantId=tenant_id,
+                    tenantId=tenant_id,  # type: ignore[arg-type]
                 )
             )
         except grpc.aio.AioRpcError as grpc_error:
@@ -206,13 +206,10 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
 
 _METADATA_PARSERS: dict[
     str,
-    Callable[
-        [ProcessMetadata | DecisionMetadata | DecisionRequirementsMetadata | FormMetadata],
-        DeployResourceResponse.ProcessMetadata
-        | DeployResourceResponse.DecisionMetadata
-        | DeployResourceResponse.DecisionRequirementsMetadata
-        | DeployResourceResponse.FormMetadata,
-    ],
+    Callable[[ProcessMetadata], DeployResourceResponse.ProcessMetadata]
+    | Callable[[DecisionMetadata], DeployResourceResponse.DecisionMetadata]
+    | Callable[[DecisionRequirementsMetadata], DeployResourceResponse.DecisionRequirementsMetadata]
+    | Callable[[FormMetadata], DeployResourceResponse.FormMetadata],
 ] = {
     "process": ZeebeProcessAdapter._create_process_from_raw_process,
     "decision": ZeebeProcessAdapter._create_decision_from_raw_decision,
