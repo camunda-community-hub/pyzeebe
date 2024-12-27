@@ -48,8 +48,7 @@ Creating a client
 Dependencies
 ============
 
-* python 3.7+
-* zeebe-grpc
+* python 3.9+
 * grpcio
 * protobuf
 * oauthlib
