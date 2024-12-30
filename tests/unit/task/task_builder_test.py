@@ -28,10 +28,10 @@ class TestBuildTask:
         self, single_value_task_config: TaskConfig, job: Job, mocked_job_controller: JobController
     ):
         task = task_builder.build_task(lambda: 1, single_value_task_config)
-        await task.job_handler(job, mocked_job_controller)
+        task_result = await task.job_handler(job, mocked_job_controller)
 
         assert job.variables == {}
-        assert job.task_result == {"y": 1}
+        assert task_result == {"y": 1}
 
     @pytest.mark.asyncio
     async def test_no_additional_variables_are_added_to_result(
@@ -41,10 +41,10 @@ class TestBuildTask:
         single_value_task_config.variables_to_fetch = ["x"]
 
         task = task_builder.build_task(lambda x: x, single_value_task_config)
-        await task.job_handler(job, mocked_job_controller)
+        task_result = await task.job_handler(job, mocked_job_controller)
 
         assert job.variables == {"x": 1}
-        assert job.task_result == {"y": 1}
+        assert task_result == {"y": 1}
 
     @pytest.mark.asyncio
     async def test_job_parameter_is_injected_in_task(
@@ -54,9 +54,9 @@ class TestBuildTask:
             return {"received_job": job}
 
         task = task_builder.build_task(function_with_job_parameter, task_config)
-        await task.job_handler(job, mocked_job_controller)
+        task_result = await task.job_handler(job, mocked_job_controller)
 
-        assert job.task_result["received_job"] == job
+        assert task_result["received_job"] == job
 
     @pytest.mark.asyncio
     async def test_job_parameter_is_removed_after_job_handler_call(
@@ -66,7 +66,7 @@ class TestBuildTask:
             return {"job": job}
 
         task = task_builder.build_task(function_with_job_parameter, task_config)
-        await task.job_handler(job, mocked_job_controller)
+        task_result = await task.job_handler(job, mocked_job_controller)
 
         assert "job" not in job.variables
 
@@ -86,7 +86,7 @@ class TestBuildJobHandler:
         job_handler = task_builder.build_job_handler(original_task_function, task_config)
 
         with pytest.raises(TypeError):
-            await job_handler(job, mocked_job_controller)
+            task_result = await job_handler(job, mocked_job_controller)
 
         original_task_function.assert_called_with(x=1)
 
@@ -106,7 +106,7 @@ class TestBuildJobHandler:
 
         job_handler = task_builder.build_job_handler(task_with_only_job, task_config)
 
-        await job_handler(job, mocked_job_controller)
+        task_result = await job_handler(job, mocked_job_controller)
 
         assert task_with_only_job_called, "Task was called ok"
 
@@ -126,7 +126,7 @@ class TestBuildJobHandler:
 
         job_handler = task_builder.build_job_handler(task_with_arg_and_job, task_config)
 
-        await job_handler(job, mocked_job_controller)
+        task_result = await job_handler(job, mocked_job_controller)
 
         assert call_params == {"job": job, "x": 1}
 
@@ -137,9 +137,9 @@ class TestBuildJobHandler:
         original_task_function.return_value = {"x": 1}
         job_handler = task_builder.build_job_handler(original_task_function, task_config)
 
-        await job_handler(job, mocked_job_controller)
+        task_result = await job_handler(job, mocked_job_controller)
 
-        assert job.task_result == {"x": 1}
+        assert task_result == {"x": 1}
 
     @pytest.mark.asyncio
     async def test_returned_task_runs_original_function(
@@ -147,7 +147,7 @@ class TestBuildJobHandler:
     ):
         job_handler = task_builder.build_job_handler(original_task_function, task_config)
 
-        await job_handler(job, mocked_job_controller)
+        task_result = await job_handler(job, mocked_job_controller)
 
         original_task_function.assert_called_once()
 
@@ -168,7 +168,7 @@ class TestBuildJobHandler:
 
         job_handler = task_builder.build_job_handler(task_with_params, task_config)
 
-        await job_handler(job, mocked_job_controller)
+        task_result = await job_handler(job, mocked_job_controller)
 
         assert call_params == {"job": job, "args": (), "kwargs": {"a": 1, "b": 2}}
 
@@ -178,9 +178,9 @@ class TestBuildJobHandler:
         task_config.job_parameter_name = "job"
 
         job_handler = task_builder.build_job_handler(self.function_with_job_parameter, task_config)
-        await job_handler(job, mocked_job_controller)
+        task_result = await job_handler(job, mocked_job_controller)
 
-        assert job.task_result["received_job"] == job
+        assert task_result["received_job"] == job
 
     @pytest.mark.asyncio
     async def test_job_parameter_retains_variables(self, task_config: TaskConfig, mocked_job_controller: JobController):
@@ -189,9 +189,9 @@ class TestBuildJobHandler:
         expected_variables = copy.copy(job.variables)
 
         job_handler = task_builder.build_job_handler(self.function_with_job_parameter, task_config)
-        await job_handler(job, mocked_job_controller)
+        task_result = await job_handler(job, mocked_job_controller)
 
-        assert job.task_result["received_job"].variables == expected_variables
+        assert task_result["received_job"].variables == expected_variables
 
     @staticmethod
     def function_with_job_parameter(x: int, job: Job):

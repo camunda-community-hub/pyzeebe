@@ -19,9 +19,11 @@ Unset = "UNSET"
 
 ChannelArgumentType: TypeAlias = Sequence[tuple[str, Any]]
 
-JobHandler: TypeAlias = Callable[["Job", "JobController"], Awaitable[None]]
+JobHandler: TypeAlias = Callable[["Job", "JobController"], Awaitable[Variables]]
 ExceptionHandler: TypeAlias = Callable[[Exception, "Job", "JobController"], Awaitable[None]]
 
 
 class MiddlewareProto(Protocol):
-    async def __call__(self, job: Job, job_controller: JobController, *, task: Task, call_next: JobHandler) -> None: ...
+    async def __call__(
+        self, job: Job, job_controller: JobController, *, task: Task, call_next: JobHandler
+    ) -> Variables: ...

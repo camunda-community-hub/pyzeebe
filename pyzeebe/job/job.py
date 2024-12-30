@@ -27,10 +27,6 @@ class Job:
     variables: Variables
     tenant_id: str | None = None
     status: JobStatus = JobStatus.Running
-    task_result: Variables | None = None
-
-    def set_task_result(self, task_result: Variables) -> None:
-        object.__setattr__(self, "task_result", task_result)
 
     def _set_status(self, value: JobStatus) -> None:
         object.__setattr__(self, "status", value)

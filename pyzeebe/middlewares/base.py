@@ -10,7 +10,7 @@ from pyzeebe.types import MiddlewareProto
 if TYPE_CHECKING:
     from pyzeebe.job.job import Job, JobController
     from pyzeebe.task.task import Task
-    from pyzeebe.types import ExceptionHandler, JobHandler
+    from pyzeebe.types import ExceptionHandler, JobHandler, Variables
 
 logger = logging.getLogger(__name__)
 
@@ -23,9 +23,11 @@ class Middleware:
 
 @final
 class CatchErrorMiddleware(MiddlewareProto):
-    async def __call__(self, job: Job, job_controller: JobController, *, task: Task, call_next: JobHandler) -> None:
+    async def __call__(
+        self, job: Job, job_controller: JobController, *, task: Task, call_next: JobHandler
+    ) -> Variables:
         try:
-            await call_next(job, job_controller)
+            return await call_next(job, job_controller)
         except BusinessError:
             raise
         except Exception as err:
@@ -40,14 +42,17 @@ class ResponseMiddleware(MiddlewareProto):
     def __init__(self, exception_handlers: Mapping[type[Exception], ExceptionHandler]) -> None:
         self.exception_handlers = exception_handlers
 
-    async def __call__(self, job: Job, job_controller: JobController, *, task: Task, call_next: JobHandler) -> None:
+    async def __call__(
+        self, job: Job, job_controller: JobController, *, task: Task, call_next: JobHandler
+    ) -> Variables:
         try:
-            await call_next(job, job_controller)
+            variables = await call_next(job, job_controller)
         except Exception as err:
             for exception_type, exception_handler in self.exception_handlers.items():
                 if isinstance(err, exception_type):
                     await exception_handler(err, job, job_controller)
-                    return
+                    return {}
             raise err
-
-        await job_controller.set_success_status(job.task_result)
+        else:
+            await job_controller.set_success_status(variables)
+            return variables

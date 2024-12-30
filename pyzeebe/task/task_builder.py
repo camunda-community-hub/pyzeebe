@@ -14,7 +14,7 @@ from pyzeebe.function_tools.dict_tools import convert_to_dict_function
 from pyzeebe.function_tools.parameter_tools import get_job_parameter_name
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_config import TaskConfig
-from pyzeebe.types import JobHandler
+from pyzeebe.types import JobHandler, Variables
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -31,8 +31,8 @@ def build_job_handler(task_function: Function[..., Any], task_config: TaskConfig
     prepared_task_function = prepare_task_function(task_function, task_config)
 
     @functools.wraps(task_function)
-    async def job_handler(job: Job, job_controller: JobController) -> None:
-        await run_original_task_function(prepared_task_function, task_config, job)
+    async def job_handler(job: Job, job_controller: JobController) -> Variables:
+        return await run_original_task_function(prepared_task_function, task_config, job)
 
     return job_handler
 
@@ -47,7 +47,7 @@ def prepare_task_function(task_function: Function[P, R], task_config: TaskConfig
     return task_function  # type: ignore[return-value]
 
 
-async def run_original_task_function(task_function: DictFunction[...], task_config: TaskConfig, job: Job) -> Job:
+async def run_original_task_function(task_function: DictFunction[...], task_config: TaskConfig, job: Job) -> Variables:
     if task_config.variables_to_fetch is None:
         variables: dict[str, Any] = {}
     elif task_wants_all_variables(task_config):
@@ -70,9 +70,7 @@ async def run_original_task_function(task_function: DictFunction[...], task_conf
     if returned_value is None:
         returned_value = {}
 
-    job.set_task_result(returned_value)
-
-    return job
+    return returned_value
 
 
 def only_job_is_required_in_task_function(task_function: DictFunction[...]) -> bool:
