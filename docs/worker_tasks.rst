@@ -22,6 +22,30 @@ This is a task that does nothing. It receives no parameters and also doesn't ret
 
     While this task indeed returns a python dictionary, it doesn't return anything to Zeebe. To do that we have to fill the dictionary with values.
 
+Pyzeebe fetch variables from Zeebe in follow order:
+
+- if `variables_to_fetch` is presented in :py:meth:`.ZeebeTaskRouter.task` decorator - fetch that variables;
+- if `Job` is presented in task signature - fetch all variables;
+- if `*args` or `**kwargs` are presented in task signature - fetch all variables;
+- if `**kwargs` are presented in task signature and it has :py:obj:`typing.Unpack` [:py:class:`typing.TypedDict`] annotation - fetch variables from `TypedDict` signature;
+- if some arguments are presented in task signature - fetch that variables.
+
+.. code-block:: python
+
+    @worker.task(task_type="my_task")
+    async def my_task_1(x):
+        return {}
+
+
+    class MyTaskVariables(TypedDict):
+        x: int
+
+
+    @worker.task(task_type="my_task")
+    async def my_task_2(**kwargs: Unpack[MyTaskVariables]):
+        return {}
+
+All this tasks fetch variable "x" from Zeebe.
 
 Async/Sync Tasks
 ----------------
