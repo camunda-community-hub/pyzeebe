@@ -6,13 +6,6 @@ import types
 from collections.abc import AsyncGenerator, Iterable
 
 import grpc
-from zeebe_grpc.gateway_pb2 import (
-    ActivatedJob,
-    ActivateJobsRequest,
-    CompleteJobRequest,
-    FailJobRequest,
-    ThrowErrorRequest,
-)
 
 from pyzeebe.errors import (
     ActivateJobsRequestInvalidError,
@@ -22,6 +15,13 @@ from pyzeebe.errors import (
 from pyzeebe.grpc_internals.grpc_utils import is_error_status
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 from pyzeebe.job.job import Job
+from pyzeebe.proto.gateway_pb2 import (
+    ActivatedJob,
+    ActivateJobsRequest,
+    CompleteJobRequest,
+    FailJobRequest,
+    ThrowErrorRequest,
+)
 from pyzeebe.types import Variables
 
 from .types import CompleteJobResponse, FailJobResponse, ThrowErrorResponse
