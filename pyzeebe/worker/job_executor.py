@@ -8,6 +8,7 @@ from pyzeebe.errors import JobAlreadyDeactivatedError
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job, JobController
 from pyzeebe.task.task import Task
+from pyzeebe.types import JobHandler
 from pyzeebe.worker.task_state import TaskState
 
 logger = logging.getLogger(__name__)
@@ -16,12 +17,20 @@ AsyncTaskCallback = Callable[["asyncio.Future[None]"], None]
 
 
 class JobExecutor:
-    def __init__(self, task: Task, jobs: asyncio.Queue[Job], task_state: TaskState, zeebe_adapter: ZeebeAdapter):
+    def __init__(
+        self,
+        task: Task,
+        jobs: asyncio.Queue[Job],
+        task_state: TaskState,
+        zeebe_adapter: ZeebeAdapter,
+        job_handler: JobHandler,
+    ):
         self.task = task
         self.jobs = jobs
         self.task_state = task_state
         self.stop_event = asyncio.Event()
         self.zeebe_adapter = zeebe_adapter
+        self.job_handler = job_handler
 
     async def execute(self) -> None:
         while self.should_execute():
@@ -34,7 +43,7 @@ class JobExecutor:
 
     async def execute_one_job(self, job: Job, job_controller: JobController) -> None:
         try:
-            await self.task.job_handler(job, job_controller)
+            await self.job_handler(job, job_controller)
         except JobAlreadyDeactivatedError as error:
             logger.warning("Job was already deactivated. Job key: %s", error.job_key)
 

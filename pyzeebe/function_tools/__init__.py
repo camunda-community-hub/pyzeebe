@@ -1,15 +1,17 @@
 from __future__ import annotations
 
 from collections.abc import Awaitable
-from typing import Any, Callable, Optional, TypeVar, Union
+from typing import Callable, Optional, TypeVar, Union
 
-from typing_extensions import ParamSpec
+from typing_extensions import ParamSpec, TypeAlias
+
+from pyzeebe.types import JsonDictType
 
 Parameters = ParamSpec("Parameters")
 ReturnType = TypeVar("ReturnType")
 
-SyncFunction = Callable[Parameters, ReturnType]
-AsyncFunction = Callable[Parameters, Awaitable[ReturnType]]
-Function = Union[SyncFunction[Parameters, ReturnType], AsyncFunction[Parameters, ReturnType]]
+SyncFunction: TypeAlias = Callable[Parameters, ReturnType]
+AsyncFunction: TypeAlias = Callable[Parameters, Awaitable[ReturnType]]
+Function: TypeAlias = Union[SyncFunction[Parameters, ReturnType], AsyncFunction[Parameters, ReturnType]]
 
-DictFunction = Callable[Parameters, Awaitable[Optional[dict[str, Any]]]]
+DictFunction: TypeAlias = Callable[Parameters, Awaitable[Optional[JsonDictType]]]
