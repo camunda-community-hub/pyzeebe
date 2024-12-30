@@ -3,13 +3,45 @@ from uuid import uuid4
 
 import pytest
 
-from pyzeebe import TaskDecorator
 from pyzeebe.errors import BusinessError, DuplicateTaskTypeError, TaskNotFoundError
 from pyzeebe.job.job import Job, JobController
-from pyzeebe.task.exception_handler import ExceptionHandler, default_exception_handler
+from pyzeebe.task.exception_handler import default_exception_handler
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_router import ZeebeTaskRouter
 from tests.unit.utils.random_utils import randint
+
+
+class TestAddTask:
+    def test_add_task(self, zeebe_router: ZeebeTaskRouter, task: Task):
+        zeebe_router._add_task(task)
+
+        assert zeebe_router.get_task(task.type) == task
+
+    def test_raises_on_duplicate(self, zeebe_router: ZeebeTaskRouter, task: Task):
+        zeebe_router._add_task(task)
+        with pytest.raises(DuplicateTaskTypeError):
+            zeebe_router._add_task(task)
+
+    def test_only_one_task_added(self, zeebe_router: ZeebeTaskRouter):
+        @zeebe_router.task(str(uuid4()))
+        def dummy_function():
+            pass
+
+        assert len(zeebe_router.tasks) == 1
+
+    def test_task_type_saved(self, zeebe_router: ZeebeTaskRouter, task: Task):
+        zeebe_router._add_task(task)
+
+        assert zeebe_router.get_task(task.type).type == task.type
+
+    def test_variables_to_fetch_match_function_parameters(self, zeebe_router: ZeebeTaskRouter, task_type: str):
+        expected_variables_to_fetch = ["x"]
+
+        @zeebe_router.task(task_type)
+        def dummy_function(x):
+            pass
+
+        assert zeebe_router.get_task(task_type).config.variables_to_fetch == expected_variables_to_fetch
 
 
 def test_get_task(router: ZeebeTaskRouter, task: Task):
@@ -18,16 +50,6 @@ def test_get_task(router: ZeebeTaskRouter, task: Task):
     found_task = router.get_task(task.type)
 
     assert found_task == task
-
-
-def test_task_inherits_exception_handler(router: ZeebeTaskRouter, task: Task):
-    router._exception_handler = str
-    router.task(task.type)(task.original_function)
-
-    found_task = router.get_task(task.type)
-    found_handler = found_task.config.exception_handler
-
-    assert found_handler == str
 
 
 def test_get_fake_task(router: ZeebeTaskRouter):
@@ -87,42 +109,6 @@ def test_check_is_task_duplicate_with_duplicate(router: ZeebeTaskRouter, task: T
 
 def test_no_duplicate_task_type_error_is_raised(router: ZeebeTaskRouter, task: Task):
     router._is_task_duplicate(task.type)
-
-
-def test_add_before_decorator(router: ZeebeTaskRouter, decorator: TaskDecorator):
-    router.before(decorator)
-
-    assert len(router._before) == 1
-
-
-def test_add_after_decorator(router: ZeebeTaskRouter, decorator: TaskDecorator):
-    router.after(decorator)
-
-    assert len(router._after) == 1
-
-
-def test_set_exception_handler(router: ZeebeTaskRouter, exception_handler: ExceptionHandler):
-    router.exception_handler(exception_handler)
-
-    assert router._exception_handler is exception_handler
-
-
-def test_add_before_decorator_through_constructor(decorator: TaskDecorator):
-    router = ZeebeTaskRouter(before=[decorator])
-
-    assert len(router._before) == 1
-
-
-def test_add_after_decorator_through_constructor(decorator: TaskDecorator):
-    router = ZeebeTaskRouter(after=[decorator])
-
-    assert len(router._after) == 1
-
-
-def test_set_exception_handler_through_constructor(exception_handler: ExceptionHandler):
-    router = ZeebeTaskRouter(exception_handler=exception_handler)
-
-    assert router._exception_handler is exception_handler
 
 
 @pytest.mark.asyncio
