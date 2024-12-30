@@ -110,6 +110,9 @@ ignore = [
     "E501",   # line too long, handled by black
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"update_proto.py" = ["T201"]
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
