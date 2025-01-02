@@ -16,6 +16,26 @@ This means that all methods that :py:class:`ZeebeTaskRouter` has will also appea
    :undoc-members:
    :special-members: __init__
 
+.. autoclass:: pyzeebe.Middleware
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: pyzeebe.MiddlewareProto
+   :members:
+   :undoc-members:
+   :special-members: __call__
+
+
+.. autoclass:: pyzeebe.Task
+   :members:
+   :undoc-members:
+
+
+.. autoclass:: pyzeebe.TaskConfig
+   :members:
+   :undoc-members:
+
 
 .. autoclass:: pyzeebe.Job
    :members:

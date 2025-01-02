@@ -13,7 +13,7 @@ from pyzeebe.worker.task_state import TaskState
 
 @pytest.fixture
 def job_executor(task: Task, queue: asyncio.Queue, task_state: TaskState, zeebe_adapter: ZeebeAdapter):
-    return JobExecutor(task, queue, task_state, zeebe_adapter)
+    return JobExecutor(task, queue, task_state, zeebe_adapter, task.job_handler)
 
 
 @pytest.fixture(autouse=True)
