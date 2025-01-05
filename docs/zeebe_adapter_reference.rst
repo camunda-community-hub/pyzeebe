@@ -32,6 +32,11 @@ Zeebe GRPC Responses
    :undoc-members:
    :member-order: bysource
 
+.. autoclass:: pyzeebe.grpc_internals.types.BroadcastSignalResponse
+   :members:
+   :undoc-members:
+   :member-order: bysource
+
 .. autoclass:: pyzeebe.grpc_internals.types.PublishMessageResponse
    :members:
    :undoc-members:

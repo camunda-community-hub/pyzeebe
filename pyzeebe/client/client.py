@@ -5,6 +5,7 @@ from collections.abc import Iterable
 import grpc
 
 from pyzeebe.grpc_internals.types import (
+    BroadcastSignalResponse,
     CancelProcessInstanceResponse,
     CreateProcessInstanceResponse,
     CreateProcessInstanceWithResultResponse,
@@ -145,6 +146,36 @@ class ZeebeClient:
 
         """
         return await self.zeebe_adapter.deploy_resource(*resource_file_path, tenant_id=tenant_id)
+
+    async def broadcast_signal(
+        self,
+        signal_name: str,
+        variables: Variables | None = None,
+        tenant_id: str | None = None,
+    ) -> BroadcastSignalResponse:
+        """
+        Broadcasts a signal
+
+        Args:
+            signal_name (str): The name of the signal
+            variables (dict): The variables the signal should contain.
+            tenant_id (str): The tenant ID of the message. New in Zeebe 8.4.
+
+        Returns:
+            BroadcastSignalResponse: response from Zeebe.
+
+        Raises:
+            ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
+            ZeebeInternalError: If Zeebe experiences an internal error
+            UnknownGrpcStatusCodeError: If Zeebe returns an unexpected status code
+
+        """
+        return await self.zeebe_adapter.broadcast_signal(
+            signal_name=signal_name,
+            variables=variables or {},
+            tenant_id=tenant_id,
+        )
 
     async def publish_message(
         self,

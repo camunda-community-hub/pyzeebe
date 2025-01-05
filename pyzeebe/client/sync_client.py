@@ -7,6 +7,7 @@ import grpc
 
 from pyzeebe import ZeebeClient
 from pyzeebe.grpc_internals.types import (
+    BroadcastSignalResponse,
     CancelProcessInstanceResponse,
     CreateProcessInstanceResponse,
     CreateProcessInstanceWithResultResponse,
@@ -56,6 +57,21 @@ class SyncZeebeClient:
     @copy_docstring(ZeebeClient.deploy_resource)
     def deploy_resource(self, *resource_file_path: str, tenant_id: str | None = None) -> DeployResourceResponse:
         return self.loop.run_until_complete(self.client.deploy_resource(*resource_file_path, tenant_id=tenant_id))
+
+    @copy_docstring(ZeebeClient.broadcast_signal)
+    def broadcast_signal(
+        self,
+        signal_name: str,
+        variables: Variables | None = None,
+        tenant_id: str | None = None,
+    ) -> BroadcastSignalResponse:
+        return self.loop.run_until_complete(
+            self.client.broadcast_signal(
+                signal_name,
+                variables,
+                tenant_id,
+            )
+        )
 
     @copy_docstring(ZeebeClient.publish_message)
     def publish_message(

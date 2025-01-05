@@ -135,6 +135,14 @@ class DeployResourceResponse:
 
 
 @dataclass(frozen=True)
+class BroadcastSignalResponse:
+    key: int
+    """the unique ID of the signal that was broadcasted"""
+    tenant_id: str | None
+    """the tenant ID of the signal that was broadcasted"""
+
+
+@dataclass(frozen=True)
 class PublishMessageResponse:
     key: int
     """the unique ID of the message that was published"""
