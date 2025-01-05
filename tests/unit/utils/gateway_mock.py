@@ -10,6 +10,7 @@ from pyzeebe.job.job_status import JobStatus
 from pyzeebe.proto.gateway_pb2 import (
     ActivatedJob,
     ActivateJobsResponse,
+    BroadcastSignalResponse,
     CancelProcessInstanceResponse,
     CompleteJobResponse,
     CreateProcessInstanceResponse,
@@ -200,6 +201,9 @@ class GatewayMock(GatewayServicer):
                 resources.append(metadata)
 
         return DeployResourceResponse(key=randint(0, RANDOM_RANGE), deployments=resources, tenantId=request.tenantId)
+
+    def BroadcastSignal(self, request, context):
+        return BroadcastSignalResponse()
 
     def PublishMessage(self, request, context):
         if request.messageId in self.messages.keys():
