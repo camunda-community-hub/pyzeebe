@@ -85,5 +85,10 @@ async def test_cancel_process_instance(zeebe_client: ZeebeClient, grpc_servicer:
 
 
 @pytest.mark.asyncio
+async def test_broadcast_signal(zeebe_client: ZeebeClient):
+    await zeebe_client.broadcast_signal(signal_name=str(uuid4()))
+
+
+@pytest.mark.asyncio
 async def test_publish_message(zeebe_client: ZeebeClient):
     await zeebe_client.publish_message(name=str(uuid4()), correlation_key=str(uuid4()))

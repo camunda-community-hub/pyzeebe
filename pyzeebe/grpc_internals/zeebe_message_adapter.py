@@ -7,13 +7,32 @@ import grpc
 from pyzeebe.errors import MessageAlreadyExistsError
 from pyzeebe.grpc_internals.grpc_utils import is_error_status
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
-from pyzeebe.proto.gateway_pb2 import PublishMessageRequest
+from pyzeebe.proto.gateway_pb2 import BroadcastSignalRequest, PublishMessageRequest
 from pyzeebe.types import Variables
 
-from .types import PublishMessageResponse
+from .types import BroadcastSignalResponse, PublishMessageResponse
 
 
 class ZeebeMessageAdapter(ZeebeAdapterBase):
+    async def broadcast_signal(
+        self,
+        signal_name: str,
+        variables: Variables,
+        tenant_id: str | None = None,
+    ) -> BroadcastSignalResponse:
+        try:
+            response = await self._gateway_stub.BroadcastSignal(
+                BroadcastSignalRequest(
+                    signalName=signal_name,
+                    variables=json.dumps(variables),
+                    tenantId=tenant_id,  # type: ignore[arg-type]
+                )
+            )
+        except grpc.aio.AioRpcError as grpc_error:
+            await self._handle_grpc_error(grpc_error)
+
+        return BroadcastSignalResponse(key=response.key, tenant_id=response.tenantId)
+
     async def publish_message(
         self,
         name: str,
