@@ -128,7 +128,9 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
 
         return CancelProcessInstanceResponse()
 
-    async def deploy_resource(self, *resource_file_path: str, tenant_id: str | None = None) -> DeployResourceResponse:
+    async def deploy_resource(
+        self, *resource_file_path: str | os.PathLike[str], tenant_id: str | None = None
+    ) -> DeployResourceResponse:
         try:
             response = await self._gateway_stub.DeployResource(
                 DeployResourceRequest(
@@ -218,6 +220,6 @@ _METADATA_PARSERS: dict[
 }
 
 
-async def _create_resource_request(resource_file_path: str) -> Resource:
+async def _create_resource_request(resource_file_path: str | os.PathLike[str]) -> Resource:
     async with await anyio.open_file(resource_file_path, "rb") as file:
         return Resource(name=os.path.basename(resource_file_path), content=await file.read())
