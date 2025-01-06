@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from collections.abc import Iterable
 
 import grpc
@@ -124,7 +125,9 @@ class ZeebeClient:
         """
         return await self.zeebe_adapter.cancel_process_instance(process_instance_key=process_instance_key)
 
-    async def deploy_resource(self, *resource_file_path: str, tenant_id: str | None = None) -> DeployResourceResponse:
+    async def deploy_resource(
+        self, *resource_file_path: str | os.PathLike[str], tenant_id: str | None = None
+    ) -> DeployResourceResponse:
         """
         Deploy one or more processes
 

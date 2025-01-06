@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 from functools import partial, wraps
 
 import grpc
@@ -55,7 +56,9 @@ class SyncZeebeClient:
         return self.loop.run_until_complete(self.client.cancel_process_instance(process_instance_key))
 
     @copy_docstring(ZeebeClient.deploy_resource)
-    def deploy_resource(self, *resource_file_path: str, tenant_id: str | None = None) -> DeployResourceResponse:
+    def deploy_resource(
+        self, *resource_file_path: str | os.PathLike[str], tenant_id: str | None = None
+    ) -> DeployResourceResponse:
         return self.loop.run_until_complete(self.client.deploy_resource(*resource_file_path, tenant_id=tenant_id))
 
     @copy_docstring(ZeebeClient.broadcast_signal)
