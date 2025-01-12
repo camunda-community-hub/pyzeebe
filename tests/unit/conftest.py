@@ -56,6 +56,12 @@ def zeebe_client(aio_grpc_channel: grpc.aio.Channel):
 
 
 @pytest.fixture
+def zeebe_router():
+    router = ZeebeTaskRouter()
+    return router
+
+
+@pytest.fixture
 def zeebe_worker(aio_grpc_channel: grpc.aio.Channel):
     worker = ZeebeWorker(aio_grpc_channel)
     return worker
@@ -76,15 +82,12 @@ def first_active_job(task, job_from_task, grpc_servicer) -> str:
 def task_config(task_type, variables_to_fetch=None):
     return TaskConfig(
         type=task_type,
-        exception_handler=AsyncMock(),
         timeout_ms=10000,
         max_jobs_to_activate=32,
         max_running_jobs=32,
         variables_to_fetch=variables_to_fetch or [],
         single_value=False,
         variable_name="",
-        before=[],
-        after=[],
     )
 
 
@@ -111,22 +114,6 @@ def router():
 @pytest.fixture
 def routers():
     return [ZeebeTaskRouter() for _ in range(0, randint(2, 100))]
-
-
-@pytest.fixture
-def decorator():
-    async def simple_decorator(job: Job) -> Job:
-        return job
-
-    return AsyncMock(wraps=simple_decorator)
-
-
-@pytest.fixture
-def exception_handler():
-    async def simple_exception_handler(e: Exception, job: Job, job_controller: JobController) -> None:
-        return None
-
-    return AsyncMock(wraps=simple_exception_handler)
 
 
 @pytest.fixture(scope="module")
