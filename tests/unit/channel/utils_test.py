@@ -176,7 +176,7 @@ class TestGetCamundaAddress:
     def test_is_calculated_from_parameters_as_highest_priority(self):
         result = get_camunda_address("cluster_id_param", "camunda_region_param")
 
-        assert result == f"cluster_id_param.camunda_region_param.zeebe.camunda.io:443"
+        assert result == "cluster_id_param.camunda_region_param.zeebe.camunda.io:443"
 
     def test_raises_error_if_cluster_id_is_none(self):
         with pytest.raises(SettingsError):

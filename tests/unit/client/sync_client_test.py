@@ -103,3 +103,12 @@ class TestPublishMessage:
         sync_zeebe_client.publish_message(name, correlation_key)
 
         sync_zeebe_client.client.publish_message.assert_called_once()
+
+
+class TestTopology:
+    def test_calls_topology_of_zeebe_client(self, sync_zeebe_client: SyncZeebeClient):
+        sync_zeebe_client.client.topology = AsyncMock()
+
+        sync_zeebe_client.topology()
+
+        sync_zeebe_client.client.topology.assert_called_once()

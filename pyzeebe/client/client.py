@@ -12,6 +12,7 @@ from pyzeebe.grpc_internals.types import (
     CreateProcessInstanceWithResultResponse,
     DeployResourceResponse,
     PublishMessageResponse,
+    TopologyResponse,
 )
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.types import Variables
@@ -220,3 +221,19 @@ class ZeebeClient:
             message_id=message_id,
             tenant_id=tenant_id,
         )
+
+    async def topology(self) -> TopologyResponse:
+        """
+        Obtains the current topology of the cluster the gateway is part of.
+
+        Returns:
+            TopologyResponse: response from Zeebe.
+
+        Raises:
+            ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
+            ZeebeInternalError: If Zeebe experiences an internal error
+            UnknownGrpcStatusCodeError: If Zeebe returns an unexpected status code
+
+        """
+        return await self.zeebe_adapter.topology()
