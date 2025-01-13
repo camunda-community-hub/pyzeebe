@@ -161,7 +161,7 @@ class ZeebeClient:
     ) -> EvaluateDecisionResponse:
         """Evaluates a decision.
 
-        You specify the decision to evaluate either by using its unique KEY (as returned by :py:method:`ZeebeClient.deploy_resource`), or using the decision ID.
+        You specify the decision to evaluate either by using its unique KEY (as returned by :py:meth:`ZeebeClient.deploy_resource`), or using the decision ID.
         When using the decision ID, the latest deployed version of the decision is used.
 
         Args:

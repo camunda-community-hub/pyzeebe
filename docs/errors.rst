@@ -32,6 +32,8 @@ All ``pyzeebe`` errors inherit from :py:class:`PyZeebeError`
 
 .. autoexception:: pyzeebe.errors.ProcessInvalidError
 
+.. autoexception:: pyzeebe.errors.DecisionNotFoundError
+
 .. autoexception:: pyzeebe.errors.InvalidJSONError
 
 .. autoexception:: pyzeebe.errors.ZeebeError

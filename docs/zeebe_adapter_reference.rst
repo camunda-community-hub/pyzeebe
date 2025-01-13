@@ -32,6 +32,11 @@ Zeebe GRPC Responses
    :undoc-members:
    :member-order: bysource
 
+.. autoclass:: pyzeebe.grpc_internals.types.EvaluateDecisionResponse
+   :members:
+   :undoc-members:
+   :member-order: bysource
+
 .. autoclass:: pyzeebe.grpc_internals.types.BroadcastSignalResponse
    :members:
    :undoc-members:
@@ -53,6 +58,11 @@ Zeebe GRPC Responses
    :member-order: bysource
 
 .. autoclass:: pyzeebe.grpc_internals.types.ThrowErrorResponse
+   :members:
+   :undoc-members:
+   :member-order: bysource
+
+.. autoclass:: pyzeebe.grpc_internals.types.TopologyResponse
    :members:
    :undoc-members:
    :member-order: bysource
