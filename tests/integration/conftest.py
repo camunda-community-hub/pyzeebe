@@ -56,6 +56,17 @@ async def deploy_process(zeebe_client: ZeebeClient):
 
 
 @pytest.fixture(autouse=True, scope="module")
+async def deploy_dmn(zeebe_client: ZeebeClient):
+    try:
+        integration_tests_path = os.path.join("tests", "integration")
+        response = await zeebe_client.deploy_resource(os.path.join(integration_tests_path, "test.dmn"))
+    except FileNotFoundError:
+        response = await zeebe_client.deploy_resource("test.dmn")
+
+    return response.deployments[0].decision_key
+
+
+@pytest.fixture(autouse=True, scope="module")
 def start_worker(event_loop: asyncio.AbstractEventLoop, zeebe_worker: ZeebeWorker):
     event_loop.create_task(zeebe_worker.work())
     yield
@@ -75,3 +86,13 @@ def process_variables() -> dict:
 @pytest.fixture(scope="module")
 def process_stats(process_name: str) -> ProcessStats:
     return ProcessStats(process_name)
+
+
+@pytest.fixture(scope="module")
+def decision_id() -> str:
+    return "test"
+
+
+@pytest.fixture(scope="module")
+def decision_key(deploy_dmn) -> int:
+    return deploy_dmn

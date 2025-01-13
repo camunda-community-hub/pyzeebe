@@ -6,6 +6,7 @@ from .job_errors import (
 )
 from .message_errors import MessageAlreadyExistsError
 from .process_errors import (
+    DecisionNotFoundError,
     InvalidJSONError,
     ProcessDefinitionHasNoStartEventError,
     ProcessDefinitionNotFoundError,
@@ -42,6 +43,7 @@ __all__ = (
     "ProcessInstanceNotFoundError",
     "ProcessInvalidError",
     "ProcessTimeoutError",
+    "DecisionNotFoundError",
     "BusinessError",
     "DuplicateTaskTypeError",
     "NoVariableNameGivenError",

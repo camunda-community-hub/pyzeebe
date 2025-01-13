@@ -12,6 +12,7 @@ from pyzeebe.grpc_internals.types import (
     CreateProcessInstanceResponse,
     CreateProcessInstanceWithResultResponse,
     DeployResourceResponse,
+    EvaluateDecisionResponse,
     PublishMessageResponse,
     TopologyResponse,
 )
@@ -62,6 +63,19 @@ class SyncZeebeClient:
         return self.loop.run_until_complete(self.client.deploy_resource(*resource_file_path, tenant_id=tenant_id))
 
     deploy_resource.__doc__ = ZeebeClient.deploy_resource.__doc__
+
+    def evaluate_decision(
+        self,
+        decision_key: int | None,
+        decision_id: str | None,
+        variables: Variables | None = None,
+        tenant_id: str | None = None,
+    ) -> EvaluateDecisionResponse:
+        return self.loop.run_until_complete(
+            self.client.evaluate_decision(decision_key, decision_id, variables=variables, tenant_id=tenant_id)
+        )
+
+    evaluate_decision.__doc__ = ZeebeClient.evaluate_decision.__doc__
 
     def broadcast_signal(
         self,

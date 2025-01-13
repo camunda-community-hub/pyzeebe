@@ -11,6 +11,7 @@ from pyzeebe.grpc_internals.types import (
     CreateProcessInstanceResponse,
     CreateProcessInstanceWithResultResponse,
     DeployResourceResponse,
+    EvaluateDecisionResponse,
     PublishMessageResponse,
     TopologyResponse,
 )
@@ -150,6 +151,40 @@ class ZeebeClient:
 
         """
         return await self.zeebe_adapter.deploy_resource(*resource_file_path, tenant_id=tenant_id)
+
+    async def evaluate_decision(
+        self,
+        decision_key: int | None,
+        decision_id: str | None,
+        variables: Variables | None = None,
+        tenant_id: str | None = None,
+    ) -> EvaluateDecisionResponse:
+        """Evaluates a decision.
+
+        You specify the decision to evaluate either by using its unique KEY (as returned by :py:method:`ZeebeClient.deploy_resource`), or using the decision ID.
+        When using the decision ID, the latest deployed version of the decision is used.
+
+        Args:
+            decision_key (int): The unique key identifying the decision to be evaluated
+                (e.g. returned from a decision in the DeployResourceResponse message)
+            decision_id (str): The ID of the decision to be evaluated
+            variables (dict): A dictionary containing all variables for the decision to be evaluated. Must be JSONable.
+            tenant_id (strc): The tenant ID of the resources to deploy. New in Zeebe 8.3.
+
+        Returns:
+            EvaluateDecisionResponse: response from Zeebe.
+
+        Raises:
+            DecisionNotFoundError: No decision with decision_key/decision_id exists
+            ZeebeBackPressureError: If Zeebe is currently in back pressure (too many requests)
+            ZeebeGatewayUnavailableError: If the Zeebe gateway is unavailable
+            ZeebeInternalError: If Zeebe experiences an internal error
+            UnknownGrpcStatusCodeError: If Zeebe returns an unexpected status code
+
+        """
+        return await self.zeebe_adapter.evaluate_decision(
+            decision_key, decision_id, variables=variables or {}, tenant_id=tenant_id
+        )
 
     async def broadcast_signal(
         self,
