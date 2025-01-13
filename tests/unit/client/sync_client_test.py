@@ -84,6 +84,16 @@ class TestDeployResource:
         sync_zeebe_client.client.deploy_resource.assert_called_with(file_path, tenant_id=None)
 
 
+class TestEvaluateDecision:
+    def test_calls_evaluate_decision_of_zeebe_client(self, sync_zeebe_client: SyncZeebeClient):
+        sync_zeebe_client.client.evaluate_decision = AsyncMock()
+        decision_id = str(uuid4())
+
+        sync_zeebe_client.evaluate_decision(decision_key=None, decision_id=decision_id)
+
+        sync_zeebe_client.client.evaluate_decision.assert_called_with(None, decision_id, variables=None, tenant_id=None)
+
+
 class TestBroadcastSignal:
     def test_calls_broadcast_signal_of_zeebe_client(self, sync_zeebe_client: SyncZeebeClient):
         sync_zeebe_client.client.broadcast_signal = AsyncMock()

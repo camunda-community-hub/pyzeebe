@@ -6,6 +6,7 @@ import grpc
 import pytest
 
 from pyzeebe.errors import (
+    DecisionNotFoundError,
     InvalidJSONError,
     ProcessDefinitionHasNoStartEventError,
     ProcessDefinitionNotFoundError,
@@ -17,6 +18,7 @@ from pyzeebe.grpc_internals.types import (
     CreateProcessInstanceResponse,
     CreateProcessInstanceWithResultResponse,
     DeployResourceResponse,
+    EvaluateDecisionResponse,
 )
 from pyzeebe.grpc_internals.zeebe_process_adapter import ZeebeProcessAdapter
 from tests.unit.utils.gateway_mock import GatewayMock
@@ -208,3 +210,22 @@ class TestDeployResource:
         await zeebe_adapter.deploy_resource(file_path)
 
         mocked_aiofiles_open.assert_called_with(file_path, "rb")
+
+
+@pytest.mark.asyncio
+class TestEvaluateDecision:
+    async def test_response_is_of_correct_type(self, zeebe_adapter: ZeebeProcessAdapter, grpc_servicer: GatewayMock):
+        decision_id = str(uuid4())
+        decision_key = randint(0, 10)
+        grpc_servicer.mock_deploy_decision(decision_key, decision_id)
+
+        response = await zeebe_adapter.evaluate_decision(decision_key, decision_id, {})
+
+        assert isinstance(response, EvaluateDecisionResponse)
+
+    async def test_raises_on_unkown_process(self, zeebe_adapter: ZeebeProcessAdapter):
+        decision_id = str(uuid4())
+        decision_key = randint(0, 10)
+
+        with pytest.raises(DecisionNotFoundError):
+            await zeebe_adapter.evaluate_decision(decision_key, decision_id, {})

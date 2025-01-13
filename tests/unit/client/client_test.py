@@ -10,6 +10,7 @@ from pyzeebe.grpc_internals.types import (
     CancelProcessInstanceResponse,
     CreateProcessInstanceResponse,
     CreateProcessInstanceWithResultResponse,
+    EvaluateDecisionResponse,
 )
 from tests.unit.utils.gateway_mock import GatewayMock
 
@@ -81,6 +82,17 @@ async def test_cancel_process_instance(zeebe_client: ZeebeClient, grpc_servicer:
     assert isinstance(
         await zeebe_client.cancel_process_instance(process_instance_key=response.process_instance_key),
         CancelProcessInstanceResponse,
+    )
+
+
+@pytest.mark.asyncio
+async def test_evaluate_decision(zeebe_client: ZeebeClient, grpc_servicer: GatewayMock):
+    decision_id = str(uuid4())
+    decision_key = randint(0, 10)
+    grpc_servicer.mock_deploy_decision(decision_key, decision_id)
+    assert isinstance(
+        await zeebe_client.evaluate_decision(decision_key, decision_id),
+        EvaluateDecisionResponse,
     )
 
 

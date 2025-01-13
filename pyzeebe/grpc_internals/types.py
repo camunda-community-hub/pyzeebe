@@ -3,7 +3,7 @@ from __future__ import annotations
 import enum
 from dataclasses import dataclass
 
-from pyzeebe.types import Variables
+from pyzeebe.types import JsonType, Variables
 
 
 @dataclass(frozen=True)
@@ -133,6 +133,101 @@ class DeployResourceResponse:
     """a list of deployed resources, e.g. processes"""
     tenant_id: str | None
     """the tenant ID of the deployed resources"""
+
+
+@dataclass(frozen=True)
+class EvaluateDecisionResponse:
+
+    @dataclass(frozen=True)
+    class EvaluatedDecision:
+
+        @dataclass(frozen=True)
+        class MatchedDecisionRule:
+
+            @dataclass(frozen=True)
+            class EvaluatedDecisionOutput:
+                output_id: str
+                """the id of the evaluated decision output"""
+                output_name: str
+                """the name of the evaluated decision output"""
+                output_value: JsonType
+                """the value of the evaluated decision output"""
+
+            rule_id: str
+            """the id of the matched rule"""
+            rule_index: int
+            """the index of the matched rule"""
+            evaluated_outputs: list[EvaluatedDecisionOutput]
+            """the evaluated decision outputs"""
+
+        @dataclass(frozen=True)
+        class EvaluatedDecisionInput:
+            input_id: str
+            """the id of the evaluated decision input"""
+            input_name: str
+            """the name of the evaluated decision input"""
+            input_value: JsonType
+            """the value of the evaluated decision input"""
+
+        decision_key: int
+        """the unique key identifying the decision which was evaluated (e.g. returned
+        from a decision in the DeployResourceResponse message)
+        """
+        decision_id: str
+        """the ID of the decision which was evaluated"""
+        decision_name: str
+        """the name of the decision which was evaluated"""
+        decision_version: int
+        """the version of the decision which was evaluated"""
+        decision_type: str
+        """the type of the decision which was evaluated"""
+        decision_output: JsonType
+        """JSON document that will instantiate the result of the decision which was
+        evaluated; it will be a JSON object, as the result output will be mapped
+        in a key-value fashion, e.g. { "a": 1 }.
+        """
+        matched_rules: list[MatchedDecisionRule]
+        """the decision rules that matched within this decision evaluation"""
+        evaluated_inputs: list[EvaluatedDecisionInput]
+        """the decision inputs that were evaluated within this decision evaluation"""
+        tenant_id: str | None
+        """the tenant identifier of the evaluated decision"""
+
+    decision_key: int
+    """the unique key identifying the decision which was evaluated (e.g. returned
+    from a decision in the DeployResourceResponse message)
+    """
+    decision_id: str
+    """the ID of the decision which was evaluated"""
+    decision_name: str
+    """the name of the decision which was evaluated"""
+    decision_version: int
+    """the version of the decision which was evaluated"""
+    decision_requirements_id: str
+    """the ID of the decision requirements graph that the decision which was
+    evaluated is part of.
+    """
+    decision_requirements_key: int
+    """the unique key identifying the decision requirements graph that the
+    decision which was evaluated is part of.
+    """
+    decision_output: JsonType
+    """JSON document that will instantiate the result of the decision which was
+    evaluated; it will be a JSON object, as the result output will be mapped
+    in a key-value fashion, e.g. { "a": 1 }.
+    """
+    evaluated_decisions: list[EvaluatedDecision]
+    """a list of decisions that were evaluated within the requested decision evaluation"""
+    failed_decision_id: str
+    """an optional string indicating the ID of the decision which
+    failed during evaluation
+    """
+    failure_message: str
+    """an optional message describing why the decision which was evaluated failed"""
+    tenant_id: str | None
+    """the tenant identifier of the evaluated decision"""
+    decision_instance_key: int
+    """the unique key identifying this decision evaluation"""
 
 
 @dataclass(frozen=True)

@@ -18,8 +18,14 @@ from pyzeebe.proto.gateway_pb2 import (
     DecisionMetadata,
     Deployment,
     DeployResourceResponse,
+    EvaluatedDecision,
+    EvaluatedDecisionInput,
+    EvaluatedDecisionOutput,
+    EvaluateDecisionRequest,
+    EvaluateDecisionResponse,
     FailJobResponse,
     FormMetadata,
+    MatchedDecisionRule,
     ProcessMetadata,
     PublishMessageResponse,
     TopologyResponse,
@@ -39,6 +45,7 @@ class GatewayMock(GatewayServicer):
 
     def __init__(self):
         self.deployed_processes = {}
+        self.deployed_decisions = {}
         self.active_processes = {}
         self.active_jobs: dict[int, Job] = {}
         self.messages = {}
@@ -203,6 +210,61 @@ class GatewayMock(GatewayServicer):
 
         return DeployResourceResponse(key=randint(0, RANDOM_RANGE), deployments=resources, tenantId=request.tenantId)
 
+    def EvaluateDecision(self, request, context):
+        if request.decisionId in self.deployed_decisions:
+            return EvaluateDecisionResponse(
+                decisionKey=request.decisionKey,
+                decisionId=request.decisionId,
+                decisionName="test",
+                decisionVersion=randint(0, 10),
+                decisionRequirementsId="test",
+                decisionRequirementsKey=randint(0, 10),
+                decisionOutput='{"foo": "bar"}',
+                evaluatedDecisions=[
+                    EvaluatedDecision(
+                        decisionKey=request.decisionKey,
+                        decisionId=request.decisionId,
+                        decisionName="test",
+                        decisionVersion=randint(0, 10),
+                        decisionType="test",
+                        decisionOutput='{"foo": "bar"}',
+                        matchedRules=[
+                            MatchedDecisionRule(
+                                ruleId="test",
+                                ruleIndex=randint(0, 10),
+                                evaluatedOutputs=[
+                                    EvaluatedDecisionOutput(
+                                        outputId="test",
+                                        outputName="test",
+                                        outputValue='"test"',
+                                    )
+                                ],
+                            )
+                        ],
+                        evaluatedInputs=[
+                            EvaluatedDecisionInput(
+                                inputId="test",
+                                inputName=name,
+                                inputValue=value,
+                            )
+                            for name, value in json.loads(request.variables).items()
+                        ],
+                        tenantId=request.tenantId,
+                    )
+                ],
+                failedDecisionId="",
+                failureMessage="",
+                tenantId=request.tenantId,
+                decisionInstanceKey=randint(0, 10),
+            )
+        else:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details(
+                f"Command 'EVALUATE' rejected with code 'INVALID_ARGUMENT': "
+                f"Expected to evaluate decision '{request.decisionId}', but no decision found for id '{request.decisionId}'"
+            )
+            return EvaluateDecisionResponse()
+
     def BroadcastSignal(self, request, context):
         return BroadcastSignalResponse()
 
@@ -218,6 +280,12 @@ class GatewayMock(GatewayServicer):
             "bpmn_process_id": bpmn_process_id,
             "version": version,
             "tasks": tasks,
+        }
+
+    def mock_deploy_decision(self, decision_key: int, decision_id: str):
+        self.deployed_decisions[decision_id] = {
+            "decision_id": decision_id,
+            "decision_key": decision_key,
         }
 
     def Topology(self, request, context):

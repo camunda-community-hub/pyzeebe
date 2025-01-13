@@ -9,6 +9,7 @@ import anyio
 import grpc
 
 from pyzeebe.errors import (
+    DecisionNotFoundError,
     InvalidJSONError,
     ProcessDefinitionHasNoStartEventError,
     ProcessDefinitionNotFoundError,
@@ -25,7 +26,12 @@ from pyzeebe.proto.gateway_pb2 import (
     DecisionMetadata,
     DecisionRequirementsMetadata,
     DeployResourceRequest,
+    EvaluatedDecision,
+    EvaluatedDecisionInput,
+    EvaluatedDecisionOutput,
+    EvaluateDecisionRequest,
     FormMetadata,
+    MatchedDecisionRule,
     ProcessMetadata,
     Resource,
 )
@@ -36,6 +42,7 @@ from .types import (
     CreateProcessInstanceResponse,
     CreateProcessInstanceWithResultResponse,
     DeployResourceResponse,
+    EvaluateDecisionResponse,
 )
 
 
@@ -203,6 +210,96 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
             form_key=response.formKey,
             resource_name=response.resourceName,
             tenant_id=response.tenantId,
+        )
+
+    async def evaluate_decision(
+        self,
+        decision_key: int | None,
+        decision_id: str | None,
+        variables: Variables,
+        tenant_id: str | None = None,
+    ) -> EvaluateDecisionResponse:
+        if decision_id is None and decision_key is None:
+            raise ValueError("decision_key or decision_id must be not None")
+
+        try:
+            response = await self._gateway_stub.EvaluateDecision(
+                EvaluateDecisionRequest(
+                    decisionKey=decision_key,  # type: ignore[arg-type]
+                    decisionId=decision_id,  # type: ignore[arg-type]
+                    variables=json.dumps(variables),
+                    tenantId=tenant_id,  # type: ignore[arg-type]
+                )
+            )
+        except grpc.aio.AioRpcError as grpc_error:
+            if is_error_status(grpc_error, grpc.StatusCode.INVALID_ARGUMENT) and (details := grpc_error.details()):
+                if "but no decision found for" in details:
+                    raise DecisionNotFoundError(decision_id=decision_id, decision_key=decision_key) from grpc_error
+            await self._handle_grpc_error(grpc_error)
+
+        return EvaluateDecisionResponse(
+            decision_key=response.decisionKey,
+            decision_id=response.decisionId,
+            decision_name=response.decisionName,
+            decision_version=response.decisionVersion,
+            decision_requirements_id=response.decisionRequirementsId,
+            decision_requirements_key=response.decisionRequirementsKey,
+            decision_output=json.loads(response.decisionOutput),
+            evaluated_decisions=[
+                self._create_evaluated_decision_from_raw(evaluated_decision)
+                for evaluated_decision in response.evaluatedDecisions
+            ],
+            failed_decision_id=response.failedDecisionId,
+            failure_message=response.failureMessage,
+            tenant_id=response.tenantId,
+            decision_instance_key=response.decisionInstanceKey,
+        )
+
+    def _create_evaluated_decision_from_raw(
+        self, response: EvaluatedDecision
+    ) -> EvaluateDecisionResponse.EvaluatedDecision:
+        return EvaluateDecisionResponse.EvaluatedDecision(
+            decision_key=response.decisionKey,
+            decision_id=response.decisionId,
+            decision_name=response.decisionName,
+            decision_version=response.decisionVersion,
+            decision_type=response.decisionType,
+            decision_output=json.loads(response.decisionOutput),
+            matched_rules=[self._create_matched_rule_from_raw(matched_rule) for matched_rule in response.matchedRules],
+            evaluated_inputs=[
+                self._create_evaluated_input_from_raw(evaluated_input) for evaluated_input in response.evaluatedInputs
+            ],
+            tenant_id=response.tenantId,
+        )
+
+    def _create_matched_rule_from_raw(
+        self, response: MatchedDecisionRule
+    ) -> EvaluateDecisionResponse.EvaluatedDecision.MatchedDecisionRule:
+        return EvaluateDecisionResponse.EvaluatedDecision.MatchedDecisionRule(
+            rule_id=response.ruleId,
+            rule_index=response.ruleIndex,
+            evaluated_outputs=[
+                self._create_evaluated_output_from_raw(evaluated_output)
+                for evaluated_output in response.evaluatedOutputs
+            ],
+        )
+
+    def _create_evaluated_input_from_raw(
+        self, response: EvaluatedDecisionInput
+    ) -> EvaluateDecisionResponse.EvaluatedDecision.EvaluatedDecisionInput:
+        return EvaluateDecisionResponse.EvaluatedDecision.EvaluatedDecisionInput(
+            input_id=response.inputId,
+            input_name=response.inputName,
+            input_value=json.loads(response.inputValue),
+        )
+
+    def _create_evaluated_output_from_raw(
+        self, response: EvaluatedDecisionOutput
+    ) -> EvaluateDecisionResponse.EvaluatedDecision.MatchedDecisionRule.EvaluatedDecisionOutput:
+        return EvaluateDecisionResponse.EvaluatedDecision.MatchedDecisionRule.EvaluatedDecisionOutput(
+            output_id=response.outputId,
+            output_name=response.outputName,
+            output_value=json.loads(response.outputValue),
         )
 
 

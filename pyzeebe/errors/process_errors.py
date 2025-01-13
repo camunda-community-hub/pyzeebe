@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pyzeebe.errors.pyzeebe_errors import PyZeebeError
 
 
@@ -32,3 +34,14 @@ class ProcessTimeoutError(PyZeebeError, TimeoutError):
     def __init__(self, bpmn_process_id: str):
         super().__init__(f"Timeout while waiting for process {bpmn_process_id} to complete")
         self.bpmn_process_id = bpmn_process_id
+
+
+class DecisionNotFoundError(PyZeebeError):
+    def __init__(self, decision_key: int | None, decision_id: str | None):
+        if decision_id is not None:
+            msg = f"Decision with id '{decision_id}' was not found"
+        else:
+            msg = f"Decision with key '{decision_key}' was not found"
+        super().__init__(msg)
+        self.decision_key = decision_key
+        self.decision_id = decision_id
