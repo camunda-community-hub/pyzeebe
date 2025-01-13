@@ -30,11 +30,6 @@ from pyzeebe.proto.gateway_pb2 import (
     EvaluatedDecisionInput,
     EvaluatedDecisionOutput,
     EvaluateDecisionRequest,
-)
-from pyzeebe.proto.gateway_pb2 import (
-    EvaluateDecisionResponse as EvaluateDecisionResponseStub,
-)
-from pyzeebe.proto.gateway_pb2 import (
     FormMetadata,
     MatchedDecisionRule,
     ProcessMetadata,
@@ -228,7 +223,7 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
             raise ValueError("decision_key or decision_id must be not None")
 
         try:
-            response: EvaluateDecisionResponseStub = await self._gateway_stub.EvaluateDecision(
+            response = await self._gateway_stub.EvaluateDecision(
                 EvaluateDecisionRequest(
                     decisionKey=decision_key,  # type: ignore[arg-type]
                     decisionId=decision_id,  # type: ignore[arg-type]

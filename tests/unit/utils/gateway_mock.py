@@ -18,10 +18,14 @@ from pyzeebe.proto.gateway_pb2 import (
     DecisionMetadata,
     Deployment,
     DeployResourceResponse,
+    EvaluatedDecision,
+    EvaluatedDecisionInput,
+    EvaluatedDecisionOutput,
     EvaluateDecisionRequest,
     EvaluateDecisionResponse,
     FailJobResponse,
     FormMetadata,
+    MatchedDecisionRule,
     ProcessMetadata,
     PublishMessageResponse,
     TopologyResponse,
@@ -216,7 +220,38 @@ class GatewayMock(GatewayServicer):
                 decisionRequirementsId="test",
                 decisionRequirementsKey=randint(0, 10),
                 decisionOutput='{"foo": "bar"}',
-                evaluatedDecisions=[],
+                evaluatedDecisions=[
+                    EvaluatedDecision(
+                        decisionKey=request.decisionKey,
+                        decisionId=request.decisionId,
+                        decisionName="test",
+                        decisionVersion=randint(0, 10),
+                        decisionType="test",
+                        decisionOutput='{"foo": "bar"}',
+                        matchedRules=[
+                            MatchedDecisionRule(
+                                ruleId="test",
+                                ruleIndex=randint(0, 10),
+                                evaluatedOutputs=[
+                                    EvaluatedDecisionOutput(
+                                        outputId="test",
+                                        outputName="test",
+                                        outputValue='"test"',
+                                    )
+                                ],
+                            )
+                        ],
+                        evaluatedInputs=[
+                            EvaluatedDecisionInput(
+                                inputId="test",
+                                inputName=name,
+                                inputValue=value,
+                            )
+                            for name, value in json.loads(request.variables).items()
+                        ],
+                        tenantId=request.tenantId,
+                    )
+                ],
                 failedDecisionId="",
                 failureMessage="",
                 tenantId=request.tenantId,
