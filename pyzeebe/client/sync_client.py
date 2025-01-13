@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import os
-from functools import partial, wraps
 
 import grpc
 
@@ -14,10 +13,9 @@ from pyzeebe.grpc_internals.types import (
     CreateProcessInstanceWithResultResponse,
     DeployResourceResponse,
     PublishMessageResponse,
+    TopologyResponse,
 )
 from pyzeebe.types import Variables
-
-copy_docstring = partial(wraps, assigned=["__doc__"], updated=[])
 
 
 class SyncZeebeClient:
@@ -25,7 +23,6 @@ class SyncZeebeClient:
         self.loop = asyncio.get_event_loop()
         self.client = ZeebeClient(grpc_channel, max_connection_retries)
 
-    @copy_docstring(ZeebeClient.run_process)
     def run_process(
         self,
         bpmn_process_id: str,
@@ -35,7 +32,8 @@ class SyncZeebeClient:
     ) -> CreateProcessInstanceResponse:
         return self.loop.run_until_complete(self.client.run_process(bpmn_process_id, variables, version, tenant_id))
 
-    @copy_docstring(ZeebeClient.run_process_with_result)
+    run_process.__doc__ = ZeebeClient.publish_message.__doc__
+
     def run_process_with_result(
         self,
         bpmn_process_id: str,
@@ -51,17 +49,20 @@ class SyncZeebeClient:
             )
         )
 
-    @copy_docstring(ZeebeClient.cancel_process_instance)
+    run_process_with_result.__doc__ = ZeebeClient.publish_message.__doc__
+
     def cancel_process_instance(self, process_instance_key: int) -> CancelProcessInstanceResponse:
         return self.loop.run_until_complete(self.client.cancel_process_instance(process_instance_key))
 
-    @copy_docstring(ZeebeClient.deploy_resource)
+    cancel_process_instance.__doc__ = ZeebeClient.cancel_process_instance.__doc__
+
     def deploy_resource(
         self, *resource_file_path: str | os.PathLike[str], tenant_id: str | None = None
     ) -> DeployResourceResponse:
         return self.loop.run_until_complete(self.client.deploy_resource(*resource_file_path, tenant_id=tenant_id))
 
-    @copy_docstring(ZeebeClient.broadcast_signal)
+    deploy_resource.__doc__ = ZeebeClient.deploy_resource.__doc__
+
     def broadcast_signal(
         self,
         signal_name: str,
@@ -76,7 +77,8 @@ class SyncZeebeClient:
             )
         )
 
-    @copy_docstring(ZeebeClient.publish_message)
+    broadcast_signal.__doc__ = ZeebeClient.broadcast_signal.__doc__
+
     def publish_message(
         self,
         name: str,
@@ -96,3 +98,10 @@ class SyncZeebeClient:
                 tenant_id,
             )
         )
+
+    publish_message.__doc__ = ZeebeClient.publish_message.__doc__
+
+    def topology(self) -> TopologyResponse:
+        return self.loop.run_until_complete(self.client.topology())
+
+    topology.__doc__ = ZeebeClient.topology.__doc__

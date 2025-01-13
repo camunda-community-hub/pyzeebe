@@ -22,6 +22,7 @@ from pyzeebe.proto.gateway_pb2 import (
     FormMetadata,
     ProcessMetadata,
     PublishMessageResponse,
+    TopologyResponse,
 )
 from pyzeebe.proto.gateway_pb2_grpc import GatewayServicer
 from pyzeebe.task.task import Task
@@ -218,3 +219,6 @@ class GatewayMock(GatewayServicer):
             "version": version,
             "tasks": tasks,
         }
+
+    def Topology(self, request, context):
+        return TopologyResponse()

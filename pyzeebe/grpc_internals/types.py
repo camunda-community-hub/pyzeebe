@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import enum
 from dataclasses import dataclass
 
 from pyzeebe.types import Variables
@@ -163,3 +164,56 @@ class FailJobResponse:
 @dataclass(frozen=True)
 class ThrowErrorResponse:
     pass
+
+
+@dataclass(frozen=True)
+class TopologyResponse:
+
+    @dataclass(frozen=True)
+    class BrokerInfo:
+
+        @dataclass(frozen=True)
+        class Partition:
+
+            class PartitionBrokerRole(enum.IntEnum):
+                """Describes the Raft role of the broker for a given partition"""
+
+                LEADER = 0
+                FOLLOWER = 1
+                INACTIVE = 2
+
+            class PartitionBrokerHealth(enum.IntEnum):
+                """Describes the current health of the partition"""
+
+                HEALTHY = 0
+                UNHEALTHY = 1
+                DEAD = 2
+
+            partition_id: int
+            """the unique ID of this partition"""
+            role: PartitionBrokerRole
+            """the role of the broker for this partition"""
+            health: PartitionBrokerHealth
+            """the health of this partition"""
+
+        node_id: int
+        """unique (within a cluster) node ID for the broker"""
+        host: str
+        """hostname of the broker"""
+        port: int
+        """port for the broker"""
+        partitions: list[Partition]
+        """list of partitions managed or replicated on this broker"""
+        version: str
+        """broker version"""
+
+    brokers: list[BrokerInfo]
+    """list of brokers part of this cluster"""
+    cluster_size: int
+    """how many nodes are in the cluster"""
+    partitions_count: int
+    """how many partitions are spread across the cluster"""
+    replication_factor: int
+    """configured replication factor for this cluster"""
+    gateway_version: str
+    """gateway version"""
