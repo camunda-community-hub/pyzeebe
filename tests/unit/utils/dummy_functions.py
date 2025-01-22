@@ -1,3 +1,7 @@
+from typing import TypedDict
+
+from typing_extensions import Unpack
+
 from pyzeebe.job.job import Job
 
 
@@ -30,6 +34,18 @@ def args_param(*args):
 
 
 def kwargs_param(**kwargs):
+    pass
+
+
+class Kwargs(TypedDict):
+    z: int
+
+
+def kwargs_typed_dict_param(**kwargs: Unpack[Kwargs]):
+    pass
+
+
+def positional_and_kwargs_typed_dict_param(x, y=1, **kwargs: Unpack[Kwargs]):
     pass
 
 

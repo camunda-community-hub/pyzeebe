@@ -20,6 +20,8 @@ class TestGetFunctionParameters:
             (dummy_functions.positional_and_keyword_params, ["x", "y"]),
             (dummy_functions.args_param, []),
             (dummy_functions.kwargs_param, []),
+            (dummy_functions.kwargs_typed_dict_param, ["z"]),
+            (dummy_functions.positional_and_kwargs_typed_dict_param, ["x", "y", "z"]),
             (dummy_functions.standard_named_params, ["args", "kwargs"]),
             (dummy_functions.with_job_parameter, []),
             (dummy_functions.with_job_parameter_and_param, ["x"]),
