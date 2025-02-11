@@ -1,4 +1,4 @@
-""" gRPC Channel Options
+"""gRPC Channel Options
 
 ``grpc.keepalive_time_ms``
 --------------------------
