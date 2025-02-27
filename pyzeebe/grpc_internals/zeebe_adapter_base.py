@@ -1,5 +1,5 @@
 import logging
-from typing import NoReturn
+from typing import TYPE_CHECKING, NoReturn, cast
 
 import grpc
 
@@ -14,13 +14,16 @@ from pyzeebe.errors.pyzeebe_errors import PyZeebeError
 from pyzeebe.grpc_internals.grpc_utils import is_error_status
 from pyzeebe.proto.gateway_pb2_grpc import GatewayStub
 
+if TYPE_CHECKING:
+    from pyzeebe.proto.gateway_pb2_grpc import GatewayAsyncStub
+
 logger = logging.getLogger(__name__)
 
 
 class ZeebeAdapterBase:
     def __init__(self, grpc_channel: grpc.aio.Channel, max_connection_retries: int = -1):
         self._channel = grpc_channel
-        self._gateway_stub = GatewayStub(grpc_channel)
+        self._gateway_stub = cast("GatewayAsyncStub", GatewayStub(grpc_channel))
         self._connected = True
         self.retrying_connection = False
         self._max_connection_retries = max_connection_retries

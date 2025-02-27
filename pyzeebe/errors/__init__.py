@@ -3,6 +3,7 @@ from .job_errors import (
     ActivateJobsRequestInvalidError,
     JobAlreadyDeactivatedError,
     JobNotFoundError,
+    StreamActivateJobsRequestInvalidError,
 )
 from .message_errors import MessageAlreadyExistsError
 from .process_errors import (
@@ -34,6 +35,7 @@ from .zeebe_errors import (
 __all__ = (
     "InvalidOAuthCredentialsError",
     "ActivateJobsRequestInvalidError",
+    "StreamActivateJobsRequestInvalidError",
     "JobAlreadyDeactivatedError",
     "JobNotFoundError",
     "MessageAlreadyExistsError",

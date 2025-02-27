@@ -12,7 +12,7 @@ from pyzeebe import ExceptionHandler, TaskDecorator, ZeebeTaskRouter
 from pyzeebe.errors import DuplicateTaskTypeError
 from pyzeebe.job.job import Job, JobController
 from pyzeebe.task.task import Task
-from pyzeebe.worker.job_poller import JobPoller
+from pyzeebe.worker.job_poller import JobPoller, JobStreamer
 from pyzeebe.worker.worker import ZeebeWorker
 
 
@@ -236,7 +236,7 @@ class TestIncludeRouter:
 class TestWorker:
     @pytest.fixture()
     def zeebe_worker(self, aio_grpc_channel_mock):
-        return ZeebeWorker(grpc_channel=aio_grpc_channel_mock)
+        return ZeebeWorker(grpc_channel=aio_grpc_channel_mock, stream_enabled=True)
 
     @staticmethod
     async def wait_for_channel_ready(*, task_status: anyio.abc.TaskStatus = anyio.TASK_STATUS_IGNORED):
@@ -296,3 +296,27 @@ class TestWorker:
         poller_mock.poll.assert_awaited_once()
         poller2_mock.poll.assert_awaited_once()
         assert poller2_cancel_event.is_set()
+
+    async def test_streamer_stoped(self, zeebe_worker: ZeebeWorker):
+        zeebe_worker._init_tasks = Mock()
+        zeebe_worker._stop_event = AsyncMock(spec_set=anyio.Event)
+
+        streamer_mock = AsyncMock(spec_set=JobStreamer)
+        zeebe_worker._job_streamers = [streamer_mock]
+
+        await zeebe_worker.work()
+        streamer_mock.poll.assert_awaited_once()
+
+        await zeebe_worker.stop()
+        streamer_mock.stop.assert_awaited_once()
+
+    async def test_streamer_failed(self, zeebe_worker: ZeebeWorker):
+        zeebe_worker._init_tasks = Mock()
+
+        streamer_mock = AsyncMock(spec_set=JobStreamer, poll=AsyncMock(side_effect=[Exception("test_exception")]))
+        zeebe_worker._job_streamers = [streamer_mock]
+
+        with pytest.raises(Exception, match=r"unhandled errors in a TaskGroup \(1 sub-exception\)"):
+            await zeebe_worker.work()
+
+        streamer_mock.poll.assert_awaited_once()

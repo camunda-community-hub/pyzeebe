@@ -16,6 +16,19 @@ class ActivateJobsRequestInvalidError(PyZeebeError):
         super().__init__(msg)
 
 
+class StreamActivateJobsRequestInvalidError(PyZeebeError):
+    def __init__(self, task_type: str, worker: str, timeout: int):
+        msg = "Failed to activate jobs. Reasons:"
+        if task_type == "" or task_type is None:
+            msg = msg + "task_type is empty, "
+        if worker == "" or worker is None:
+            msg = msg + "worker is empty, "
+        if timeout < 1:
+            msg = msg + "job timeout is smaller than 0ms, "
+
+        super().__init__(msg)
+
+
 class JobAlreadyDeactivatedError(PyZeebeError):
     def __init__(self, job_key: int) -> None:
         super().__init__(f"Job {job_key} was already stopped (Completed/Failed/Error)")

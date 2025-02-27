@@ -90,6 +90,37 @@ class GatewayMock(GatewayServicer):
                 )
         yield ActivateJobsResponse(jobs=jobs)
 
+    def StreamActivatedJobs(self, request, context):
+        if not request.type:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            return ActivatedJob()
+
+        if request.timeout <= 0:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            return ActivatedJob()
+
+        if not request.worker:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            return ActivatedJob()
+
+        for active_job in self.active_jobs.values():
+            if active_job.type == request.type:
+                yield ActivatedJob(
+                    key=active_job.key,
+                    type=active_job.type,
+                    processInstanceKey=active_job.process_instance_key,
+                    bpmnProcessId=active_job.bpmn_process_id,
+                    processDefinitionVersion=active_job.process_definition_version,
+                    processDefinitionKey=active_job.process_definition_key,
+                    elementId=active_job.element_id,
+                    elementInstanceKey=active_job.element_instance_key,
+                    customHeaders=json.dumps(active_job.custom_headers),
+                    worker=active_job.worker,
+                    retries=active_job.retries,
+                    deadline=active_job.deadline,
+                    variables=json.dumps(active_job.variables),
+                )
+
     def CompleteJob(self, request, context):
         if request.jobKey in self.active_jobs.keys():
             active_job = self.active_jobs.get(request.jobKey)
