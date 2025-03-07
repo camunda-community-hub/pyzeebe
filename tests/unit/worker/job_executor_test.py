@@ -6,6 +6,12 @@ import pytest
 
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job, JobController
+from pyzeebe.middlewares import (
+    BaseMiddleware,
+    ExceptionMiddleware,
+    ExecuteMiddlewareStack,
+)
+from pyzeebe.task.exception_handler import default_exception_handler
 from pyzeebe.task.task import Task
 from pyzeebe.worker.job_executor import JobExecutor, create_job_callback
 from pyzeebe.worker.task_state import TaskState
@@ -13,7 +19,13 @@ from pyzeebe.worker.task_state import TaskState
 
 @pytest.fixture
 def job_executor(task: Task, queue: asyncio.Queue, task_state: TaskState, zeebe_adapter: ZeebeAdapter):
-    return JobExecutor(task, queue, task_state, zeebe_adapter)
+    return JobExecutor(
+        task=task,
+        jobs=queue,
+        task_state=task_state,
+        zeebe_adapter=zeebe_adapter,
+        middlewares=[ExceptionMiddleware({Exception: default_exception_handler})],
+    )
 
 
 @pytest.fixture(autouse=True)
@@ -23,18 +35,66 @@ def mock_job_handler(task: Task):
 
 @pytest.mark.asyncio
 class TestExecuteOneJob:
-    async def test_executes_jobs(
-        self, job_executor: JobExecutor, job_from_task: Job, task: Task, job_controller: JobController
-    ):
-        await job_executor.execute_one_job(job_from_task, job_controller)
+    async def test_executes_jobs(self, job_executor: JobExecutor, task: Task, job_controller: JobController):
+        await job_executor.execute_one_job(job_controller)
 
-        task.job_handler.assert_called_with(job_from_task, job_controller)
+        task.job_handler.assert_called_with(job_controller.job, job_controller)
 
-    async def test_continues_on_deactivated_job(
-        self, job_executor: JobExecutor, job_from_task: Job, job_controller: JobController
+    async def test_continues_on_deactivated_job(self, job_executor: JobExecutor, job_controller: JobController):
+        await job_executor.execute_one_job(job_controller)
+        await job_executor.execute_one_job(job_controller)
+
+    async def test_executes_jobs_success(
+        self, job_executor: JobExecutor, task: Task, mocked_job_controller: JobController
     ):
-        await job_executor.execute_one_job(job_from_task, job_controller)
-        await job_executor.execute_one_job(job_from_task, job_controller)
+        task.job_handler.return_value = Mock(task_result="task_result")
+
+        await job_executor.execute_one_job(mocked_job_controller)
+
+        mocked_job_controller.set_success_status.assert_called_with("task_result")
+
+    async def test_executes_jobs_error(
+        self, job_executor: JobExecutor, task: Task, mocked_job_controller: JobController
+    ):
+        task.job_handler.side_effect = ValueError("test")
+
+        await job_executor.execute_one_job(mocked_job_controller)
+
+        mocked_job_controller.set_failure_status.assert_called_with("Failed job. Error: test")
+
+    async def test_executes_middleware_order(
+        self,
+        task: Task,
+        queue: asyncio.Queue,
+        task_state: TaskState,
+        zeebe_adapter: ZeebeAdapter,
+        mocked_job_controller: JobController,
+    ):
+        order = []
+
+        class Middleware(BaseMiddleware):
+            def __init__(self, order: int) -> None:
+                self.order = order
+
+            async def execute_scope(
+                self, call_next: ExecuteMiddlewareStack, job: Job, job_controller: JobController
+            ) -> Job:
+                order.append(self.order)
+                result = await call_next(job, job_controller)
+                order.append(self.order)
+                return result
+
+        job_executor = JobExecutor(
+            task=task,
+            jobs=queue,
+            task_state=task_state,
+            zeebe_adapter=zeebe_adapter,
+            middlewares=[Middleware(0), Middleware(1)],
+        )
+
+        await job_executor.execute_one_job(mocked_job_controller)
+
+        assert order == [1, 0, 0, 1]
 
 
 @pytest.mark.asyncio

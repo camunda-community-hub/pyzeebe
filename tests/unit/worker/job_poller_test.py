@@ -5,6 +5,7 @@ import pytest
 
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job
+from pyzeebe.middlewares import BaseMiddleware, ConsumeMiddlewareStack
 from pyzeebe.task.task import Task
 from pyzeebe.worker.job_poller import JobPoller, JobStreamer
 from pyzeebe.worker.task_state import TaskState
@@ -14,14 +15,33 @@ from tests.unit.utils.random_utils import random_job
 
 @pytest.fixture
 def job_poller(zeebe_adapter: ZeebeAdapter, task: Task, queue: asyncio.Queue, task_state: TaskState) -> JobPoller:
-    return JobPoller(zeebe_adapter, task, queue, "test_worker", 100, task_state, 0, None)
+    return JobPoller(
+        zeebe_adapter=zeebe_adapter,
+        task=task,
+        queue=queue,
+        worker_name="test_worker",
+        request_timeout=100,
+        task_state=task_state,
+        poll_retry_delay=0,
+        tenant_ids=None,
+        middlewares=[],
+    )
 
 
 @pytest.fixture
 def job_stream_poller(
     zeebe_adapter: ZeebeAdapter, task: Task, queue: asyncio.Queue, task_state: TaskState
 ) -> JobStreamer:
-    return JobStreamer(zeebe_adapter, task, queue, "test_worker", 100, task_state, [])
+    return JobStreamer(
+        zeebe_adapter=zeebe_adapter,
+        task=task,
+        queue=queue,
+        worker_name="test_worker",
+        stream_request_timeout=100,
+        task_state=task_state,
+        tenant_ids=[],
+        middlewares=[],
+    )
 
 
 @pytest.mark.asyncio
@@ -41,14 +61,43 @@ class TestPollOnce:
 
         assert queue.empty()
 
-    async def test_job_is_added_to_task_state(
-        self, job_poller: JobPoller, job_from_task: Job, grpc_servicer: GatewayMock
+    async def test_executes_middleware_order(
+        self,
+        zeebe_adapter: ZeebeAdapter,
+        task: Task,
+        queue: asyncio.Queue,
+        task_state: TaskState,
+        job_from_task: Job,
+        grpc_servicer: GatewayMock,
     ):
+        order = []
         grpc_servicer.active_jobs[job_from_task.key] = job_from_task
 
-        await job_poller.poll_once()
+        class Middleware(BaseMiddleware):
+            def __init__(self, order: int) -> None:
+                self.order = order
 
-        assert job_poller.task_state.count_active() == 1
+            async def consume_scope(self, call_next: ConsumeMiddlewareStack, job: Job) -> Job:
+                order.append(self.order)
+                result = await call_next(job)
+                order.append(self.order)
+                return result
+
+        job_executor = JobPoller(
+            zeebe_adapter=zeebe_adapter,
+            task=task,
+            queue=queue,
+            worker_name="test_worker",
+            request_timeout=100,
+            task_state=task_state,
+            poll_retry_delay=0,
+            tenant_ids=None,
+            middlewares=[Middleware(0), Middleware(1)],
+        )
+
+        await job_executor.poll_once()
+
+        assert order == [1, 0, 0, 1]
 
 
 class TestShouldPoll:

@@ -3,10 +3,9 @@ from uuid import uuid4
 
 import pytest
 
-from pyzeebe import TaskDecorator
 from pyzeebe.errors import BusinessError, DuplicateTaskTypeError, TaskNotFoundError
 from pyzeebe.job.job import Job, JobController
-from pyzeebe.task.exception_handler import ExceptionHandler, default_exception_handler
+from pyzeebe.task.exception_handler import default_exception_handler
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_router import ZeebeTaskRouter
 from tests.unit.utils.random_utils import randint
@@ -18,16 +17,6 @@ def test_get_task(router: ZeebeTaskRouter, task: Task):
     found_task = router.get_task(task.type)
 
     assert found_task == task
-
-
-def test_task_inherits_exception_handler(router: ZeebeTaskRouter, task: Task):
-    router._exception_handler = str
-    router.task(task.type)(task.original_function)
-
-    found_task = router.get_task(task.type)
-    found_handler = found_task.config.exception_handler
-
-    assert found_handler == str
 
 
 def test_get_fake_task(router: ZeebeTaskRouter):
@@ -87,42 +76,6 @@ def test_check_is_task_duplicate_with_duplicate(router: ZeebeTaskRouter, task: T
 
 def test_no_duplicate_task_type_error_is_raised(router: ZeebeTaskRouter, task: Task):
     router._is_task_duplicate(task.type)
-
-
-def test_add_before_decorator(router: ZeebeTaskRouter, decorator: TaskDecorator):
-    router.before(decorator)
-
-    assert len(router._before) == 1
-
-
-def test_add_after_decorator(router: ZeebeTaskRouter, decorator: TaskDecorator):
-    router.after(decorator)
-
-    assert len(router._after) == 1
-
-
-def test_set_exception_handler(router: ZeebeTaskRouter, exception_handler: ExceptionHandler):
-    router.exception_handler(exception_handler)
-
-    assert router._exception_handler is exception_handler
-
-
-def test_add_before_decorator_through_constructor(decorator: TaskDecorator):
-    router = ZeebeTaskRouter(before=[decorator])
-
-    assert len(router._before) == 1
-
-
-def test_add_after_decorator_through_constructor(decorator: TaskDecorator):
-    router = ZeebeTaskRouter(after=[decorator])
-
-    assert len(router._after) == 1
-
-
-def test_set_exception_handler_through_constructor(exception_handler: ExceptionHandler):
-    router = ZeebeTaskRouter(exception_handler=exception_handler)
-
-    assert router._exception_handler is exception_handler
 
 
 @pytest.mark.asyncio

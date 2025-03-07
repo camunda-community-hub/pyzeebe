@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from functools import partial
 
 from pyzeebe.errors import (
     ActivateJobsRequestInvalidError,
@@ -13,6 +14,7 @@ from pyzeebe.errors import (
 )
 from pyzeebe.grpc_internals.zeebe_job_adapter import ZeebeJobAdapter
 from pyzeebe.job.job import Job
+from pyzeebe.middlewares import BaseMiddleware, ConsumeMiddlewareStack
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_state import TaskState
 
@@ -22,6 +24,7 @@ logger = logging.getLogger(__name__)
 class JobPoller:
     def __init__(
         self,
+        *,
         zeebe_adapter: ZeebeJobAdapter,
         task: Task,
         queue: asyncio.Queue[Job],
@@ -30,6 +33,7 @@ class JobPoller:
         task_state: TaskState,
         poll_retry_delay: int,
         tenant_ids: list[str] | None,
+        middlewares: list[BaseMiddleware],
     ) -> None:
         self.zeebe_adapter = zeebe_adapter
         self.task = task
@@ -40,6 +44,7 @@ class JobPoller:
         self.poll_retry_delay = poll_retry_delay
         self.tenant_ids = tenant_ids
         self.stop_event = asyncio.Event()
+        self.middleware_stack = self._build_middleware_consume_stack(middlewares)
 
     async def poll(self) -> None:
         while self.should_poll():
@@ -68,8 +73,7 @@ class JobPoller:
                 tenant_ids=self.tenant_ids,
             )
             async for job in jobs:
-                self.task_state.add(job)
-                await self.queue.put(job)
+                await self.middleware_stack(job)
         except ActivateJobsRequestInvalidError:
             logger.warning("Activate job requests was invalid for task %s", self.task.type)
             raise
@@ -96,10 +100,25 @@ class JobPoller:
         self.stop_event.set()
         await self.queue.join()
 
+    async def _on_consume_job(self, job: Job) -> Job:
+        self.task_state.add(job)
+        await self.queue.put(job)
+
+        return job
+
+    def _build_middleware_consume_stack(self, middlewares: list[BaseMiddleware]) -> ConsumeMiddlewareStack:
+        on_consume = self._on_consume_job
+
+        for m in middlewares:
+            on_consume = partial(m.consume_scope, on_consume)
+
+        return on_consume
+
 
 class JobStreamer:
     def __init__(
         self,
+        *,
         zeebe_adapter: ZeebeJobAdapter,
         task: Task,
         queue: asyncio.Queue[Job],
@@ -107,6 +126,7 @@ class JobStreamer:
         stream_request_timeout: int,
         task_state: TaskState,
         tenant_ids: list[str] | None,
+        middlewares: list[BaseMiddleware],
     ) -> None:
         self.zeebe_adapter = zeebe_adapter
         self.task = task
@@ -116,6 +136,7 @@ class JobStreamer:
         self.task_state = task_state
         self.tenant_ids = tenant_ids
         self.stop_event = asyncio.Event()
+        self.middleware_stack = self._build_middleware_consume_stack(middlewares)
 
     async def poll(self) -> None:
         while self.should_poll():
@@ -132,8 +153,7 @@ class JobStreamer:
                 tenant_ids=self.tenant_ids,
             )
             async for job in jobs:
-                self.task_state.add(job)
-                await self.queue.put(job)
+                await self.middleware_stack(job)
         except StreamActivateJobsRequestInvalidError:
             logger.warning("Stream job requests was invalid for task %s", self.task.type)
             raise
@@ -155,3 +175,17 @@ class JobStreamer:
     async def stop(self) -> None:
         self.stop_event.set()
         await self.queue.join()
+
+    async def _on_consume_job(self, job: Job) -> Job:
+        self.task_state.add(job)
+        await self.queue.put(job)
+
+        return job
+
+    def _build_middleware_consume_stack(self, middlewares: list[BaseMiddleware]) -> ConsumeMiddlewareStack:
+        on_consume = self._on_consume_job
+
+        for m in middlewares:
+            on_consume = partial(m.consume_scope, on_consume)
+
+        return on_consume
