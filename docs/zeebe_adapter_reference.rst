@@ -66,3 +66,8 @@ Zeebe GRPC Responses
    :members:
    :undoc-members:
    :member-order: bysource
+
+.. autoclass:: pyzeebe.grpc_internals.types.HealthCheckResponse
+   :members:
+   :undoc-members:
+   :member-order: bysource
