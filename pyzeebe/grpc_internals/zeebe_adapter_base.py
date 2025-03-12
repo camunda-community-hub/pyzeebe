@@ -2,6 +2,7 @@ import logging
 from typing import TYPE_CHECKING, NoReturn, cast
 
 import grpc
+from grpc_health.v1.health_pb2_grpc import HealthStub
 
 from pyzeebe.errors import (
     UnknownGrpcStatusCodeError,
@@ -24,6 +25,7 @@ class ZeebeAdapterBase:
     def __init__(self, grpc_channel: grpc.aio.Channel, max_connection_retries: int = -1):
         self._channel = grpc_channel
         self._gateway_stub = cast("GatewayAsyncStub", GatewayStub(grpc_channel))
+        self._health_stub = HealthStub(grpc_channel)
         self._connected = True
         self.retrying_connection = False
         self._max_connection_retries = max_connection_retries
@@ -38,7 +40,7 @@ class ZeebeAdapterBase:
 
     async def _handle_grpc_error(self, grpc_error: grpc.aio.AioRpcError) -> NoReturn:
         try:
-            pyzeebe_error = _create_pyzeebe_error_from_grpc_error(grpc_error)
+            pyzeebe_error = self._create_pyzeebe_error_from_grpc_error(grpc_error)
             raise pyzeebe_error
         except (ZeebeGatewayUnavailableError, ZeebeInternalError, ZeebeDeadlineExceeded):
             self._current_connection_retries += 1
@@ -54,14 +56,13 @@ class ZeebeAdapterBase:
         finally:
             self._connected = False
 
-
-def _create_pyzeebe_error_from_grpc_error(grpc_error: grpc.aio.AioRpcError) -> PyZeebeError:
-    if is_error_status(grpc_error, grpc.StatusCode.RESOURCE_EXHAUSTED):
-        return ZeebeBackPressureError(grpc_error)
-    if is_error_status(grpc_error, grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.CANCELLED):
-        return ZeebeGatewayUnavailableError(grpc_error)
-    if is_error_status(grpc_error, grpc.StatusCode.INTERNAL):
-        return ZeebeInternalError(grpc_error)
-    elif is_error_status(grpc_error, grpc.StatusCode.DEADLINE_EXCEEDED):
-        return ZeebeDeadlineExceeded(grpc_error)
-    return UnknownGrpcStatusCodeError(grpc_error)
+    def _create_pyzeebe_error_from_grpc_error(self, grpc_error: grpc.aio.AioRpcError) -> PyZeebeError:
+        if is_error_status(grpc_error, grpc.StatusCode.RESOURCE_EXHAUSTED):
+            return ZeebeBackPressureError(grpc_error)
+        if is_error_status(grpc_error, grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.CANCELLED):
+            return ZeebeGatewayUnavailableError(grpc_error)
+        if is_error_status(grpc_error, grpc.StatusCode.INTERNAL):
+            return ZeebeInternalError(grpc_error)
+        elif is_error_status(grpc_error, grpc.StatusCode.DEADLINE_EXCEEDED):
+            return ZeebeDeadlineExceeded(grpc_error)
+        return UnknownGrpcStatusCodeError(grpc_error)

@@ -12,6 +12,7 @@ from pyzeebe.grpc_internals.types import (
     CreateProcessInstanceWithResultResponse,
     DeployResourceResponse,
     EvaluateDecisionResponse,
+    HealthCheckResponse,
     PublishMessageResponse,
     TopologyResponse,
 )
@@ -272,3 +273,11 @@ class ZeebeClient:
 
         """
         return await self.zeebe_adapter.topology()
+
+    async def healthcheck(self) -> HealthCheckResponse:
+        """Ping Zeebe Gateway using GRPC Health Checking Protocol.
+
+        Returns:
+            HealthCheckResponse: response from Zeebe.
+        """
+        return await self.zeebe_adapter.healthcheck()

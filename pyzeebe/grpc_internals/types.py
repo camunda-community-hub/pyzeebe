@@ -312,3 +312,19 @@ class TopologyResponse:
     """configured replication factor for this cluster"""
     gateway_version: str
     """gateway version"""
+
+
+@dataclass(frozen=True)
+class HealthCheckResponse:
+    """GRPC Health Checking Protocol
+
+    https://grpc.io/docs/guides/health-checking/
+    """
+
+    class ServingStatus(enum.IntEnum):
+        UNKNOWN = 0
+        SERVING = 1
+        NOT_SERVING = 2
+        SERVICE_UNKNOWN = 3
+
+    status: ServingStatus

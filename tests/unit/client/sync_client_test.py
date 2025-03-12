@@ -122,3 +122,12 @@ class TestTopology:
         sync_zeebe_client.topology()
 
         sync_zeebe_client.client.topology.assert_called_once()
+
+
+class TestHealthCheck:
+    def test_calls_topology_of_zeebe_client(self, sync_zeebe_client: SyncZeebeClient):
+        sync_zeebe_client.client.healthcheck = AsyncMock()
+
+        sync_zeebe_client.healthcheck()
+
+        sync_zeebe_client.client.healthcheck.assert_called_once()
