@@ -8,6 +8,7 @@ import anyio
 import grpc
 
 from pyzeebe import TaskDecorator
+from pyzeebe.grpc_internals.types import HealthCheckResponse
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job
 from pyzeebe.task import task_builder
@@ -157,3 +158,7 @@ class ZeebeWorker(ZeebeTaskRouter):
                 config_with_decorators = self._add_decorators_to_config(task.config)
                 task = task_builder.build_task(task.original_function, config_with_decorators)
                 self._add_task(task)
+
+    async def healthcheck(self) -> HealthCheckResponse:
+        """Ping Zeebe Gateway using GRPC Health Checking Protocol."""
+        return await self.zeebe_adapter.healthcheck()

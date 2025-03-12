@@ -13,6 +13,7 @@ from pyzeebe.grpc_internals.types import (
     CreateProcessInstanceWithResultResponse,
     DeployResourceResponse,
     EvaluateDecisionResponse,
+    HealthCheckResponse,
     PublishMessageResponse,
     TopologyResponse,
 )
@@ -119,3 +120,8 @@ class SyncZeebeClient:
         return self.loop.run_until_complete(self.client.topology())
 
     topology.__doc__ = ZeebeClient.topology.__doc__
+
+    def healthcheck(self) -> HealthCheckResponse:
+        return self.loop.run_until_complete(self.client.healthcheck())
+
+    healthcheck.__doc__ = ZeebeClient.healthcheck.__doc__

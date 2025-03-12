@@ -109,3 +109,9 @@ async def test_publish_message(zeebe_client: ZeebeClient):
 @pytest.mark.asyncio
 async def test_topology(zeebe_client: ZeebeClient):
     await zeebe_client.topology()
+
+
+@pytest.mark.xfail(reason="Required GRPC health checking stubs")
+@pytest.mark.asyncio
+async def test_healthcheck(zeebe_client: ZeebeClient):
+    await zeebe_client.healthcheck()

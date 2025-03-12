@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import grpc
+from grpc_health.v1.health_pb2 import HealthCheckRequest
 
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 from pyzeebe.proto.gateway_pb2 import TopologyRequest
 
-from .types import TopologyResponse
+from .types import HealthCheckResponse, TopologyResponse
 
 
 class ZeebeClusterAdapter(ZeebeAdapterBase):
@@ -38,3 +39,12 @@ class ZeebeClusterAdapter(ZeebeAdapterBase):
             replication_factor=response.replicationFactor,
             gateway_version=response.gatewayVersion,
         )
+
+    async def healthcheck(self) -> HealthCheckResponse:
+        try:
+            response = await self._health_stub.Check(HealthCheckRequest(service="gateway_protocol.Gateway"))
+        except grpc.aio.AioRpcError as grpc_error:
+            pyzeebe_error = self._create_pyzeebe_error_from_grpc_error(grpc_error)
+            raise pyzeebe_error from grpc_error
+
+        return HealthCheckResponse(status=response.status)
