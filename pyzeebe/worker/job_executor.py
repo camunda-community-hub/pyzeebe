@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from functools import partial
 from typing import Callable
 
 from pyzeebe.errors import JobAlreadyDeactivatedError
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job, JobController
+from pyzeebe.middlewares import BaseMiddleware, ExecuteMiddlewareStack
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_state import TaskState
 
@@ -16,25 +18,34 @@ AsyncTaskCallback = Callable[["asyncio.Future[None]"], None]
 
 
 class JobExecutor:
-    def __init__(self, task: Task, jobs: asyncio.Queue[Job], task_state: TaskState, zeebe_adapter: ZeebeAdapter):
+    def __init__(
+        self,
+        *,
+        task: Task,
+        jobs: asyncio.Queue[Job],
+        task_state: TaskState,
+        zeebe_adapter: ZeebeAdapter,
+        middlewares: list[BaseMiddleware],
+    ):
         self.task = task
         self.jobs = jobs
         self.task_state = task_state
         self.stop_event = asyncio.Event()
         self.zeebe_adapter = zeebe_adapter
+        self.middleware_stack = self._build_middleware_execute_stack(middlewares)
 
     async def execute(self) -> None:
         while self.should_execute():
             job = await self.get_next_job()
-            task = asyncio.create_task(self.execute_one_job(job, JobController(job, self.zeebe_adapter)))
+            task = asyncio.create_task(self.execute_one_job(JobController(job, self.zeebe_adapter)))
             task.add_done_callback(create_job_callback(self, job))
 
     async def get_next_job(self) -> Job:
         return await self.jobs.get()
 
-    async def execute_one_job(self, job: Job, job_controller: JobController) -> None:
+    async def execute_one_job(self, job_controller: JobController) -> None:
         try:
-            await self.task.job_handler(job, job_controller)
+            await self.middleware_stack(job_controller.job, job_controller)
         except JobAlreadyDeactivatedError as error:
             logger.warning("Job was already deactivated. Job key: %s", error.job_key)
 
@@ -44,6 +55,14 @@ class JobExecutor:
     async def stop(self) -> None:
         self.stop_event.set()
         await self.jobs.join()
+
+    def _build_middleware_execute_stack(self, middlewares: list[BaseMiddleware]) -> ExecuteMiddlewareStack:
+        job_handler = self.task.job_handler
+
+        for m in middlewares:
+            job_handler = partial(m.execute_scope, job_handler)
+
+        return job_handler
 
 
 def create_job_callback(job_executor: JobExecutor, job: Job) -> AsyncTaskCallback:
