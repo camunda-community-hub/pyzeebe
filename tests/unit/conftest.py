@@ -25,7 +25,6 @@ def job_controller(job):
 @pytest.fixture
 def mocked_job_controller(job):
     job_controller = JobController(job, MagicMock())
-    job_controller.set_running_after_decorators_status = AsyncMock()
     job_controller.set_success_status = AsyncMock()
     job_controller.set_failure_status = AsyncMock()
     job_controller.set_error_status = AsyncMock()
@@ -76,15 +75,12 @@ def first_active_job(task, job_from_task, grpc_servicer) -> str:
 def task_config(task_type, variables_to_fetch=None):
     return TaskConfig(
         type=task_type,
-        exception_handler=AsyncMock(),
         timeout_ms=10000,
         max_jobs_to_activate=32,
         max_running_jobs=32,
         variables_to_fetch=variables_to_fetch or [],
         single_value=False,
         variable_name="",
-        before=[],
-        after=[],
     )
 
 
