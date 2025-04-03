@@ -1415,14 +1415,14 @@ files = [
 
 [[package]]
 name = "types-oauthlib"
-version = "3.2.0.20250401"
+version = "3.2.0.20250403"
 description = "Typing stubs for oauthlib"
 optional = false
 python-versions = ">=3.9"
 groups = ["stubs"]
 files = [
-    {file = "types_oauthlib-3.2.0.20250401-py3-none-any.whl", hash = "sha256:5591a3ee974683c8c3d5dec46831ed02b3502894d3813dae6e6abb6a840f602d"},
-    {file = "types_oauthlib-3.2.0.20250401.tar.gz", hash = "sha256:adae9178ff62b4099123e9ac15475c7277ac7dc741ce5a6dacc7e023a34023dc"},
+    {file = "types_oauthlib-3.2.0.20250403-py3-none-any.whl", hash = "sha256:02466f91a01522adfa4aaf0d7e76274f00a102eed40034117c5ecae768a2571e"},
+    {file = "types_oauthlib-3.2.0.20250403.tar.gz", hash = "sha256:40a4fcfb2e95235e399b5c0dd1cbe9d8c4b19415c09fb54c648d3397e02e0425"},
 ]
 
 [[package]]
