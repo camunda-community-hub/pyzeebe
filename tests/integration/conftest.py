@@ -29,15 +29,20 @@ def zeebe_client(grpc_channel: grpc.aio.Channel):
 
 @pytest.fixture(scope="module")
 def zeebe_worker(grpc_channel):
-    return ZeebeWorker(grpc_channel)
+    worker = ZeebeWorker(grpc_channel)
+
+    async def exception_handler(exc: Exception, job: Job, job_controller: JobController) -> None:
+        await job_controller.set_error_status(f"Failed to run task {job.type}. Reason: {exc}")
+
+    worker.add_exception_handler(Exception, exception_handler)
+
+    return worker
 
 
 @pytest.fixture(autouse=True, scope="module")
 def task(zeebe_worker: ZeebeWorker, process_stats: ProcessStats):
-    async def exception_handler(exc: Exception, job: Job, job_controller: JobController) -> None:
-        await job_controller.set_error_status(job, f"Failed to run task {job.type}. Reason: {exc}")
 
-    @zeebe_worker.task("test", exception_handler)
+    @zeebe_worker.task("test")
     async def task_handler(should_throw: bool, input: str, job: Job) -> dict:
         process_stats.add_process_run(ProcessRun(job.process_instance_key, job.variables))
         if should_throw:

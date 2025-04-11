@@ -9,9 +9,9 @@ from pyzeebe.client.client import ZeebeClient
 from pyzeebe.client.sync_client import SyncZeebeClient
 from pyzeebe.job.job import Job, JobController
 from pyzeebe.job.job_status import JobStatus
+from pyzeebe.middlewares import BaseMiddleware
 from pyzeebe.task.exception_handler import ExceptionHandler, default_exception_handler
 from pyzeebe.task.task_config import TaskConfig
-from pyzeebe.task.types import TaskDecorator
 from pyzeebe.worker.task_router import ZeebeTaskRouter
 from pyzeebe.worker.worker import ZeebeWorker
 
@@ -28,8 +28,8 @@ __all__ = (
     "JobStatus",
     "ExceptionHandler",
     "TaskConfig",
-    "TaskDecorator",
     "ZeebeTaskRouter",
     "default_exception_handler",
     "ZeebeWorker",
+    "BaseMiddleware",
 )

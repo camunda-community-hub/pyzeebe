@@ -8,9 +8,10 @@ import anyio.abc
 import grpc
 import pytest
 
-from pyzeebe import ExceptionHandler, TaskDecorator, ZeebeTaskRouter
+from pyzeebe import ZeebeTaskRouter
 from pyzeebe.errors import DuplicateTaskTypeError
-from pyzeebe.job.job import Job, JobController
+from pyzeebe.middlewares import BaseMiddleware, ExceptionMiddleware
+from pyzeebe.task.exception_handler import ExceptionHandler, default_exception_handler
 from pyzeebe.task.task import Task
 from pyzeebe.worker.job_poller import JobPoller, JobStreamer
 from pyzeebe.worker.worker import ZeebeWorker
@@ -49,36 +50,77 @@ class TestAddTask:
         assert zeebe_worker.get_task(task_type).config.variables_to_fetch == expected_variables_to_fetch
 
 
-class TestDecorator:
-    def test_add_before_decorator(self, zeebe_worker: ZeebeWorker, decorator: TaskDecorator):
-        zeebe_worker.before(decorator)
-        assert len(zeebe_worker._before) == 1
-        assert decorator in zeebe_worker._before
+class TestAddMiddleware:
+    @pytest.fixture
+    def middleware(self):
+        return AsyncMock(spec_set=BaseMiddleware)
 
-    def test_add_after_decorator(self, zeebe_worker: ZeebeWorker, decorator: TaskDecorator):
-        zeebe_worker.after(decorator)
-        assert len(zeebe_worker._after) == 1
-        assert decorator in zeebe_worker._after
+    def test_add_middleware(self, zeebe_worker: ZeebeWorker, middleware: BaseMiddleware):
+        zeebe_worker.add_middleware(middleware)
 
-    def test_set_exception_handler(self, zeebe_worker: ZeebeWorker, exception_handler: ExceptionHandler):
-        zeebe_worker.exception_handler(exception_handler)
-        assert exception_handler is zeebe_worker._exception_handler
+        assert middleware in zeebe_worker.user_middlewares
 
-    def test_add_constructor_before_decorator(self, aio_grpc_channel: grpc.aio.Channel, decorator: TaskDecorator):
-        zeebe_worker = ZeebeWorker(aio_grpc_channel, before=[decorator])
-        assert len(zeebe_worker._before) == 1
-        assert decorator in zeebe_worker._before
+    def test_add_middleware_worker_already_started(self, zeebe_worker: ZeebeWorker, middleware: BaseMiddleware):
+        zeebe_worker._build_middleware_stack()
 
-    def test_add_constructor_after_decorator(self, aio_grpc_channel: grpc.aio.Channel, decorator: TaskDecorator):
-        zeebe_worker = ZeebeWorker(aio_grpc_channel, after=[decorator])
-        assert len(zeebe_worker._after) == 1
-        assert decorator in zeebe_worker._after
+        with pytest.raises(RuntimeError, match="It isn't possible to add middleware to started worker."):
+            zeebe_worker.add_middleware(middleware)
 
-    def test_set_constructor_exception_handler(
-        self, aio_grpc_channel: grpc.aio.Channel, exception_handler: ExceptionHandler
+    def test_middleware_in_middleware_stack(self, zeebe_worker: ZeebeWorker, middleware: BaseMiddleware):
+        zeebe_worker.add_middleware(middleware)
+        zeebe_worker._build_middleware_stack()
+
+        assert middleware in zeebe_worker.middlewares
+
+    def test_middleware_order(self, zeebe_worker: ZeebeWorker, middleware: BaseMiddleware):
+        zeebe_worker.add_middleware(middleware)
+        zeebe_worker._build_middleware_stack()
+
+        assert len(zeebe_worker.middlewares) == 2
+        assert zeebe_worker.middlewares[0] is middleware
+        assert isinstance(zeebe_worker.middlewares[1], ExceptionMiddleware)  # default middleware
+
+
+class TestAddExceptionHandler:
+    @pytest.fixture
+    def exception_handler(self):
+        return AsyncMock()
+
+    def test_add_exception_handler(self, zeebe_worker: ZeebeWorker, exception_handler: ExceptionHandler):
+        zeebe_worker.add_exception_handler(Exception, exception_handler)
+
+        assert zeebe_worker.exception_handlers.get(Exception) is exception_handler
+
+    def test_add_exception_handler_worker_already_started(
+        self, zeebe_worker: ZeebeWorker, exception_handler: ExceptionHandler
     ):
-        zeebe_worker = ZeebeWorker(aio_grpc_channel, exception_handler=exception_handler)
-        assert exception_handler is zeebe_worker._exception_handler
+        zeebe_worker._build_middleware_stack()
+
+        with pytest.raises(RuntimeError, match="It isn't possible to add exception handler to started worker."):
+            zeebe_worker.add_exception_handler(Exception, exception_handler)
+
+    def test_exception_handler_in_middleware_stack(
+        self, zeebe_worker: ZeebeWorker, exception_handler: ExceptionHandler
+    ):
+        zeebe_worker.add_exception_handler(Exception, exception_handler)
+        zeebe_worker._build_middleware_stack()
+
+        assert len(zeebe_worker.middlewares) == 1
+        assert isinstance(zeebe_worker.middlewares[0], ExceptionMiddleware)
+        assert len(zeebe_worker.middlewares[0].exception_handlers) == 1
+        assert zeebe_worker.middlewares[0].exception_handlers[Exception] is exception_handler
+
+    def test_default_exception_handler_in_middleware_stack(
+        self, zeebe_worker: ZeebeWorker, exception_handler: ExceptionHandler
+    ):
+        zeebe_worker.add_exception_handler(ValueError, exception_handler)
+        zeebe_worker._build_middleware_stack()
+
+        assert len(zeebe_worker.middlewares) == 1
+        assert isinstance(zeebe_worker.middlewares[0], ExceptionMiddleware)
+        assert len(zeebe_worker.middlewares[0].exception_handlers) == 2
+        assert zeebe_worker.middlewares[0].exception_handlers[Exception] is default_exception_handler
+        assert zeebe_worker.middlewares[0].exception_handlers[ValueError] is exception_handler
 
 
 class TestIncludeRouter:
@@ -92,121 +134,6 @@ class TestIncludeRouter:
             self.include_router_with_task(zeebe_worker, router)
 
         assert len(zeebe_worker.tasks) == len(routers)
-
-    @pytest.mark.asyncio
-    async def test_router_before_decorator(
-        self,
-        zeebe_worker: ZeebeWorker,
-        router: ZeebeTaskRouter,
-        decorator: TaskDecorator,
-        job: Job,
-        job_controller: JobController,
-    ):
-        router.before(decorator)
-        task = self.include_router_with_task(zeebe_worker, router)
-
-        await task.job_handler(job, job_controller)
-
-        decorator.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_router_after_decorator(
-        self,
-        zeebe_worker: ZeebeWorker,
-        router: ZeebeTaskRouter,
-        decorator: TaskDecorator,
-        job: Job,
-        job_controller: JobController,
-    ):
-        router.after(decorator)
-        task = self.include_router_with_task(zeebe_worker, router)
-
-        await task.job_handler(job, job_controller)
-
-        decorator.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_router_with_exception_handler(
-        self,
-        zeebe_worker: ZeebeWorker,
-        router: ZeebeTaskRouter,
-        exception_handler: ExceptionHandler,
-        job: Job,
-        job_controller: JobController,
-    ):
-        router.exception_handler(exception_handler)
-        task = self.include_router_with_task_error(zeebe_worker, router)
-
-        await task.job_handler(job, job_controller)
-
-        exception_handler.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_worker_with_before_decorator(
-        self,
-        zeebe_worker: ZeebeWorker,
-        router: ZeebeTaskRouter,
-        decorator: TaskDecorator,
-        job: Job,
-        job_controller: JobController,
-    ):
-        zeebe_worker.before(decorator)
-        task = self.include_router_with_task(zeebe_worker, router)
-
-        await task.job_handler(job, job_controller)
-
-        decorator.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_worker_with_after_decorator(
-        self,
-        zeebe_worker: ZeebeWorker,
-        router: ZeebeTaskRouter,
-        decorator: TaskDecorator,
-        job: Job,
-        job_controller: JobController,
-    ):
-        zeebe_worker.after(decorator)
-        task = self.include_router_with_task(zeebe_worker, router)
-
-        await task.job_handler(job, job_controller)
-
-        decorator.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_worker_with_exception_handler(
-        self,
-        zeebe_worker: ZeebeWorker,
-        router: ZeebeTaskRouter,
-        exception_handler: ExceptionHandler,
-        job: Job,
-        job_controller: JobController,
-    ):
-        zeebe_worker.exception_handler(exception_handler)
-        task = self.include_router_with_task_error(zeebe_worker, router)
-
-        await task.job_handler(job, job_controller)
-
-        exception_handler.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_worker_and_router_with_exception_handler(
-        self,
-        zeebe_worker: ZeebeWorker,
-        router: ZeebeTaskRouter,
-        job: Job,
-        job_controller: JobController,
-    ):
-        exception_handler_router = AsyncMock()
-        exception_handler_worker = AsyncMock()
-        router.exception_handler(exception_handler_router)
-        zeebe_worker.exception_handler(exception_handler_worker)
-        task = self.include_router_with_task_error(zeebe_worker, router)
-
-        await task.job_handler(job, job_controller)
-
-        exception_handler_router.assert_called_once()
-        exception_handler_worker.assert_not_called()
 
     @staticmethod
     def include_router_with_task(zeebe_worker: ZeebeWorker, router: ZeebeTaskRouter, task_type: str = None) -> Task:
@@ -242,6 +169,26 @@ class TestWorker:
     async def wait_for_channel_ready(*, task_status: anyio.abc.TaskStatus = anyio.TASK_STATUS_IGNORED):
         task_status.started()
 
+    async def test_setup_without_stream(self, zeebe_worker: ZeebeWorker, task: Task):
+        zeebe_worker._stream_enabled = False
+        zeebe_worker._add_task(task)
+
+        zeebe_worker._setup()
+
+        assert len(zeebe_worker._job_executors) == 1
+        assert len(zeebe_worker._job_pollers) == 1
+        assert len(zeebe_worker._job_streamers) == 0
+
+    async def test_setup_with_stream(self, zeebe_worker: ZeebeWorker, task: Task):
+        zeebe_worker._stream_enabled = True
+        zeebe_worker._add_task(task)
+
+        zeebe_worker._setup()
+
+        assert len(zeebe_worker._job_executors) == 1
+        assert len(zeebe_worker._job_pollers) == 1
+        assert len(zeebe_worker._job_streamers) == 1
+
     async def test_start_stop(self, zeebe_worker: ZeebeWorker):
         zeebe_worker._stop_event = AsyncMock(spec_set=anyio.Event)
 
@@ -252,7 +199,7 @@ class TestWorker:
         zeebe_worker._stop_event.set.assert_called_once()
 
     async def test_poller_stoped(self, zeebe_worker: ZeebeWorker):
-        zeebe_worker._init_tasks = Mock()
+        zeebe_worker._setup = Mock()
         zeebe_worker._stop_event = AsyncMock(spec_set=anyio.Event)
 
         poller_mock = AsyncMock(spec_set=JobPoller)
@@ -265,7 +212,7 @@ class TestWorker:
         poller_mock.stop.assert_awaited_once()
 
     async def test_poller_failed(self, zeebe_worker: ZeebeWorker):
-        zeebe_worker._init_tasks = Mock()
+        zeebe_worker._setup = Mock()
 
         poller_mock = AsyncMock(spec_set=JobPoller, poll=AsyncMock(side_effect=[Exception("test_exception")]))
         zeebe_worker._job_pollers = [poller_mock]
@@ -276,7 +223,7 @@ class TestWorker:
         poller_mock.poll.assert_awaited_once()
 
     async def test_second_poller_should_cancel(self, zeebe_worker: ZeebeWorker):
-        zeebe_worker._init_tasks = Mock()
+        zeebe_worker._setup = Mock()
 
         poller2_cancel_event = asyncio.Event()
 
@@ -298,7 +245,7 @@ class TestWorker:
         assert poller2_cancel_event.is_set()
 
     async def test_streamer_stoped(self, zeebe_worker: ZeebeWorker):
-        zeebe_worker._init_tasks = Mock()
+        zeebe_worker._setup = Mock()
         zeebe_worker._stop_event = AsyncMock(spec_set=anyio.Event)
 
         streamer_mock = AsyncMock(spec_set=JobStreamer)
@@ -311,7 +258,7 @@ class TestWorker:
         streamer_mock.stop.assert_awaited_once()
 
     async def test_streamer_failed(self, zeebe_worker: ZeebeWorker):
-        zeebe_worker._init_tasks = Mock()
+        zeebe_worker._setup = Mock()
 
         streamer_mock = AsyncMock(spec_set=JobStreamer, poll=AsyncMock(side_effect=[Exception("test_exception")]))
         zeebe_worker._job_streamers = [streamer_mock]

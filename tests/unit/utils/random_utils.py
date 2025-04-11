@@ -13,7 +13,7 @@ RANDOM_RANGE = 1000000000
 
 def random_job(
     task: Task = task_builder.build_task(
-        lambda x: {"x": x}, TaskConfig("test", lambda: None, 10000, 32, 32, [], False, "", [], [])
+        lambda x: {"x": x}, TaskConfig("test", lambda: None, 10000, 32, 32, [], False, "")
     ),
     variables: dict | None = None,
 ) -> Job:

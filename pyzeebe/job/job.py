@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from pyzeebe.job.job_status import JobStatus
 from pyzeebe.types import Headers, Variables
@@ -27,9 +27,9 @@ class Job:
     variables: Variables
     tenant_id: str | None = None
     status: JobStatus = JobStatus.Running
-    task_result = None
+    task_result: Variables | None = None
 
-    def set_task_result(self, task_result: Any) -> None:
+    def set_task_result(self, task_result: Variables) -> None:
         object.__setattr__(self, "task_result", task_result)
 
     def _set_status(self, value: JobStatus) -> None:
@@ -46,11 +46,9 @@ class JobController:
         self._job = job
         self._zeebe_adapter = zeebe_adapter
 
-    async def set_running_after_decorators_status(self) -> None:
-        """
-        RunningAfterDecorators status means that the task has been completed as intended and the after decorators will now run.
-        """
-        self._job._set_status(JobStatus.RunningAfterDecorators)
+    @property
+    def job(self) -> Job:
+        return self._job
 
     async def set_success_status(self, variables: Variables | None = None) -> None:
         """
