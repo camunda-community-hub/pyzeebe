@@ -1,7 +1,10 @@
+from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, NoReturn, cast
+from collections.abc import Callable
 
 import grpc
+from typing_extensions import TypeAlias
 from grpc_health.v1.health_pb2_grpc import HealthStub
 
 from pyzeebe.errors import (
@@ -18,6 +21,7 @@ from pyzeebe.proto.gateway_pb2_grpc import GatewayStub
 if TYPE_CHECKING:
     from pyzeebe.proto.gateway_pb2_grpc import GatewayAsyncStub
 
+Callback: TypeAlias = Callable[[], None]
 logger = logging.getLogger(__name__)
 
 
@@ -30,10 +34,14 @@ class ZeebeAdapterBase:
         self.retrying_connection = False
         self._max_connection_retries = max_connection_retries
         self._current_connection_retries = 0
+        self._on_disconnect_callbacks: list[Callback] = []
 
     @property
     def connected(self) -> bool:
         return self._connected
+
+    def add_disconnect_callback(self, callback: Callback) -> None:
+        self._on_disconnect_callbacks.append(callback)
 
     def _should_retry(self) -> bool:
         return self._max_connection_retries == -1 or self._current_connection_retries < self._max_connection_retries
@@ -55,6 +63,8 @@ class ZeebeAdapterBase:
             logger.exception("Failed to close channel, %s exception was raised", type(exception).__name__)
         finally:
             self._connected = False
+            for callback in self._on_disconnect_callbacks:
+                callback()
 
     def _create_pyzeebe_error_from_grpc_error(self, grpc_error: grpc.aio.AioRpcError) -> PyZeebeError:
         if is_error_status(grpc_error, grpc.StatusCode.RESOURCE_EXHAUSTED):

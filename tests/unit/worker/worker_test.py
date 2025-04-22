@@ -320,3 +320,18 @@ class TestWorker:
             await zeebe_worker.work()
 
         streamer_mock.poll.assert_awaited_once()
+
+    async def test_stop_after_retries_exceeded(self, zeebe_worker: ZeebeWorker):
+        @zeebe_worker.task(str(uuid4()))
+        def dummy_function():
+            pass
+
+        zeebe_worker.zeebe_adapter._gateway_stub.ActivateJobs.side_effect = [
+            grpc.aio.AioRpcError(grpc.StatusCode.INTERNAL, None, None)
+        ]
+        zeebe_worker.zeebe_adapter._max_connection_retries = 1
+
+        await zeebe_worker.work()
+
+        zeebe_worker.zeebe_adapter._gateway_stub.ActivateJobs.assert_called_once()
+        assert zeebe_worker._stop_event.is_set() is True
