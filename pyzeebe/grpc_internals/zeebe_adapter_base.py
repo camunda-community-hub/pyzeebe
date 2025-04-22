@@ -1,11 +1,12 @@
 from __future__ import annotations
+
 import logging
-from typing import TYPE_CHECKING, NoReturn, cast
 from collections.abc import Callable
+from typing import TYPE_CHECKING, NoReturn, cast
 
 import grpc
-from typing_extensions import TypeAlias
 from grpc_health.v1.health_pb2_grpc import HealthStub
+from typing_extensions import TypeAlias
 
 from pyzeebe.errors import (
     UnknownGrpcStatusCodeError,
