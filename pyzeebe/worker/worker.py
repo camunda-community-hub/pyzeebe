@@ -150,11 +150,11 @@ class ZeebeWorker(ZeebeTaskRouter):
             for poller in self._job_pollers:
                 tg.start_soon(poller.stop)
 
-        for streamer in self._job_streamers:
-            await streamer.stop()
+            for streamer in self._job_streamers:
+                tg.start_soon(streamer.stop)
 
-        for executor in self._job_executors:
-            tg.start_soon(executor.stop)
+            for executor in self._job_executors:
+                tg.start_soon(executor.stop)
 
         self._stop_event.set()
 
