@@ -106,7 +106,7 @@ class ZeebeWorker(ZeebeTaskRouter):
         while True:
             if not self.zeebe_adapter.connected:
                 logger.error("Lost Zeebe connection")
-                await self.stop()
+                self._stop_event.set()
                 break
             await asyncio.sleep(5)
 
