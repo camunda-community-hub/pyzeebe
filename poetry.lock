@@ -1427,14 +1427,14 @@ files = [
 
 [[package]]
 name = "types-protobuf"
-version = "5.29.1.20250403"
+version = "6.30.2.20250503"
 description = "Typing stubs for protobuf"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev", "stubs"]
 files = [
-    {file = "types_protobuf-5.29.1.20250403-py3-none-any.whl", hash = "sha256:c71de04106a2d54e5b2173d0a422058fae0ef2d058d70cf369fb797bf61ffa59"},
-    {file = "types_protobuf-5.29.1.20250403.tar.gz", hash = "sha256:7ff44f15022119c9d7558ce16e78b2d485bf7040b4fadced4dd069bb5faf77a2"},
+    {file = "types_protobuf-6.30.2.20250503-py3-none-any.whl", hash = "sha256:fc78df75118155b9617c8e8c3944eaf8f537f943b2f258b00b8520162c32d829"},
+    {file = "types_protobuf-6.30.2.20250503.tar.gz", hash = "sha256:14ad797be85ce763c710b2d8e7cf8c4fc7972d4b986620899727c7dec1e66468"},
 ]
 
 [[package]]
@@ -1522,4 +1522,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "0292fa32a44e7f3a55f8700a8e1e6aa6cd01e14ce0145ae4eee37e6f7f7fcbe9"
+content-hash = "971afc5152682d43a29351ccca036365720c635bfbaff96a9451ed4b3d47da91"
