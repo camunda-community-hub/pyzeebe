@@ -1454,14 +1454,14 @@ urllib3 = ">=2"
 
 [[package]]
 name = "types-requests-oauthlib"
-version = "2.0.0.20250306"
+version = "2.0.0.20250516"
 description = "Typing stubs for requests-oauthlib"
 optional = false
 python-versions = ">=3.9"
 groups = ["stubs"]
 files = [
-    {file = "types_requests_oauthlib-2.0.0.20250306-py3-none-any.whl", hash = "sha256:37707de81d9ce54894afcccd70d4a845dbe4c59e747908faaeba59a96453d993"},
-    {file = "types_requests_oauthlib-2.0.0.20250306.tar.gz", hash = "sha256:92e5f1ed35689b1804fdcd60b7ac39b0bd440a4b96693685879bc835b334797f"},
+    {file = "types_requests_oauthlib-2.0.0.20250516-py3-none-any.whl", hash = "sha256:faf417c259a3ae54c1b72c77032c07af3025ed90164c905fb785d21e8580139c"},
+    {file = "types_requests_oauthlib-2.0.0.20250516.tar.gz", hash = "sha256:2a384b6ca080bd1eb30a88e14836237dc43d217892fddf869f03aea65213e0d4"},
 ]
 
 [package.dependencies]
