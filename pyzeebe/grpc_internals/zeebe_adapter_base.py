@@ -63,6 +63,7 @@ class ZeebeAdapterBase:
         except Exception as exception:
             logger.exception("Failed to close channel, %s exception was raised", type(exception).__name__)
         finally:
+            logger.info(f"Closing grpc channel after {self._max_connection_retries} retries.")
             self._connected = False
             for callback in self._on_disconnect_callbacks:
                 callback()

@@ -64,7 +64,6 @@ class ZeebeWorker(ZeebeTaskRouter):
         self._job_pollers: list[JobPoller] = []
         self._job_streamers: list[JobStreamer] = []
         self._job_executors: list[JobExecutor] = []
-        self._stop_event = anyio.Event()
         self._stream_enabled = stream_enabled
         self._stream_request_timeout = stream_request_timeout
 
@@ -102,14 +101,6 @@ class ZeebeWorker(ZeebeTaskRouter):
                 )
                 self._job_streamers.append(streamer)
 
-    async def _monitor_connection(self) -> None:
-        while True:
-            if not self.zeebe_adapter.connected:
-                logger.error("Lost Zeebe connection")
-                self._stop_event.set()
-                break
-            await asyncio.sleep(5)
-
     async def work(self) -> None:
         """
         Start the worker. The worker will poll zeebe for jobs of each task in a different asyncio task.
@@ -125,7 +116,6 @@ class ZeebeWorker(ZeebeTaskRouter):
         self._init_tasks()
 
         async with anyio.create_task_group() as tg:
-            tg.start_soon(self._monitor_connection)
 
             for poller in self._job_pollers:
                 tg.start_soon(poller.poll)
