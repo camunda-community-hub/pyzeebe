@@ -54,7 +54,9 @@ class ZeebeWorker(ZeebeTaskRouter):
                 It's useful to set a few hours to load-balance your streams over time. New in Zeebe 8.4.
         """
         super().__init__(before, after, exception_handler)
+        self._stop_event = anyio.Event()
         self.zeebe_adapter = ZeebeAdapter(grpc_channel, max_connection_retries)
+        self.zeebe_adapter.add_disconnect_callback(self._stop_event.set)
         self.name = name or socket.gethostname()
         self.request_timeout = request_timeout
         self.poll_retry_delay = poll_retry_delay
@@ -62,7 +64,6 @@ class ZeebeWorker(ZeebeTaskRouter):
         self._job_pollers: list[JobPoller] = []
         self._job_streamers: list[JobStreamer] = []
         self._job_executors: list[JobExecutor] = []
-        self._stop_event = anyio.Event()
         self._stream_enabled = stream_enabled
         self._stream_request_timeout = stream_request_timeout
 
@@ -115,6 +116,7 @@ class ZeebeWorker(ZeebeTaskRouter):
         self._init_tasks()
 
         async with anyio.create_task_group() as tg:
+
             for poller in self._job_pollers:
                 tg.start_soon(poller.poll)
 
@@ -134,14 +136,15 @@ class ZeebeWorker(ZeebeTaskRouter):
         """
         Stop the worker. This will emit a signal asking tasks to complete the current task and stop polling for new.
         """
-        for poller in self._job_pollers:
-            await poller.stop()
+        async with anyio.create_task_group() as tg:
+            for poller in self._job_pollers:
+                tg.start_soon(poller.stop)
 
-        for streamer in self._job_streamers:
-            await streamer.stop()
+            for streamer in self._job_streamers:
+                tg.start_soon(streamer.stop)
 
-        for executor in self._job_executors:
-            await executor.stop()
+            for executor in self._job_executors:
+                tg.start_soon(executor.stop)
 
         self._stop_event.set()
 
