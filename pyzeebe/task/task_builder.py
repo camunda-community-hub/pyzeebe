@@ -9,6 +9,7 @@ from typing import Any, TypeVar
 from typing_extensions import ParamSpec
 
 from pyzeebe import Job
+from pyzeebe.errors.decorator_errors import NonRecoverableDecoratorError
 from pyzeebe.function_tools import DictFunction, Function
 from pyzeebe.function_tools.async_tools import asyncify, is_async_function
 from pyzeebe.function_tools.dict_tools import convert_to_dict_function
@@ -118,6 +119,8 @@ def create_decorator_runner(decorators: Sequence[AsyncTaskDecorator]) -> Decorat
 async def run_decorator(decorator: AsyncTaskDecorator, job: Job) -> Job:
     try:
         return await decorator(job)
+    except NonRecoverableDecoratorError:
+        raise
     except Exception as e:
         logger.warning("Failed to run decorator %s. Exception: %s", decorator, e, exc_info=True)
         return job

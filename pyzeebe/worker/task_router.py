@@ -14,6 +14,7 @@ from pyzeebe.task.task import Task
 from pyzeebe.task.task_config import TaskConfig
 from pyzeebe.task.types import TaskDecorator
 
+
 P = ParamSpec("P")
 R = TypeVar("R")
 RD = TypeVar("RD", bound=Optional[dict[str, Any]])
