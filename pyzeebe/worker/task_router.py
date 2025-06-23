@@ -23,10 +23,10 @@ logger = logging.getLogger(__name__)
 
 class ZeebeTaskRouter:
     def __init__(
-            self,
-            before: list[TaskDecorator] | None = None,
-            after: list[TaskDecorator] | None = None,
-            exception_handler: ExceptionHandler | None = None,
+        self,
+        before: list[TaskDecorator] | None = None,
+        after: list[TaskDecorator] | None = None,
+        exception_handler: ExceptionHandler | None = None,
     ):
         """
         Args:
@@ -41,49 +41,32 @@ class ZeebeTaskRouter:
 
     @overload
     def task(
-            self,
-            task_type: str,
-            exception_handler: ExceptionHandler | None = None,
-            variables_to_fetch: Iterable[str] | None = None,
-            timeout_ms: int = 10000,
-            max_jobs_to_activate: int = 32,
-            max_running_jobs: int = 32,
-            before: list[TaskDecorator] | None = None,
-            after: list[TaskDecorator] | None = None,
-            *,
-            single_value: Literal[False] = False,
+        self,
+        task_type: str,
+        exception_handler: ExceptionHandler | None = None,
+        variables_to_fetch: Iterable[str] | None = None,
+        timeout_ms: int = 10000,
+        max_jobs_to_activate: int = 32,
+        max_running_jobs: int = 32,
+        before: list[TaskDecorator] | None = None,
+        after: list[TaskDecorator] | None = None,
+        *,
+        single_value: Literal[False] = False,
     ) -> Callable[[Function[P, RD]], Function[P, RD]]:
         ...
 
-    @overload
     def task(
-            self,
-            task_type: str,
-            exception_handler: ExceptionHandler | None = None,
-            variables_to_fetch: Iterable[str] | None = None,
-            timeout_ms: int = 10000,
-            max_jobs_to_activate: int = 32,
-            max_running_jobs: int = 32,
-            before: list[TaskDecorator] | None = None,
-            after: list[TaskDecorator] | None = None,
-            *,
-            single_value: Literal[True],
-            variable_name: str,
-    ) -> Callable[[Function[P, R]], Function[P, R]]:
-        ...
-
-    def task(
-            self,
-            task_type: str,
-            exception_handler: ExceptionHandler | None = None,
-            variables_to_fetch: Iterable[str] | None = None,
-            timeout_ms: int = 10000,
-            max_jobs_to_activate: int = 32,
-            max_running_jobs: int = 32,
-            before: list[TaskDecorator] | None = None,
-            after: list[TaskDecorator] | None = None,
-            single_value: bool = False,
-            variable_name: str | None = None,
+        self,
+        task_type: str,
+        exception_handler: ExceptionHandler | None = None,
+        variables_to_fetch: Iterable[str] | None = None,
+        timeout_ms: int = 10000,
+        max_jobs_to_activate: int = 32,
+        max_running_jobs: int = 32,
+        before: list[TaskDecorator] | None = None,
+        after: list[TaskDecorator] | None = None,
+        single_value: bool = False,
+        variable_name: str | None = None,
     ) -> Callable[[Function[P, R]], Function[P, R]]:
         """
         Decorator to create a task
@@ -129,6 +112,23 @@ class ZeebeTaskRouter:
             return task_function
 
         return task_wrapper
+
+    @overload
+    def task(
+        self,
+        task_type: str,
+        exception_handler: ExceptionHandler | None = None,
+        variables_to_fetch: Iterable[str] | None = None,
+        timeout_ms: int = 10000,
+        max_jobs_to_activate: int = 32,
+        max_running_jobs: int = 32,
+        before: list[TaskDecorator] | None = None,
+        after: list[TaskDecorator] | None = None,
+        *,
+        single_value: Literal[True],
+        variable_name: str,
+    ) -> Callable[[Function[P, R]], Function[P, R]]:
+        ...
 
     def _add_task(self, task: Task) -> None:
         self._is_task_duplicate(task.type)

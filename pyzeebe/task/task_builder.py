@@ -65,7 +65,7 @@ def prepare_task_function(task_function: Function[P, R], task_config: TaskConfig
 
 
 async def run_original_task_function(
-        task_function: DictFunction[...], task_config: TaskConfig, job: Job, job_controller: JobController
+    task_function: DictFunction[...], task_config: TaskConfig, job: Job, job_controller: JobController
 ) -> tuple[Variables, bool]:
     try:
         if task_config.variables_to_fetch is None:
