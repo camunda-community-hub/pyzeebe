@@ -65,7 +65,7 @@ def prepare_task_function(task_function: Function[P, R], task_config: TaskConfig
 
 
 async def run_original_task_function(
-    task_function: DictFunction[...], task_config: TaskConfig, job: Job, job_controller: JobController
+        task_function: DictFunction[...], task_config: TaskConfig, job: Job, job_controller: JobController
 ) -> tuple[Variables, bool]:
     try:
         if task_config.variables_to_fetch is None:
@@ -119,7 +119,8 @@ def create_decorator_runner(decorators: Sequence[AsyncTaskDecorator]) -> Decorat
 async def run_decorator(decorator: AsyncTaskDecorator, job: Job) -> Job:
     try:
         return await decorator(job)
-    except NonRecoverableDecoratorError:
+    except NonRecoverableDecoratorError as error:
+        logger.error(f"Non-recoverable decorator error in job %s: %s", job.type, error)
         raise
     except Exception as e:
         logger.warning("Failed to run decorator %s. Exception: %s", decorator, e, exc_info=True)

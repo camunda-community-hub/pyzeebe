@@ -9,7 +9,6 @@ from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job, JobController
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_state import TaskState
-from pyzeebe.errors.decorator_errors import NonRecoverableDecoratorError
 
 logger = logging.getLogger(__name__)
 
@@ -36,9 +35,6 @@ class JobExecutor:
     async def execute_one_job(self, job: Job, job_controller: JobController) -> None:
         try:
             await self.task.job_handler(job, job_controller)
-        except NonRecoverableDecoratorError as error:
-            logger.error(f"Non-recoverable decorator error in job %s: %s", job.type, error)
-            raise
         except JobAlreadyDeactivatedError as error:
             logger.warning("Job was already deactivated. Job key: %s", error.job_key)
 
