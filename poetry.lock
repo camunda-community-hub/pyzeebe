@@ -248,7 +248,7 @@ description = "Cross-platform colored terminal text."
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
 groups = ["dev"]
-markers = "sys_platform == \"win32\" or platform_system == \"Windows\""
+markers = "platform_system == \"Windows\" or sys_platform == \"win32\""
 files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
@@ -1416,14 +1416,14 @@ files = [
 
 [[package]]
 name = "types-oauthlib"
-version = "3.3.0.20250622"
+version = "3.3.0.20250703"
 description = "Typing stubs for oauthlib"
 optional = false
 python-versions = ">=3.9"
 groups = ["stubs"]
 files = [
-    {file = "types_oauthlib-3.3.0.20250622-py3-none-any.whl", hash = "sha256:9c23bc13c18d62bb2cc3a45c72ee1acc0231e8de74f2d79015ac43c77e3849e5"},
-    {file = "types_oauthlib-3.3.0.20250622.tar.gz", hash = "sha256:27f67b661fce269e46bed1d06be093f6b94c19cfb71ade50080aab39c5b6eab7"},
+    {file = "types_oauthlib-3.3.0.20250703-py3-none-any.whl", hash = "sha256:51cc15591c3ba8e3fc04691d6c9a83b0d4d6962d87be76b660cfcfe5323a8949"},
+    {file = "types_oauthlib-3.3.0.20250703.tar.gz", hash = "sha256:778f942fd22c0e50d4bead5d1047ff8dac44c7bcd4dcf864fa523a031ac6cf6a"},
 ]
 
 [[package]]
