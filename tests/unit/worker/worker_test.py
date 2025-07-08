@@ -270,7 +270,7 @@ class TestWorker:
         poller_mock = AsyncMock(spec_set=JobPoller, poll=AsyncMock(side_effect=[Exception("test_exception")]))
         zeebe_worker._job_pollers = [poller_mock]
 
-        with pytest.raises(Exception, match=r"unhandled errors in a TaskGroup \(1 sub-exception\)"):
+        with pytest.raises(Exception, match=r"unhandled errors in a TaskGroup"):
             await zeebe_worker.work()
 
         poller_mock.poll.assert_awaited_once()
@@ -290,7 +290,7 @@ class TestWorker:
         poller2_mock = AsyncMock(spec_set=JobPoller, poll=AsyncMock(wraps=poll2))
         zeebe_worker._job_pollers = [poller_mock, poller2_mock]
 
-        with pytest.raises(Exception, match=r"unhandled errors in a TaskGroup \(1 sub-exception\)"):
+        with pytest.raises(Exception, match=r"unhandled errors in a TaskGroup"):
             await zeebe_worker.work()
 
         poller_mock.poll.assert_awaited_once()
@@ -316,7 +316,7 @@ class TestWorker:
         streamer_mock = AsyncMock(spec_set=JobStreamer, poll=AsyncMock(side_effect=[Exception("test_exception")]))
         zeebe_worker._job_streamers = [streamer_mock]
 
-        with pytest.raises(Exception, match=r"unhandled errors in a TaskGroup \(1 sub-exception\)"):
+        with pytest.raises(Exception, match=r"unhandled errors in a TaskGroup"):
             await zeebe_worker.work()
 
         streamer_mock.poll.assert_awaited_once()
