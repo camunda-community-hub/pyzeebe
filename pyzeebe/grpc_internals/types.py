@@ -262,6 +262,11 @@ class ThrowErrorResponse:
 
 
 @dataclass(frozen=True)
+class UpdateJobTimeoutResponse:
+    pass
+
+
+@dataclass(frozen=True)
 class TopologyResponse:
 
     @dataclass(frozen=True)

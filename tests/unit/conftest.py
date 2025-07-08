@@ -9,6 +9,7 @@ import pytest_asyncio
 from pyzeebe import Job, ZeebeClient, ZeebeWorker
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import JobController
+from pyzeebe.job.job_status import JobStatus
 from pyzeebe.task import task_builder
 from pyzeebe.task.task_config import TaskConfig
 from pyzeebe.worker.task_router import ZeebeTaskRouter
@@ -68,6 +69,13 @@ def task(original_task_function, task_config):
 
 @pytest.fixture
 def first_active_job(task, job_from_task, grpc_servicer) -> str:
+    grpc_servicer.active_jobs[job_from_task.key] = job_from_task
+    return job_from_task
+
+
+@pytest.fixture
+def deactivated_job(task, job_from_task, grpc_servicer) -> str:
+    job_from_task._set_status(JobStatus.Completed)
     grpc_servicer.active_jobs[job_from_task.key] = job_from_task
     return job_from_task
 
