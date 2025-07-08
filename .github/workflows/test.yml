@@ -21,21 +21,21 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
         if: ${{ matrix.python-version != '3.6' && matrix.python-version != '3.7' && matrix.python-version != '3.8' }}
-      - name: Init python poetry action
-        uses: abatilo/actions-poetry@v4.0.0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          poetry-version: 1.8.3
+          version: "0.7.19"
         if: ${{ matrix.python-version != '3.6' && matrix.python-version != '3.7' && matrix.python-version != '3.8' }}
-      - name: Install dependencies
-        run: poetry install
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev
         if: ${{ matrix.python-version != '3.6' && matrix.python-version != '3.7' && matrix.python-version != '3.8' }}
       - name: Test with pytest
         run: |
-          poetry run coverage run --source=pyzeebe -m pytest tests/unit
+          uv run coverage run --source=pyzeebe -m pytest tests/unit
         if: ${{ matrix.python-version != '3.6' && matrix.python-version != '3.7' && matrix.python-version != '3.8' }}
       - name: Upload to coveralls
         run: |
-          poetry run coveralls --service=github
+          uv run coveralls --service=github
         env:
           COVERALLS_PARALLEL: "true"
           COVERALLS_SERVICE_JOB_ID: ${{ github.run_id }}
@@ -61,12 +61,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - name: Init python poetry action
-        uses: abatilo/actions-poetry@v4.0.0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          poetry-version: 1.8.3
-      - name: Install dependencies
-        run: poetry install
+          version: "0.7.19"
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev
       - name: Sleep for 30 seconds
         uses: jakejarvis/wait-action@master
         with:
@@ -74,7 +74,7 @@ jobs:
 
       - name: Run integration tests
         run: |
-          poetry run pytest tests/integration
+          uv run pytest tests/integration
 
   finish-coveralls:
     runs-on: ubuntu-latest
@@ -84,14 +84,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - name: Init python poetry action
-        uses: abatilo/actions-poetry@v4.0.0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          poetry-version: 1.8.3
-      - name: Install dependencies
-        run: poetry install
+          version: "0.7.19"
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev
       - name: finish coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          poetry run coveralls --service=github --finish
+          uv run coveralls --service=github --finish
