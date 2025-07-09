@@ -1,4 +1,10 @@
+import pydantic
+
 from pyzeebe.job.job import Job
+
+
+class Foo(pydantic.BaseModel):
+    value: str
 
 
 def no_param():
@@ -46,6 +52,14 @@ def with_job_parameter_and_param(x, job: Job):
 
 
 def with_multiple_job_parameters(job: Job, job2: Job):
+    pass
+
+
+def with_pydantic_schema(data: Foo):
+    pass
+
+
+def with_job_parameter_and_pydantic_schema(data: Foo, job: Job):
     pass
 
 

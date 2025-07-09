@@ -1,6 +1,7 @@
 import copy
 from typing import Callable
 
+import pydantic
 import pytest
 
 from pyzeebe import Job, JobController, TaskDecorator
@@ -9,6 +10,10 @@ from pyzeebe.task import task_builder
 from pyzeebe.task.task import Task
 from pyzeebe.task.task_config import TaskConfig
 from tests.unit.utils.random_utils import random_job
+
+
+class Foo(pydantic.BaseModel):
+    value: str
 
 
 class TestBuildTask:
@@ -72,6 +77,18 @@ class TestBuildTask:
         job = await task.job_handler(job, mocked_job_controller)
 
         assert "job" not in job.variables
+
+    @pytest.mark.asyncio
+    async def test_pydantic_is_injected_in_task(self, task_config: TaskConfig, mocked_job_controller: JobController):
+        def function_with_pydantic(data: Foo):
+            return {"data": data.model_dump()}
+
+        job = random_job(variables={"value": "test"})
+
+        task = task_builder.build_task(function_with_pydantic, task_config)
+        job = await task.job_handler(job, mocked_job_controller)
+
+        assert mocked_job_controller.set_success_status.call_args.kwargs["variables"]["data"] == {"value": "test"}
 
 
 class TestBuildJobHandler:

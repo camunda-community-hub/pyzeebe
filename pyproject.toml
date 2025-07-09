@@ -28,6 +28,11 @@ homepage = "https://github.com/camunda-community-hub/pyzeebe"
 repository = "https://github.com/camunda-community-hub/pyzeebe"
 documentation = "https://camunda-community-hub.github.io/pyzeebe/"
 
+[project.optional-dependencies]
+pydantic = [
+    "pydantic>=2.0",
+]
+
 [dependency-groups]
 dev = [
     "pytest>=7.4,<9.0",

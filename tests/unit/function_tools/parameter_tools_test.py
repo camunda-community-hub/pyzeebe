@@ -24,6 +24,8 @@ class TestGetFunctionParameters:
             (dummy_functions.with_job_parameter, []),
             (dummy_functions.with_job_parameter_and_param, ["x"]),
             (dummy_functions.with_multiple_job_parameters, []),
+            (dummy_functions.with_pydantic_schema, ["value"]),
+            (dummy_functions.with_job_parameter_and_pydantic_schema, ["value"]),
             (dummy_functions.lambda_no_params, None),
             (dummy_functions.lambda_one_param, ["x"]),
             (dummy_functions.lambda_multiple_params, ["x", "y", "z"]),
@@ -51,3 +53,15 @@ class TestGetJobParameter:
         job_parameter = parameter_tools.get_job_parameter_name(dummy_functions.with_multiple_job_parameters)
 
         assert job_parameter == "job"
+
+
+class TestGetPydanticSchema:
+    def test_returns_none_when_there_are_no_parameters_annotated_with_job(self):
+        pydantic_schema = parameter_tools.get_pydantic_schema(dummy_functions.multiple_params)
+
+        assert pydantic_schema == None
+
+    def test_returns_parameter_name_when_annotated(self):
+        pydantic_schema = parameter_tools.get_pydantic_schema(dummy_functions.with_pydantic_schema)
+
+        assert pydantic_schema[0] == "data"
