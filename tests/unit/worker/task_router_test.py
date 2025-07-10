@@ -1,6 +1,7 @@
 from unittest import mock
 from uuid import uuid4
 
+import pydantic
 import pytest
 
 from pyzeebe import TaskDecorator
@@ -10,6 +11,10 @@ from pyzeebe.task.exception_handler import ExceptionHandler, default_exception_h
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_router import ZeebeTaskRouter
 from tests.unit.utils.random_utils import randint
+
+
+class Foo(pydantic.BaseModel):
+    value: str
 
 
 def test_get_task(router: ZeebeTaskRouter, task: Task):
@@ -140,6 +145,24 @@ async def test_default_exception_handler_uses_business_error(job: Job, mocked_jo
     exception = BusinessError(error_code)
     await default_exception_handler(exception, job, mocked_job_controller)
     mocked_job_controller.set_error_status.assert_called_with(mock.ANY, error_code=error_code)
+
+
+@pytest.mark.asyncio
+async def test_default_exception_handler_uses_pydantic_error(job: Job, mocked_job_controller: JobController):
+    exception = None
+    try:
+        Foo(**{})
+    except pydantic.ValidationError as err:
+        exception = err
+
+    await default_exception_handler(exception, job, mocked_job_controller)
+    mocked_job_controller.set_error_status.assert_called_with(
+        "Failed job. Recoverable error: 1 validation error for Foo\n"
+        "value\n"
+        "  Field required [type=missing, input_value={}, input_type=dict]\n"
+        "    For further information visit "
+        "https://errors.pydantic.dev/2.11/v/missing"
+    )
 
 
 @pytest.mark.asyncio

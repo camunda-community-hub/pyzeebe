@@ -1,11 +1,16 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from typing import TYPE_CHECKING
+from typing import Type as type_
 
 from pyzeebe.errors import NoVariableNameGivenError
 from pyzeebe.function_tools import async_tools
 from pyzeebe.task.exception_handler import ExceptionHandler
 from pyzeebe.task.types import AsyncTaskDecorator, TaskDecorator
+
+if TYPE_CHECKING:
+    import pydantic
 
 
 class TaskConfig:
@@ -39,6 +44,7 @@ class TaskConfig:
         self.before = async_tools.asyncify_all_functions(before)
         self.after = async_tools.asyncify_all_functions(after)
         self.job_parameter_name: str | None = None
+        self.pydantic_schema: tuple[str, type_[pydantic.BaseModel]] | None = None
 
     def __repr__(self) -> str:
         return (

@@ -12,7 +12,10 @@ from pyzeebe import Job
 from pyzeebe.function_tools import DictFunction, Function
 from pyzeebe.function_tools.async_tools import asyncify, is_async_function
 from pyzeebe.function_tools.dict_tools import convert_to_dict_function
-from pyzeebe.function_tools.parameter_tools import get_job_parameter_name
+from pyzeebe.function_tools.parameter_tools import (
+    get_job_parameter_name,
+    get_pydantic_schema,
+)
 from pyzeebe.job.job import JobController
 from pyzeebe.task.exception_handler import default_exception_handler
 from pyzeebe.task.task import Task
@@ -28,6 +31,7 @@ logger = logging.getLogger(__name__)
 
 def build_task(task_function: Function[..., Any], task_config: TaskConfig) -> Task:
     task_config.job_parameter_name = get_job_parameter_name(task_function)
+    task_config.pydantic_schema = get_pydantic_schema(task_function)
     return Task(task_function, build_job_handler(task_function, task_config), task_config)
 
 
@@ -67,14 +71,16 @@ async def run_original_task_function(
     task_function: DictFunction[...], task_config: TaskConfig, job: Job, job_controller: JobController
 ) -> tuple[Variables, bool]:
     try:
-        if task_config.variables_to_fetch is None:
-            variables: dict[str, Any] = {}
+        variables: dict[str, Any] = {}
+        if task_config.pydantic_schema:
+            parameter_name, pydantic_schema = task_config.pydantic_schema
+            variables[parameter_name] = pydantic_schema.model_validate(job.variables)
         elif task_wants_all_variables(task_config):
             if only_job_is_required_in_task_function(task_function):
                 variables = {}
             else:
                 variables = {**job.variables}
-        else:
+        elif task_config.variables_to_fetch is not None:
             variables = {
                 k: v
                 for k, v in job.variables.items()
