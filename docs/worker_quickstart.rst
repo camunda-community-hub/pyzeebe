@@ -57,6 +57,10 @@ This means the worker will disconnect upon two consecutive failures. Each time t
 
     The default behavior is 10 retries. If you want infinite retries just set to -1.
 
+..note ::
+
+    After the number of retries you set, the grpc channel closes and the ZeebeWorker stop.
+
 
 Add a task
 ----------
