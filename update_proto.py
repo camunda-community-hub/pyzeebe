@@ -5,7 +5,7 @@ import pathlib
 import requests
 from grpc_tools.protoc import main as grpc_tools_protoc_main
 
-DEFAULT_PROTO_VERSION: str = "8.6.6"
+DEFAULT_PROTO_VERSION: str = "8.7.10"
 
 
 def main():
