@@ -16,7 +16,7 @@ jobs:
         python-version: ["3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
@@ -57,7 +57,7 @@ jobs:
           - 26500:26500
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
@@ -80,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: unit-test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
