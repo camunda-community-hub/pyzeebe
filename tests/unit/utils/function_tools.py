@@ -1,4 +1,4 @@
-from typing import Callable
+from collections.abc import Callable
 
 from pyzeebe.function_tools import async_tools
 
