@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import functools
+import inspect
 from collections.abc import Iterable
 from typing import Any, TypeVar
 
@@ -33,6 +34,4 @@ def asyncify(task_function: SyncFunction[P, R]) -> AsyncFunction[P, R]:
 
 
 def is_async_function(function: Function[P, R]) -> TypeIs[AsyncFunction[P, R]]:
-    # Not using inspect.iscoroutinefunction here because it doens't handle AsyncMock well
-    # See: https://bugs.python.org/issue40573
-    return asyncio.iscoroutinefunction(function)
+    return inspect.iscoroutinefunction(function)

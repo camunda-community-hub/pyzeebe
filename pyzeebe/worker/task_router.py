@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Iterable
-from typing import Any, Callable, Literal, Optional, TypeVar, overload
+from collections.abc import Callable, Iterable
+from typing import Any, Literal, Optional, TypeVar, overload
 
 from typing_extensions import ParamSpec
 

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import json
 import os
-from collections.abc import Iterable
-from typing import Callable, NoReturn
+from collections.abc import Callable, Iterable
+from typing import NoReturn
 
 import anyio
 import grpc

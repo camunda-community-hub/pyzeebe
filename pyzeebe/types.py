@@ -1,7 +1,5 @@
 from collections.abc import Mapping, Sequence
-from typing import Any, Union
-
-from typing_extensions import TypeAlias
+from typing import Any, TypeAlias, Union
 
 Headers: TypeAlias = Mapping[str, Any]
 Unset = "UNSET"
