@@ -26,7 +26,7 @@ jobs:
       - name: Sphinx build
         run: uv run sphinx-build --define html_baseurl="${{ steps.pages.outputs.base_url }}" docs _site/
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
 
   deploy:
     needs: build
