@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 import grpc
 import pytest
@@ -97,6 +97,9 @@ class TestHandleRpcError:
         )
 
     async def test_closes_after_retries_exceeded(self, zeebe_adapter: ZeebeAdapterBase):
+        on_disconnect_callback = Mock()
+        zeebe_adapter.add_disconnect_callback(on_disconnect_callback)
+
         error = grpc.aio.AioRpcError(grpc.StatusCode.UNAVAILABLE, None, None)
 
         zeebe_adapter._channel.close = AsyncMock()
@@ -106,8 +109,12 @@ class TestHandleRpcError:
 
         assert zeebe_adapter.connected is False
         zeebe_adapter._channel.close.assert_awaited_once()
+        on_disconnect_callback.assert_called_once()
 
     async def test_closes_after_internal_error(self, zeebe_adapter: ZeebeAdapterBase):
+        on_disconnect_callback = Mock()
+        zeebe_adapter.add_disconnect_callback(on_disconnect_callback)
+
         error = grpc.aio.AioRpcError(grpc.StatusCode.INTERNAL, None, None)
 
         zeebe_adapter._channel.close = AsyncMock()
@@ -117,3 +124,4 @@ class TestHandleRpcError:
 
         assert zeebe_adapter.connected is False
         zeebe_adapter._channel.close.assert_awaited_once()
+        on_disconnect_callback.assert_called_once()
