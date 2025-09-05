@@ -1,6 +1,6 @@
 import grpc
 
-from pyzeebe.grpc_internals import grpc_utils
+from pyzeebe.adapters.grpc import _utils as grpc_utils
 
 
 class TestIsErrorStatus:

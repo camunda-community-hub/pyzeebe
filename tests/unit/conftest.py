@@ -6,8 +6,7 @@ import grpc
 import pytest
 import pytest_asyncio
 
-from pyzeebe import Job, ZeebeClient, ZeebeWorker
-from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
+from pyzeebe import Job, ZeebeClient, ZeebeGRPCAdapter, ZeebeWorker
 from pyzeebe.job.job import JobController
 from pyzeebe.job.job_status import JobStatus
 from pyzeebe.task import task_builder
@@ -46,7 +45,7 @@ def job_from_task(task):
 
 @pytest.fixture
 def zeebe_adapter(aio_grpc_channel: grpc.aio.Channel):
-    adapter = ZeebeAdapter(aio_grpc_channel)
+    adapter = ZeebeGRPCAdapter(aio_grpc_channel)
     return adapter
 
 

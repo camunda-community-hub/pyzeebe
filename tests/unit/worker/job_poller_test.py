@@ -3,7 +3,7 @@ import re
 
 import pytest
 
-from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
+from pyzeebe import ZeebeGRPCAdapter as ZeebeAdapter
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
 from pyzeebe.worker.job_poller import JobPoller, JobStreamer
@@ -54,13 +54,13 @@ class TestPollOnce:
 class TestShouldPoll:
     def test_should_poll_returns_expected_result_when_disconnected(self, job_poller: JobPoller):
         job_poller.zeebe_adapter._connected = False
-        job_poller.zeebe_adapter.retrying_connection = False
+        job_poller.zeebe_adapter._retrying_connection = False
 
         assert not job_poller.should_poll()
 
     def test_continues_polling_when_retrying_connection(self, job_poller: JobPoller):
         job_poller.zeebe_adapter._connected = False
-        job_poller.zeebe_adapter.retrying_connection = True
+        job_poller.zeebe_adapter._retrying_connection = True
 
         assert job_poller.should_poll()
 
@@ -74,13 +74,13 @@ class TestShouldPoll:
 class TestStreamShouldPoll:
     def test_should_poll_returns_expected_result_when_disconnected(self, job_stream_poller: JobStreamer):
         job_stream_poller.zeebe_adapter._connected = False
-        job_stream_poller.zeebe_adapter.retrying_connection = False
+        job_stream_poller.zeebe_adapter._retrying_connection = False
 
         assert not job_stream_poller.should_poll()
 
     def test_continues_polling_when_retrying_connection(self, job_stream_poller: JobStreamer):
         job_stream_poller.zeebe_adapter._connected = False
-        job_stream_poller.zeebe_adapter.retrying_connection = True
+        job_stream_poller.zeebe_adapter._retrying_connection = True
 
         assert job_stream_poller.should_poll()
 

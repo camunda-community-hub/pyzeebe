@@ -6,7 +6,7 @@ import os
 import grpc
 
 from pyzeebe import ZeebeClient
-from pyzeebe.grpc_internals.types import (
+from pyzeebe.adapters.types import (
     BroadcastSignalResponse,
     CancelProcessInstanceResponse,
     CreateProcessInstanceResponse,

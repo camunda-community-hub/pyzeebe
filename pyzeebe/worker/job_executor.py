@@ -4,8 +4,8 @@ import asyncio
 import logging
 from collections.abc import Callable
 
+from pyzeebe.adapters import ZeebeAdapter
 from pyzeebe.errors import JobAlreadyDeactivatedError
-from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import Job, JobController
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_state import TaskState

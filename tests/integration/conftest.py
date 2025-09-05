@@ -6,6 +6,7 @@ import grpc
 import pytest
 
 from pyzeebe import Job, ZeebeClient, ZeebeWorker, create_insecure_channel
+from pyzeebe.adapters.grpc._adapter import ZeebeGRPCAdapter
 from pyzeebe.job.job import JobController
 from tests.integration.utils import ProcessRun, ProcessStats
 

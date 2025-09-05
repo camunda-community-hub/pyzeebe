@@ -65,6 +65,10 @@ module = "grpc"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+module = "grpc.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
 module = "grpc_health.*"
 ignore_missing_imports = true
 

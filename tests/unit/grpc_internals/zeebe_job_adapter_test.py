@@ -3,19 +3,19 @@ from uuid import uuid4
 
 import pytest
 
+from pyzeebe import ZeebeGRPCAdapter
+from pyzeebe.adapters.types import (
+    CompleteJobResponse,
+    FailJobResponse,
+    ThrowErrorResponse,
+    UpdateJobTimeoutResponse,
+)
 from pyzeebe.errors import (
     ActivateJobsRequestInvalidError,
     JobAlreadyDeactivatedError,
     JobNotFoundError,
     StreamActivateJobsRequestInvalidError,
 )
-from pyzeebe.grpc_internals.types import (
-    CompleteJobResponse,
-    FailJobResponse,
-    ThrowErrorResponse,
-    UpdateJobTimeoutResponse,
-)
-from pyzeebe.grpc_internals.zeebe_job_adapter import ZeebeJobAdapter
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
 from tests.unit.utils.gateway_mock import GatewayMock
@@ -40,10 +40,10 @@ def random_retry_back_off_ms() -> int:
 
 @pytest.mark.asyncio
 class TestActivateJobs:
-    zeebe_job_adapter: ZeebeJobAdapter
+    zeebe_job_adapter: ZeebeGRPCAdapter
 
     @pytest.fixture(autouse=True)
-    def set_up(self, zeebe_adapter: ZeebeJobAdapter):
+    def set_up(self, zeebe_adapter: ZeebeGRPCAdapter):
         self.zeebe_job_adapter = zeebe_adapter
 
     def activate_jobs(
@@ -93,10 +93,10 @@ class TestActivateJobs:
 
 @pytest.mark.asyncio
 class TestStreamActivateJobs:
-    zeebe_job_adapter: ZeebeJobAdapter
+    zeebe_job_adapter: ZeebeGRPCAdapter
 
     @pytest.fixture(autouse=True)
-    def set_up(self, zeebe_adapter: ZeebeJobAdapter):
+    def set_up(self, zeebe_adapter: ZeebeGRPCAdapter):
         self.zeebe_job_adapter = zeebe_adapter
 
     def stream_activate_jobs(
@@ -140,16 +140,16 @@ class TestStreamActivateJobs:
 
 @pytest.mark.asyncio
 class TestCompleteJob:
-    async def test_response_is_of_correct_type(self, zeebe_adapter: ZeebeJobAdapter, first_active_job: Job):
+    async def test_response_is_of_correct_type(self, zeebe_adapter: ZeebeGRPCAdapter, first_active_job: Job):
         response = await zeebe_adapter.complete_job(first_active_job.key, {})
 
         assert isinstance(response, CompleteJobResponse)
 
-    async def test_raises_on_fake_job(self, zeebe_adapter: ZeebeJobAdapter):
+    async def test_raises_on_fake_job(self, zeebe_adapter: ZeebeGRPCAdapter):
         with pytest.raises(JobNotFoundError):
             await zeebe_adapter.complete_job(random_job_key(), {})
 
-    async def test_raises_on_already_completed_job(self, zeebe_adapter: ZeebeJobAdapter, first_active_job: Job):
+    async def test_raises_on_already_completed_job(self, zeebe_adapter: ZeebeGRPCAdapter, first_active_job: Job):
         await zeebe_adapter.complete_job(first_active_job.key, {})
 
         with pytest.raises(JobAlreadyDeactivatedError):
@@ -158,7 +158,7 @@ class TestCompleteJob:
 
 @pytest.mark.asyncio
 class TestFailJob:
-    async def test_response_is_of_correct_type(self, zeebe_adapter: ZeebeJobAdapter, first_active_job: Job):
+    async def test_response_is_of_correct_type(self, zeebe_adapter: ZeebeGRPCAdapter, first_active_job: Job):
         response = await zeebe_adapter.fail_job(
             first_active_job.key,
             first_active_job.retries,
@@ -169,13 +169,13 @@ class TestFailJob:
 
         assert isinstance(response, FailJobResponse)
 
-    async def test_raises_on_fake_job(self, zeebe_adapter: ZeebeJobAdapter):
+    async def test_raises_on_fake_job(self, zeebe_adapter: ZeebeGRPCAdapter):
         with pytest.raises(JobNotFoundError):
             await zeebe_adapter.fail_job(
                 random_job_key(), 1, random_message(), random_retry_back_off_ms(), random_variables()
             )
 
-    async def test_raises_on_deactivated_job(self, zeebe_adapter: ZeebeJobAdapter, first_active_job: Job):
+    async def test_raises_on_deactivated_job(self, zeebe_adapter: ZeebeGRPCAdapter, first_active_job: Job):
         await zeebe_adapter.fail_job(
             first_active_job.key,
             first_active_job.retries,
@@ -196,16 +196,16 @@ class TestFailJob:
 
 @pytest.mark.asyncio
 class TestThrowError:
-    async def test_response_is_of_correct_type(self, zeebe_adapter: ZeebeJobAdapter, first_active_job: Job):
+    async def test_response_is_of_correct_type(self, zeebe_adapter: ZeebeGRPCAdapter, first_active_job: Job):
         response = await zeebe_adapter.throw_error(first_active_job.key, random_message(), random_variables())
 
         assert isinstance(response, ThrowErrorResponse)
 
-    async def test_raises_on_fake_job(self, zeebe_adapter: ZeebeJobAdapter):
+    async def test_raises_on_fake_job(self, zeebe_adapter: ZeebeGRPCAdapter):
         with pytest.raises(JobNotFoundError):
             await zeebe_adapter.throw_error(random_job_key(), random_message(), random_variables())
 
-    async def test_raises_on_deactivated_job(self, zeebe_adapter: ZeebeJobAdapter, first_active_job: Job):
+    async def test_raises_on_deactivated_job(self, zeebe_adapter: ZeebeGRPCAdapter, first_active_job: Job):
         await zeebe_adapter.throw_error(first_active_job.key, random_message(), random_variables())
 
         with pytest.raises(JobAlreadyDeactivatedError):
@@ -214,15 +214,15 @@ class TestThrowError:
 
 @pytest.mark.asyncio
 class TestUpdateJobTimeout:
-    async def test_response_is_of_correct_type(self, zeebe_adapter: ZeebeJobAdapter, first_active_job: Job):
+    async def test_response_is_of_correct_type(self, zeebe_adapter: ZeebeGRPCAdapter, first_active_job: Job):
         response = await zeebe_adapter.update_job_timeout(first_active_job.key, randint(10, 100))
 
         assert isinstance(response, UpdateJobTimeoutResponse)
 
-    async def test_raises_on_fake_job(self, zeebe_adapter: ZeebeJobAdapter):
+    async def test_raises_on_fake_job(self, zeebe_adapter: ZeebeGRPCAdapter):
         with pytest.raises(JobNotFoundError):
             await zeebe_adapter.update_job_timeout(random_job_key(), randint(10, 100))
 
-    async def test_raises_on_deactivated_job(self, zeebe_adapter: ZeebeJobAdapter, deactivated_job: Job):
+    async def test_raises_on_deactivated_job(self, zeebe_adapter: ZeebeGRPCAdapter, deactivated_job: Job):
         with pytest.raises(JobAlreadyDeactivatedError):
             await zeebe_adapter.update_job_timeout(deactivated_job.key, randint(10, 100))

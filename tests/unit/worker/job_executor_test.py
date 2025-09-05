@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
+from pyzeebe import ZeebeGRPCAdapter as ZeebeAdapter
 from pyzeebe.job.job import Job, JobController
 from pyzeebe.task.task import Task
 from pyzeebe.worker.job_executor import JobExecutor, create_job_callback

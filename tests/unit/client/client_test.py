@@ -5,13 +5,13 @@ from uuid import uuid4
 import pytest
 
 from pyzeebe import ZeebeClient
-from pyzeebe.errors import ProcessDefinitionNotFoundError
-from pyzeebe.grpc_internals.types import (
+from pyzeebe.adapters.types import (
     CancelProcessInstanceResponse,
     CreateProcessInstanceResponse,
     CreateProcessInstanceWithResultResponse,
     EvaluateDecisionResponse,
 )
+from pyzeebe.errors import ProcessDefinitionNotFoundError
 from tests.unit.utils.gateway_mock import GatewayMock
 
 

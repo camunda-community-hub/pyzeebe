@@ -7,7 +7,7 @@ from pyzeebe.job.job_status import JobStatus
 from pyzeebe.types import Headers, Variables
 
 if TYPE_CHECKING:
-    from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
+    from pyzeebe.adapters import ZeebeAdapter
 
 
 @dataclass(frozen=True)

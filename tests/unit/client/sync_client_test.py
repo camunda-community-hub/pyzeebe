@@ -5,12 +5,12 @@ import grpc
 import pytest
 
 from pyzeebe import SyncZeebeClient
-from pyzeebe.errors import ProcessDefinitionNotFoundError
-from pyzeebe.grpc_internals.types import (
+from pyzeebe.adapters.types import (
     CancelProcessInstanceResponse,
     CreateProcessInstanceResponse,
     CreateProcessInstanceWithResultResponse,
 )
+from pyzeebe.errors import ProcessDefinitionNotFoundError
 
 
 @pytest.fixture

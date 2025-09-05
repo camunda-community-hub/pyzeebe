@@ -3,18 +3,18 @@ from uuid import uuid4
 
 import pytest
 
+from pyzeebe import ZeebeGRPCAdapter
+from pyzeebe.adapters.types import BroadcastSignalResponse, PublishMessageResponse
 from pyzeebe.errors import MessageAlreadyExistsError
-from pyzeebe.grpc_internals.types import BroadcastSignalResponse, PublishMessageResponse
-from pyzeebe.grpc_internals.zeebe_message_adapter import ZeebeMessageAdapter
 from tests.unit.utils.random_utils import RANDOM_RANGE
 
 
 @pytest.mark.asyncio
 class TestPublishMessage:
-    zeebe_message_adapter: ZeebeMessageAdapter
+    zeebe_message_adapter: ZeebeGRPCAdapter
 
     @pytest.fixture(autouse=True)
-    def set_up(self, zeebe_adapter: ZeebeMessageAdapter):
+    def set_up(self, zeebe_adapter: ZeebeGRPCAdapter):
         self.zeebe_message_adapter = zeebe_adapter
 
     async def publish_message(
@@ -56,10 +56,10 @@ class TestPublishMessage:
 
 @pytest.mark.asyncio
 class TestBroadcastSignal:
-    zeebe_message_adapter: ZeebeMessageAdapter
+    zeebe_message_adapter: ZeebeGRPCAdapter
 
     @pytest.fixture(autouse=True)
-    def set_up(self, zeebe_adapter: ZeebeMessageAdapter):
+    def set_up(self, zeebe_adapter: ZeebeGRPCAdapter):
         self.zeebe_message_adapter = zeebe_adapter
 
     async def broadcast_signal(

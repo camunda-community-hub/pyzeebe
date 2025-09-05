@@ -1,7 +1,7 @@
 import pytest
 
-from pyzeebe.grpc_internals.types import HealthCheckResponse, TopologyResponse
-from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
+from pyzeebe import ZeebeGRPCAdapter as ZeebeAdapter
+from pyzeebe.adapters.types import HealthCheckResponse, TopologyResponse
 
 
 @pytest.mark.asyncio

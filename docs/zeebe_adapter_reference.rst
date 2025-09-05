@@ -2,7 +2,12 @@
 Zeebe Adapter Reference
 ==========================
 
-.. autoclass:: pyzeebe.grpc_internals.zeebe_adapter.ZeebeAdapter
+.. autoclass:: pyzeebe.adapters.ZeebeAdapter
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: pyzeebe.adapters.ZeebeGRPCAdapter
    :members:
    :undoc-members:
    :special-members: __init__
@@ -12,62 +17,62 @@ Zeebe Adapter Reference
 Zeebe GRPC Responses
 ==========================
 
-.. autoclass:: pyzeebe.grpc_internals.types.CreateProcessInstanceResponse
+.. autoclass:: pyzeebe.adapters.types.CreateProcessInstanceResponse
    :members:
    :undoc-members:
    :member-order: bysource
 
-.. autoclass:: pyzeebe.grpc_internals.types.CreateProcessInstanceWithResultResponse
+.. autoclass:: pyzeebe.adapters.types.CreateProcessInstanceWithResultResponse
    :members:
    :undoc-members:
    :member-order: bysource
 
-.. autoclass:: pyzeebe.grpc_internals.types.CancelProcessInstanceResponse
+.. autoclass:: pyzeebe.adapters.types.CancelProcessInstanceResponse
    :members:
    :undoc-members:
    :member-order: bysource
 
-.. autoclass:: pyzeebe.grpc_internals.types.DeployResourceResponse
+.. autoclass:: pyzeebe.adapters.types.DeployResourceResponse
    :members:
    :undoc-members:
    :member-order: bysource
 
-.. autoclass:: pyzeebe.grpc_internals.types.EvaluateDecisionResponse
+.. autoclass:: pyzeebe.adapters.types.EvaluateDecisionResponse
    :members:
    :undoc-members:
    :member-order: bysource
 
-.. autoclass:: pyzeebe.grpc_internals.types.BroadcastSignalResponse
+.. autoclass:: pyzeebe.adapters.types.BroadcastSignalResponse
    :members:
    :undoc-members:
    :member-order: bysource
 
-.. autoclass:: pyzeebe.grpc_internals.types.PublishMessageResponse
+.. autoclass:: pyzeebe.adapters.types.PublishMessageResponse
    :members:
    :undoc-members:
    :member-order: bysource
 
-.. autoclass:: pyzeebe.grpc_internals.types.CompleteJobResponse
+.. autoclass:: pyzeebe.adapters.types.CompleteJobResponse
    :members:
    :undoc-members:
    :member-order: bysource
 
-.. autoclass:: pyzeebe.grpc_internals.types.FailJobResponse
+.. autoclass:: pyzeebe.adapters.types.FailJobResponse
    :members:
    :undoc-members:
    :member-order: bysource
 
-.. autoclass:: pyzeebe.grpc_internals.types.ThrowErrorResponse
+.. autoclass:: pyzeebe.adapters.types.ThrowErrorResponse
    :members:
    :undoc-members:
    :member-order: bysource
 
-.. autoclass:: pyzeebe.grpc_internals.types.TopologyResponse
+.. autoclass:: pyzeebe.adapters.types.TopologyResponse
    :members:
    :undoc-members:
    :member-order: bysource
 
-.. autoclass:: pyzeebe.grpc_internals.types.HealthCheckResponse
+.. autoclass:: pyzeebe.adapters.types.HealthCheckResponse
    :members:
    :undoc-members:
    :member-order: bysource

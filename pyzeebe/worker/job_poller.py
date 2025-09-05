@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 
+from pyzeebe.adapters import ZeebeAdapter
 from pyzeebe.errors import (
     ActivateJobsRequestInvalidError,
     StreamActivateJobsRequestInvalidError,
@@ -11,7 +12,6 @@ from pyzeebe.errors import (
     ZeebeGatewayUnavailableError,
     ZeebeInternalError,
 )
-from pyzeebe.grpc_internals.zeebe_job_adapter import ZeebeJobAdapter
 from pyzeebe.job.job import Job
 from pyzeebe.task.task import Task
 from pyzeebe.worker.task_state import TaskState
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 class JobPoller:
     def __init__(
         self,
-        zeebe_adapter: ZeebeJobAdapter,
+        zeebe_adapter: ZeebeAdapter,
         task: Task,
         queue: asyncio.Queue[Job],
         worker_name: str,
@@ -100,7 +100,7 @@ class JobPoller:
 class JobStreamer:
     def __init__(
         self,
-        zeebe_adapter: ZeebeJobAdapter,
+        zeebe_adapter: ZeebeAdapter,
         task: Task,
         queue: asyncio.Queue[Job],
         worker_name: str,

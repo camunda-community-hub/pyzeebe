@@ -5,7 +5,8 @@ from collections.abc import Iterable
 
 import grpc
 
-from pyzeebe.grpc_internals.types import (
+from pyzeebe.adapters import ZeebeGRPCAdapter
+from pyzeebe.adapters.types import (
     BroadcastSignalResponse,
     CancelProcessInstanceResponse,
     CreateProcessInstanceResponse,
@@ -16,7 +17,6 @@ from pyzeebe.grpc_internals.types import (
     PublishMessageResponse,
     TopologyResponse,
 )
-from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.types import Variables
 
 
@@ -30,7 +30,7 @@ class ZeebeClient:
             max_connection_retries (int): Amount of connection retries before client gives up on connecting to zeebe. To setup with infinite retries use -1
         """
 
-        self.zeebe_adapter = ZeebeAdapter(grpc_channel, max_connection_retries)
+        self.zeebe_adapter = ZeebeGRPCAdapter(grpc_channel, max_connection_retries)
 
     async def run_process(
         self,

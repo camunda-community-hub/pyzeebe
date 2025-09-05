@@ -8,8 +8,8 @@ import anyio
 import grpc
 
 from pyzeebe import TaskDecorator
-from pyzeebe.grpc_internals.types import HealthCheckResponse
-from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
+from pyzeebe.adapters import ZeebeGRPCAdapter
+from pyzeebe.adapters.types import HealthCheckResponse
 from pyzeebe.job.job import Job
 from pyzeebe.task import task_builder
 from pyzeebe.task.exception_handler import ExceptionHandler
@@ -54,7 +54,7 @@ class ZeebeWorker(ZeebeTaskRouter):
                 It's useful to set a few hours to load-balance your streams over time. New in Zeebe 8.4.
         """
         super().__init__(before, after, exception_handler)
-        self.zeebe_adapter = ZeebeAdapter(grpc_channel, max_connection_retries)
+        self.zeebe_adapter = ZeebeGRPCAdapter(grpc_channel, max_connection_retries)
         self.name = name or socket.gethostname()
         self.request_timeout = request_timeout
         self.poll_retry_delay = poll_retry_delay

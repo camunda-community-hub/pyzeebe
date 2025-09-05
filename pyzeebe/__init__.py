@@ -1,4 +1,5 @@
 from pyzeebe import errors
+from pyzeebe.adapters import ZeebeAdapter, ZeebeGRPCAdapter
 from pyzeebe.channel import (
     create_camunda_cloud_channel,
     create_insecure_channel,
@@ -32,4 +33,6 @@ __all__ = (
     "ZeebeTaskRouter",
     "default_exception_handler",
     "ZeebeWorker",
+    "ZeebeAdapter",
+    "ZeebeGRPCAdapter",
 )
