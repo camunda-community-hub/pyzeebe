@@ -12,14 +12,14 @@ class TestAsyncify:
 
         assert inspect.iscoroutinefunction(async_function)
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_returned_function_returns_expected_value(self):
         expected_result = 5
         async_function = async_tools.asyncify(lambda: expected_result)
 
         assert await async_function() == expected_result
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_returned_function_accepts_keyword_arguments(self):
         async_function = async_tools.asyncify(lambda x, y, z: x + y + z)
 

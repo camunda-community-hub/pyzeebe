@@ -7,6 +7,7 @@ from pyzeebe.errors import DecisionNotFoundError, InvalidJSONError
 
 
 @pytest.mark.e2e
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     ["input", "output"],
     (
@@ -24,6 +25,7 @@ async def test_evaluate_decision_by_id(input, output, zeebe_client: ZeebeClient,
 
 
 @pytest.mark.e2e
+@pytest.mark.anyio
 async def test_evaluate_decision_by_key(zeebe_client: ZeebeClient, decision_key: int):
     response = await zeebe_client.evaluate_decision(decision_key, None, {"input": "1"})
 
@@ -31,6 +33,7 @@ async def test_evaluate_decision_by_key(zeebe_client: ZeebeClient, decision_key:
 
 
 @pytest.mark.e2e
+@pytest.mark.anyio
 async def test_non_existent_decision(zeebe_client: ZeebeClient):
     with pytest.raises(DecisionNotFoundError):
         await zeebe_client.evaluate_decision(1, str(uuid4()))

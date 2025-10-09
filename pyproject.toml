@@ -31,7 +31,6 @@ documentation = "https://camunda-community-hub.github.io/pyzeebe/"
 [dependency-groups]
 dev = [
     "pytest>=7.4,<9.0",
-    "pytest-asyncio>=0.21.2,<0.22.0",
     "pytest-grpc>=0.8.0",
     "pytest-mock>=3.11.1",
     "pylint>=2.17.5,<4.0.0",
@@ -45,6 +44,7 @@ dev = [
     "protobuf>=5.28,<6.0",
     "grpcio-tools>=1.66",
     "mypy-protobuf>=3.6",
+    "testcontainers>=4.13.0",
 ]
 stubs = [
     "types-oauthlib>=3.1.0",
@@ -90,7 +90,6 @@ profile = "black"
 extend_skip_glob = ["*_pb2.py", "*_pb2_grpc.py", "*.pyi"]
 
 [tool.pytest.ini_options]
-asyncio_mode = "auto"
 markers = ["e2e: end to end tests"]
 
 [tool.coverage.run]

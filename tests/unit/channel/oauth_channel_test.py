@@ -1,4 +1,5 @@
 import os
+import sys
 from unittest import mock
 
 import grpc
@@ -16,7 +17,8 @@ def mock_oauth2metadataplugin():
         yield mock_credentials
 
 
-def test_create_oauth2_client_credentials_channel(
+@pytest.mark.anyio
+async def test_create_oauth2_client_credentials_channel(
     mock_oauth2metadataplugin,
 ):
 
@@ -53,7 +55,9 @@ def test_create_oauth2_client_credentials_channel(
         "CAMUNDA_TOKEN_AUDIENCE": "CAMUNDA_TOKEN_AUDIENCE",
     },
 )
-def test_create_oauth2_client_credentials_channel_using_environment_variables(
+@pytest.mark.anyio
+@pytest.mark.xfail(sys.version_info < (3, 10), reason="https://github.com/python/cpython/issues/98086")
+async def test_create_oauth2_client_credentials_channel_using_environment_variables(
     mock_oauth2metadataplugin,
 ):
     channel = create_oauth2_client_credentials_channel()
@@ -61,7 +65,8 @@ def test_create_oauth2_client_credentials_channel_using_environment_variables(
     assert isinstance(channel, grpc.aio.Channel)
 
 
-def test_create_camunda_cloud_channel(
+@pytest.mark.anyio
+async def test_create_camunda_cloud_channel(
     mock_oauth2metadataplugin,
 ):
     client_id = "client_id"
@@ -98,7 +103,9 @@ def test_create_camunda_cloud_channel(
         "CAMUNDA_CLIENT_SECRET": "CAMUNDA_CLIENT_SECRET",
     },
 )
-def test_create_camunda_cloud_channel_using_environment_variables(
+@pytest.mark.anyio
+@pytest.mark.xfail(sys.version_info < (3, 10), reason="https://github.com/python/cpython/issues/98086")
+async def test_create_camunda_cloud_channel_using_environment_variables(
     mock_oauth2metadataplugin,
 ):
     channel = create_camunda_cloud_channel()
