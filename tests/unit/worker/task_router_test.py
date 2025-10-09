@@ -125,7 +125,7 @@ def test_set_exception_handler_through_constructor(exception_handler: ExceptionH
     assert router._exception_handler is exception_handler
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_default_exception_handler_logs_a_warning(job: Job, mocked_job_controller: JobController):
     with mock.patch("pyzeebe.task.exception_handler.logger.warning") as logging_mock:
         await default_exception_handler(Exception(), job, mocked_job_controller)
@@ -134,7 +134,7 @@ async def test_default_exception_handler_logs_a_warning(job: Job, mocked_job_con
         logging_mock.assert_called()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_default_exception_handler_uses_business_error(job: Job, mocked_job_controller: JobController):
     error_code = "custom-error-code"
     exception = BusinessError(error_code)
@@ -142,7 +142,7 @@ async def test_default_exception_handler_uses_business_error(job: Job, mocked_jo
     mocked_job_controller.set_error_status.assert_called_with(mock.ANY, error_code=error_code)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_default_exception_handler_warns_of_job_failure(job: Job, mocked_job_controller: JobController):
     with mock.patch("pyzeebe.task.exception_handler.logger.warning") as logging_mock:
         exception = BusinessError("custom-error-code")
