@@ -2,38 +2,55 @@ import asyncio
 import os
 from uuid import uuid4
 
+import anyio
 import grpc
 import pytest
+from testcontainers.core.container import DockerContainer
+from testcontainers.core.wait_strategies import LogMessageWaitStrategy
 
 from pyzeebe import Job, ZeebeClient, ZeebeWorker, create_insecure_channel
 from pyzeebe.job.job import JobController
 from tests.integration.utils import ProcessRun, ProcessStats
 
-
-@pytest.fixture(scope="module")
-def event_loop():
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
+ZEEBE_IMAGE_VERSION = os.getenv("ZEEBE_IMAGE_VERSION", "8.2.29")
 
 
 @pytest.fixture(scope="module")
-def grpc_channel():
-    return create_insecure_channel()
+def anyio_backend():
+    return "asyncio"
+
+
+@pytest.fixture(scope="session")
+def zeebe_container():
+    zeebe = (
+        DockerContainer(f"camunda/zeebe:{ZEEBE_IMAGE_VERSION}")
+        .with_exposed_ports(26500)
+        .waiting_for(LogMessageWaitStrategy(r"Partition-1 recovered, marking it as healthy").with_startup_timeout(30))
+    )
+
+    with zeebe:
+        yield zeebe
 
 
 @pytest.fixture(scope="module")
-def zeebe_client(grpc_channel: grpc.aio.Channel):
+async def grpc_channel(anyio_backend, zeebe_container: DockerContainer):
+    return create_insecure_channel(
+        grpc_address=f"{zeebe_container.get_container_host_ip()}:{zeebe_container.get_exposed_port(26500)}"
+    )
+
+
+@pytest.fixture(scope="module")
+async def zeebe_client(grpc_channel: grpc.aio.Channel):
     return ZeebeClient(grpc_channel)
 
 
 @pytest.fixture(scope="module")
-def zeebe_worker(grpc_channel):
+async def zeebe_worker(grpc_channel):
     return ZeebeWorker(grpc_channel)
 
 
 @pytest.fixture(autouse=True, scope="module")
-def task(zeebe_worker: ZeebeWorker, process_stats: ProcessStats):
+async def task(zeebe_worker: ZeebeWorker, process_stats: ProcessStats):
     async def exception_handler(exc: Exception, job: Job, job_controller: JobController) -> None:
         await job_controller.set_error_status(job, f"Failed to run task {job.type}. Reason: {exc}")
 
@@ -56,7 +73,7 @@ async def deploy_process(zeebe_client: ZeebeClient):
 
 
 @pytest.fixture(autouse=True, scope="module")
-async def deploy_dmn(zeebe_client: ZeebeClient):
+async def deploy_dmn(anyio_backend, zeebe_client: ZeebeClient):
     try:
         integration_tests_path = os.path.join("tests", "integration")
         response = await zeebe_client.deploy_resource(os.path.join(integration_tests_path, "test.dmn"))
@@ -67,10 +84,11 @@ async def deploy_dmn(zeebe_client: ZeebeClient):
 
 
 @pytest.fixture(autouse=True, scope="module")
-def start_worker(event_loop: asyncio.AbstractEventLoop, zeebe_worker: ZeebeWorker):
-    event_loop.create_task(zeebe_worker.work())
+async def start_worker(anyio_backend, zeebe_worker: ZeebeWorker):
+    loop = asyncio.get_running_loop()
+    loop.create_task(zeebe_worker.work())
     yield
-    event_loop.run_until_complete(zeebe_worker.stop())
+    await zeebe_worker.stop()
 
 
 @pytest.fixture(scope="module")

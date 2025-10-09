@@ -24,7 +24,7 @@ class TestBuildTask:
 
         assert isinstance(task, Task)
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_single_value_func(
         self, single_value_task_config: TaskConfig, job: Job, mocked_job_controller: JobController
     ):
@@ -34,7 +34,7 @@ class TestBuildTask:
         assert job.variables == {}
         mocked_job_controller.set_success_status.assert_awaited_once_with(variables={"y": 1})
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_no_additional_variables_are_added_to_result(
         self, single_value_task_config: TaskConfig, mocked_job_controller: JobController
     ):
@@ -49,7 +49,7 @@ class TestBuildTask:
 
         mocked_job_controller.set_success_status.assert_awaited_once_with(variables={"y": 1})
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_job_parameter_is_injected_in_task(
         self, task_config: TaskConfig, job: Job, mocked_job_controller: JobController
     ):
@@ -61,7 +61,7 @@ class TestBuildTask:
 
         assert mocked_job_controller.set_success_status.call_args.kwargs["variables"]["received_job"] == job
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_job_parameter_is_removed_after_job_handler_call(
         self, task_config: TaskConfig, job: Job, mocked_job_controller: JobController
     ):
@@ -79,7 +79,7 @@ class TestBuildJobHandler:
         task = task_builder.build_job_handler(original_task_function, task_config)
         assert callable(task)
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_exception_handler_called(
         self, original_task_function: Callable, task_config: TaskConfig, job: Job, mocked_job_controller: JobController
     ):
@@ -91,7 +91,7 @@ class TestBuildJobHandler:
 
         task_config.exception_handler.assert_called_with(exception, job, mocked_job_controller)
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_parameters_are_provided_to_task(
         self, original_task_function: Callable, task_config: TaskConfig, mocked_job_controller: JobController
     ):
@@ -104,7 +104,7 @@ class TestBuildJobHandler:
 
         original_task_function.assert_called_with(x=1)
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_parameters_are_provided_to_task_with_only_job(
         self, original_task_function: Callable, task_config: TaskConfig, mocked_job_controller: JobController
     ):
@@ -124,7 +124,7 @@ class TestBuildJobHandler:
 
         assert task_with_only_job_called, "Task was called ok"
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_parameters_are_provided_to_task_with_arg_and_job(
         self, task_config: TaskConfig, mocked_job_controller: JobController
     ):
@@ -144,7 +144,7 @@ class TestBuildJobHandler:
 
         assert call_params == {"job": job, "x": 1}
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_variables_are_added_to_result(
         self, original_task_function: Callable, task_config: TaskConfig, job: Job, mocked_job_controller: JobController
     ):
@@ -156,7 +156,7 @@ class TestBuildJobHandler:
         assert job.variables == {}
         mocked_job_controller.set_success_status.assert_awaited_once_with(variables={"x": 1})
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_job_variables_are_not_overridden(
         self, original_task_function: Callable, task_config: TaskConfig, mocked_job_controller: JobController
     ):
@@ -167,7 +167,7 @@ class TestBuildJobHandler:
 
         assert job.variables.pop("x") == 1
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_complete_job_called(
         self, original_task_function: Callable, task_config: TaskConfig, job: Job, mocked_job_controller: JobController
     ):
@@ -177,7 +177,7 @@ class TestBuildJobHandler:
 
         mocked_job_controller.set_success_status.assert_called_once_with(variables={})
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_returned_task_runs_original_function(
         self, original_task_function: Callable, task_config: TaskConfig, job: Job, mocked_job_controller: JobController
     ):
@@ -187,7 +187,7 @@ class TestBuildJobHandler:
 
         original_task_function.assert_called_once()
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_empty_variables_to_fetch_results_in_all_vars_passed_to_task(
         self, mocked_job_controller: JobController, task_config: TaskConfig
     ):
@@ -208,7 +208,7 @@ class TestBuildJobHandler:
 
         assert call_params == {"job": job, "args": (), "kwargs": {"a": 1, "b": 2}}
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_before_decorator_called(
         self,
         original_task_function: Callable,
@@ -224,7 +224,7 @@ class TestBuildJobHandler:
 
         task_config.before.pop().assert_called_once()
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_after_decorator_called(
         self,
         original_task_function: Callable,
@@ -240,7 +240,7 @@ class TestBuildJobHandler:
 
         task_config.after.pop().assert_called_once()
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_after_decorator_can_access_task_result(
         self,
         task_config: TaskConfig,
@@ -264,7 +264,7 @@ class TestBuildJobHandler:
 
         assert task_result == {"result": 1}
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_failing_decorator_continues(
         self,
         original_task_function: Callable,
@@ -282,7 +282,7 @@ class TestBuildJobHandler:
         decorator.assert_called_once()
         task_config.exception_handler.assert_not_called()
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_decorator_variables_are_added(
         self,
         original_task_function: Callable,
@@ -299,7 +299,7 @@ class TestBuildJobHandler:
 
         assert "x" in job.variables
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_job_status_is_updated(
         self,
         task_config: TaskConfig,
@@ -311,7 +311,7 @@ class TestBuildJobHandler:
 
         assert job.status == JobStatus.RunningAfterDecorators
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_job_parameter_is_injected(
         self, task_config: TaskConfig, job: Job, mocked_job_controller: JobController
     ):
@@ -322,7 +322,7 @@ class TestBuildJobHandler:
 
         assert mocked_job_controller.set_success_status.call_args.kwargs["variables"]["received_job"] == job
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_job_parameter_retains_variables(
         self, task_config: TaskConfig, job: Job, mocked_job_controller: JobController
     ):

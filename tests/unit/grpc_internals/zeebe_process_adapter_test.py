@@ -36,7 +36,7 @@ def mocked_aiofiles_open():
         yield open_mock
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 class TestCreateProcessInstance:
     async def test_response_is_of_correct_type(self, zeebe_adapter: ZeebeProcessAdapter, grpc_servicer: GatewayMock):
         bpmn_process_id = str(uuid4())
@@ -74,7 +74,7 @@ class TestCreateProcessInstance:
             await zeebe_adapter.create_process_instance(bpmn_process_id, version, {})
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 class TestCreateProcessWithResult:
     async def test_response_is_of_correct_type(self, zeebe_adapter: ZeebeProcessAdapter, grpc_servicer: GatewayMock):
         bpmn_process_id = str(uuid4())
@@ -145,7 +145,7 @@ class TestCreateProcessWithResult:
             )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 class TestCancelProcess:
     async def test_cancels_the_process(self, zeebe_adapter: ZeebeProcessAdapter, grpc_servicer: GatewayMock):
         bpmn_process_id = str(uuid4())
@@ -170,7 +170,7 @@ class TestCancelProcess:
             await zeebe_adapter.cancel_process_instance(process_instance_key=randint(0, RANDOM_RANGE))
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 class TestDeployResource:
     async def test_deploy_process_response_type(self, zeebe_adapter: ZeebeProcessAdapter):
         file_path = str(uuid4()) + ".bpmn"
@@ -212,7 +212,7 @@ class TestDeployResource:
         mocked_aiofiles_open.assert_called_with(file_path, "rb")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 class TestEvaluateDecision:
     async def test_response_is_of_correct_type(self, zeebe_adapter: ZeebeProcessAdapter, grpc_servicer: GatewayMock):
         decision_id = str(uuid4())

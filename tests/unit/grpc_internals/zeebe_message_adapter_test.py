@@ -9,7 +9,7 @@ from pyzeebe.grpc_internals.zeebe_message_adapter import ZeebeMessageAdapter
 from tests.unit.utils.random_utils import RANDOM_RANGE
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 class TestPublishMessage:
     zeebe_message_adapter: ZeebeMessageAdapter
 
@@ -54,7 +54,7 @@ class TestPublishMessage:
             await self.publish_message(message_id=message_id)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 class TestBroadcastSignal:
     zeebe_message_adapter: ZeebeMessageAdapter
 
