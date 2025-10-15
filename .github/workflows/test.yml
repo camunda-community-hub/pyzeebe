@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        zeebe-version: ["8.5.25", "8.6.29", "8.7.15"]
+        zeebe-version: ["8.5.25", "8.6.29", "8.7.15", "8.8.0"]
 
     steps:
       - uses: actions/checkout@v5
