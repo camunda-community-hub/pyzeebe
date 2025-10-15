@@ -6,7 +6,7 @@ import pytest
 from pyzeebe import Job, JobController, JobStatus
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 class TestSetSuccessStatus:
     async def test_updates_job_in_zeebe(self, job: Job, job_controller: JobController):
         complete_job_mock = AsyncMock()
@@ -25,7 +25,7 @@ class TestSetSuccessStatus:
         assert job.status == JobStatus.Completed
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 class TestSetErrorStatus:
     async def test_updates_job_in_zeebe(self, job: Job, job_controller: JobController):
         throw_error_mock = AsyncMock()
@@ -56,7 +56,7 @@ class TestSetErrorStatus:
         assert job.status == JobStatus.ErrorThrown
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 class TestSetFailureStatus:
     async def test_updates_job_in_zeebe(self, job: Job, job_controller: JobController):
         fail_job_mock = AsyncMock()

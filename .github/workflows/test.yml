@@ -44,17 +44,11 @@ jobs:
 
   integration-test:
     env:
-      ZEEBE_ADDRESS: "localhost:26500"
+      ZEEBE_IMAGE_VERSION: ${{ matrix.zeebe-version }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
         zeebe-version: ["8.2.29", "8.3.13", "8.4.9", "8.5.5"]
-
-    services:
-      zeebe:
-        image: camunda/zeebe:${{ matrix.zeebe-version }}
-        ports:
-          - 26500:26500
 
     steps:
       - uses: actions/checkout@v5
@@ -67,11 +61,6 @@ jobs:
           version: "0.9.0"
       - name: Install the project
         run: uv sync --locked --all-extras --dev
-      - name: Sleep for 30 seconds
-        uses: jakejarvis/wait-action@master
-        with:
-          time: "30s"
-
       - name: Run integration tests
         run: |
           uv run pytest tests/integration

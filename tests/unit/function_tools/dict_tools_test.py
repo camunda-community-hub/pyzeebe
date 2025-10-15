@@ -3,7 +3,7 @@ import pytest
 from pyzeebe.function_tools import dict_tools
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 class TestConvertToDictFunction:
     async def test_converting_to_dict(self):
         async def original_function(x):

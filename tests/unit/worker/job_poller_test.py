@@ -13,18 +13,18 @@ from tests.unit.utils.random_utils import random_job
 
 
 @pytest.fixture
-def job_poller(zeebe_adapter: ZeebeAdapter, task: Task, queue: asyncio.Queue, task_state: TaskState) -> JobPoller:
+async def job_poller(zeebe_adapter: ZeebeAdapter, task: Task, queue: asyncio.Queue, task_state: TaskState) -> JobPoller:
     return JobPoller(zeebe_adapter, task, queue, "test_worker", 100, task_state, 0, None)
 
 
 @pytest.fixture
-def job_stream_poller(
+async def job_stream_poller(
     zeebe_adapter: ZeebeAdapter, task: Task, queue: asyncio.Queue, task_state: TaskState
 ) -> JobStreamer:
     return JobStreamer(zeebe_adapter, task, queue, "test_worker", 100, task_state, [])
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 class TestPollOnce:
     async def test_one_job_is_polled(
         self, job_poller: JobPoller, queue: asyncio.Queue, job_from_task: Job, grpc_servicer: GatewayMock
@@ -51,55 +51,56 @@ class TestPollOnce:
         assert job_poller.task_state.count_active() == 1
 
 
+@pytest.mark.anyio
 class TestShouldPoll:
-    def test_should_poll_returns_expected_result_when_disconnected(self, job_poller: JobPoller):
+    async def test_should_poll_returns_expected_result_when_disconnected(self, job_poller: JobPoller):
         job_poller.zeebe_adapter._connected = False
         job_poller.zeebe_adapter.retrying_connection = False
 
         assert not job_poller.should_poll()
 
-    def test_continues_polling_when_retrying_connection(self, job_poller: JobPoller):
+    async def test_continues_polling_when_retrying_connection(self, job_poller: JobPoller):
         job_poller.zeebe_adapter._connected = False
         job_poller.zeebe_adapter.retrying_connection = True
 
         assert job_poller.should_poll()
 
-    @pytest.mark.asyncio
     async def test_stops_polling_after_poller_is_stopped(self, job_poller: JobPoller):
         await job_poller.stop()
 
         assert not job_poller.should_poll()
 
 
+@pytest.mark.anyio
 class TestStreamShouldPoll:
-    def test_should_poll_returns_expected_result_when_disconnected(self, job_stream_poller: JobStreamer):
+    async def test_should_poll_returns_expected_result_when_disconnected(self, job_stream_poller: JobStreamer):
         job_stream_poller.zeebe_adapter._connected = False
         job_stream_poller.zeebe_adapter.retrying_connection = False
 
         assert not job_stream_poller.should_poll()
 
-    def test_continues_polling_when_retrying_connection(self, job_stream_poller: JobStreamer):
+    async def test_continues_polling_when_retrying_connection(self, job_stream_poller: JobStreamer):
         job_stream_poller.zeebe_adapter._connected = False
         job_stream_poller.zeebe_adapter.retrying_connection = True
 
         assert job_stream_poller.should_poll()
 
-    @pytest.mark.asyncio
     async def test_stops_polling_after_poller_is_stopped(self, job_stream_poller: JobStreamer):
         await job_stream_poller.stop()
 
         assert not job_stream_poller.should_poll()
 
 
+@pytest.mark.anyio
 class TestMaxJobsToActivate:
-    def test_returns_smallest_option(self, job_poller: JobPoller):
+    async def test_returns_smallest_option(self, job_poller: JobPoller):
         job_poller.task.config.max_running_jobs = 0
 
         max_jobs_to_activate = job_poller.calculate_max_jobs_to_activate()
 
         assert max_jobs_to_activate == 0
 
-    def test_returns_zero_when_max_number_of_jobs_are_running(self, job_poller: JobPoller):
+    async def test_returns_zero_when_max_number_of_jobs_are_running(self, job_poller: JobPoller):
         for _ in range(job_poller.task.config.max_running_jobs):
             job = random_job()
             job_poller.task_state.add(job)
@@ -121,7 +122,7 @@ class TestMaxJobsToActivate:
         calculate_max_jobs_to_activate_cases.values(),
         ids=calculate_max_jobs_to_activate_cases.keys(),
     )
-    def test_calculate_max_jobs_to_activate(
+    async def test_calculate_max_jobs_to_activate(
         self,
         job_poller: JobPoller,
         active_jobs: int,
@@ -141,7 +142,7 @@ class TestMaxJobsToActivate:
         assert max_jobs_to_activate == expected
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 class TestActivateMaxJobs:
     async def test_writes_warning_log_when_no_jobs_to_activate(self, job_poller: JobPoller, caplog):
         job_poller.poll_retry_delay = 0
@@ -162,7 +163,7 @@ class TestActivateMaxJobs:
         assert job.key == job_from_task.key
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 class TestActivateStream:
     async def test_puts_job_in_queue_with_one_available_job(
         self, job_stream_poller: JobStreamer, queue: asyncio.Queue, job_from_task: Job, grpc_servicer: GatewayMock

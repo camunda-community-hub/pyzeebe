@@ -13,18 +13,19 @@ from pyzeebe.errors.zeebe_errors import UnknownGrpcStatusCodeError
 from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 
 
+@pytest.mark.anyio
 class TestShouldRetry:
-    def test_returns_true_when_no_current_retries(self, zeebe_adapter: ZeebeAdapterBase):
+    async def test_returns_true_when_no_current_retries(self, zeebe_adapter: ZeebeAdapterBase):
         zeebe_adapter._max_connection_retries = 1
         assert zeebe_adapter._should_retry()
 
-    def test_returns_false_when_current_retries_over_max(self, zeebe_adapter: ZeebeAdapterBase):
+    async def test_returns_false_when_current_retries_over_max(self, zeebe_adapter: ZeebeAdapterBase):
         zeebe_adapter._max_connection_retries = 1
         zeebe_adapter._current_connection_retries = 1
         assert not zeebe_adapter._should_retry()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 class TestHandleRpcError:
     async def test_raises_internal_error_on_internal_error_status(self, zeebe_adapter: ZeebeAdapterBase):
         error = grpc.aio.AioRpcError(grpc.StatusCode.INTERNAL, None, None)
