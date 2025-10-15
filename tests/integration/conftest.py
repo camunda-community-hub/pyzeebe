@@ -11,7 +11,7 @@ from pyzeebe import Job, ZeebeClient, ZeebeWorker, create_insecure_channel
 from pyzeebe.job.job import JobController
 from tests.integration.utils import ProcessRun, ProcessStats
 
-ZEEBE_IMAGE_VERSION = os.getenv("ZEEBE_IMAGE_VERSION", "8.2.29")
+ZEEBE_IMAGE_VERSION = os.getenv("ZEEBE_IMAGE_VERSION", "8.5.25")
 
 
 @pytest.fixture(scope="package")
