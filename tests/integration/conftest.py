@@ -23,6 +23,11 @@ def anyio_backend():
 def zeebe_container():
     zeebe = (
         DockerContainer(f"camunda/zeebe:{ZEEBE_IMAGE_VERSION}")
+        # envs for camunda 8.8+ due to https://github.com/camunda/camunda/issues/31904
+        .with_envs(
+            CAMUNDA_SECURITY_AUTHENTICATION_UNPROTECTEDAPI="true",
+            CAMUNDA_SECURITY_AUTHORIZATIONS_ENABLED="false",
+        )
         .with_exposed_ports(26500)
         .waiting_for(LogMessageWaitStrategy(r"Partition-1 recovered, marking it as healthy").with_startup_timeout(30))
     )

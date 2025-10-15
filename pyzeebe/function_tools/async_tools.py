@@ -2,12 +2,18 @@ from __future__ import annotations
 
 import asyncio
 import functools
+import sys
 from collections.abc import Iterable
 from typing import Any, TypeVar
 
 from typing_extensions import ParamSpec, TypeIs
 
 from pyzeebe.function_tools import AsyncFunction, Function, SyncFunction
+
+if sys.version_info < (3, 14):
+    from asyncio import iscoroutinefunction
+else:
+    from inspect import iscoroutinefunction
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -35,4 +41,4 @@ def asyncify(task_function: SyncFunction[P, R]) -> AsyncFunction[P, R]:
 def is_async_function(function: Function[P, R]) -> TypeIs[AsyncFunction[P, R]]:
     # Not using inspect.iscoroutinefunction here because it doens't handle AsyncMock well
     # See: https://bugs.python.org/issue40573
-    return asyncio.iscoroutinefunction(function)
+    return iscoroutinefunction(function)
