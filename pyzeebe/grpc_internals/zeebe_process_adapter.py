@@ -232,9 +232,13 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
                 )
             )
         except grpc.aio.AioRpcError as grpc_error:
+            # deprecated, used in camunda below 8.8
             if is_error_status(grpc_error, grpc.StatusCode.INVALID_ARGUMENT) and (details := grpc_error.details()):
                 if "but no decision found for" in details:
                     raise DecisionNotFoundError(decision_id=decision_id, decision_key=decision_key) from grpc_error
+            # camunda 8.8+
+            elif is_error_status(grpc_error, grpc.StatusCode.NOT_FOUND):
+                raise DecisionNotFoundError(decision_id=decision_id, decision_key=decision_key) from grpc_error
             await self._handle_grpc_error(grpc_error)
 
         return EvaluateDecisionResponse(
