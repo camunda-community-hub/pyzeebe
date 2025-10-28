@@ -94,11 +94,11 @@ This tells Zeebe that the job failed. The job will then be retried (if configure
 
 Task timeout
 ------------
-When creating a task one of the parameters we can specify is ``timeout``.
+When creating a task one of the parameters we can specify is ``timeout_ms``.
 
 .. code-block:: python
 
-    @worker.task(task_type="my_task", timeout=20000)
+    @worker.task(task_type="my_task", timeout_ms=20000)
     def my_task(input: str):
         return {"output": f"Hello World, {input}!"}
 

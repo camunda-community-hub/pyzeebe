@@ -29,6 +29,7 @@ from pyzeebe.proto.gateway_pb2 import (
     ProcessMetadata,
     PublishMessageResponse,
     TopologyResponse,
+    UpdateJobTimeoutResponse,
 )
 from pyzeebe.proto.gateway_pb2_grpc import GatewayServicer
 from pyzeebe.task.task import Task
@@ -155,6 +156,16 @@ class GatewayMock(GatewayServicer):
         else:
             job._set_status(status_on_deactivate)
         return context
+
+    def UpdateJobTimeout(self, request, context):
+        if request.jobKey in self.active_jobs.keys():
+            active_job = self.active_jobs[request.jobKey]
+            if active_job.status != JobStatus.Running:
+                context.set_code(grpc.StatusCode.FAILED_PRECONDITION)
+            return UpdateJobTimeoutResponse()
+        else:
+            context.set_code(grpc.StatusCode.NOT_FOUND)
+            return UpdateJobTimeoutResponse()
 
     def CreateProcessInstance(self, request, context):
         if request.bpmnProcessId in self.deployed_processes.keys():

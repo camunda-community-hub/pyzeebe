@@ -4,5 +4,5 @@ import pytest
 
 
 @pytest.fixture
-def queue() -> asyncio.Queue:
+async def queue() -> asyncio.Queue:
     return asyncio.Queue()

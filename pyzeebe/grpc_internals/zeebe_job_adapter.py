@@ -23,10 +23,16 @@ from pyzeebe.proto.gateway_pb2 import (
     FailJobRequest,
     StreamActivatedJobsRequest,
     ThrowErrorRequest,
+    UpdateJobTimeoutRequest,
 )
 from pyzeebe.types import Variables
 
-from .types import CompleteJobResponse, FailJobResponse, ThrowErrorResponse
+from .types import (
+    CompleteJobResponse,
+    FailJobResponse,
+    ThrowErrorResponse,
+    UpdateJobTimeoutResponse,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -167,3 +173,15 @@ class ZeebeJobAdapter(ZeebeAdapterBase):
             await self._handle_grpc_error(grpc_error)
 
         return ThrowErrorResponse()
+
+    async def update_job_timeout(self, job_key: int, timeout: int) -> UpdateJobTimeoutResponse:
+        try:
+            await self._gateway_stub.UpdateJobTimeout(UpdateJobTimeoutRequest(jobKey=job_key, timeout=timeout))
+        except grpc.aio.AioRpcError as grpc_error:
+            if is_error_status(grpc_error, grpc.StatusCode.NOT_FOUND):
+                raise JobNotFoundError(job_key=job_key) from grpc_error
+            elif is_error_status(grpc_error, grpc.StatusCode.FAILED_PRECONDITION):
+                raise JobAlreadyDeactivatedError(job_key=job_key) from grpc_error
+            await self._handle_grpc_error(grpc_error)
+
+        return UpdateJobTimeoutResponse()

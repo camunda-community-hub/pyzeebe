@@ -14,8 +14,8 @@ from pyzeebe.grpc_internals.types import (
 
 
 @pytest.fixture
-def sync_zeebe_client(event_loop, aio_grpc_channel: grpc.aio.Channel) -> SyncZeebeClient:
-    # NOTE: event_loop: pytest doesn't play well with loop.run_until_complete unless the test has a
+def sync_zeebe_client(anyio_backend, aio_grpc_channel: grpc.aio.Channel) -> SyncZeebeClient:
+    # NOTE: anyio_backend: pytest doesn't play well with loop.run_until_complete unless the test has a
     # running asyncio loop
     client = SyncZeebeClient(aio_grpc_channel)
     return client

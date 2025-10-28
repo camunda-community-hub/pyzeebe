@@ -10,23 +10,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
-          python-version: "3.13"
-      - name: Init python poetry action
-        uses: abatilo/actions-poetry@v4.0.0
+          python-version: "3.14"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
         with:
-          poetry-version: 1.8.3
-      - name: Install dependencies
-        run: poetry install
+          version: "0.9.2"
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
       - name: Sphinx build
-        run: poetry run sphinx-build --define html_baseurl="${{ steps.pages.outputs.base_url }}" docs _site/
+        run: uv run sphinx-build --define html_baseurl="${{ steps.pages.outputs.base_url }}" docs _site/
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
 
   deploy:
     needs: build

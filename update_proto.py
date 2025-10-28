@@ -1,11 +1,23 @@
+# /// script
+# requires-python = ">=3.11,<3.14"
+# dependencies = [
+#   # pin version for code generation, see https://protobuf.dev/support/cross-version-runtime-guarantee/#major
+#   "protobuf>=5.28,<6.0",
+#   "grpcio-tools>=1.66",
+#   "mypy-protobuf>=3.6",
+# ]
+# ///
+
 import argparse
 import os
 import pathlib
+from http.client import HTTPResponse
+from urllib import error
+from urllib.request import urlopen
 
-import requests
 from grpc_tools.protoc import main as grpc_tools_protoc_main
 
-DEFAULT_PROTO_VERSION: str = "8.6.6"
+DEFAULT_PROTO_VERSION: str = "8.7.10"
 
 
 def main():
@@ -37,11 +49,10 @@ def generate_proto(zeebe_proto_version: str):
 
     try:
         print(f"Downloading proto file from {proto_url}")
-        proto_content = requests.get(proto_url, timeout=5)
-        proto_content.raise_for_status()
+        proto_content: HTTPResponse = urlopen(proto_url, timeout=5)
 
         with proto_file.open("wb") as tmpfile:
-            tmpfile.write(proto_content.content)
+            tmpfile.write(proto_content.read())
 
             grpc_tools_protoc_main(
                 [
@@ -55,9 +66,9 @@ def generate_proto(zeebe_proto_version: str):
             )
         proto_file.unlink()
 
-    except requests.exceptions.HTTPError as err:
+    except error.HTTPError as err:
         print(f"HTTP Error occurred: {err}")
-    except requests.exceptions.RequestException as err:
+    except error.URLError as err:
         print(f"Error occurred: {err}")
 
 

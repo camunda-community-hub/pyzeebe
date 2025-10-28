@@ -4,17 +4,22 @@ from uuid import uuid4
 
 import grpc
 import pytest
-import pytest_asyncio
 
 from pyzeebe import Job, ZeebeClient, ZeebeWorker
 from pyzeebe.grpc_internals.zeebe_adapter import ZeebeAdapter
 from pyzeebe.job.job import JobController
+from pyzeebe.job.job_status import JobStatus
 from pyzeebe.task import task_builder
 from pyzeebe.task.task_config import TaskConfig
 from pyzeebe.worker.task_router import ZeebeTaskRouter
 from pyzeebe.worker.task_state import TaskState
 from tests.unit.utils.gateway_mock import GatewayMock
 from tests.unit.utils.random_utils import random_job
+
+
+@pytest.fixture
+def anyio_backend():
+    return "asyncio"
 
 
 @pytest.fixture
@@ -44,19 +49,19 @@ def job_from_task(task):
 
 
 @pytest.fixture
-def zeebe_adapter(aio_grpc_channel: grpc.aio.Channel):
+async def zeebe_adapter(aio_grpc_channel: grpc.aio.Channel):
     adapter = ZeebeAdapter(aio_grpc_channel)
     return adapter
 
 
 @pytest.fixture
-def zeebe_client(aio_grpc_channel: grpc.aio.Channel):
+async def zeebe_client(aio_grpc_channel: grpc.aio.Channel):
     client = ZeebeClient(aio_grpc_channel)
     return client
 
 
 @pytest.fixture
-def zeebe_worker(aio_grpc_channel: grpc.aio.Channel):
+async def zeebe_worker(aio_grpc_channel: grpc.aio.Channel):
     worker = ZeebeWorker(aio_grpc_channel)
     return worker
 
@@ -68,6 +73,13 @@ def task(original_task_function, task_config):
 
 @pytest.fixture
 def first_active_job(task, job_from_task, grpc_servicer) -> str:
+    grpc_servicer.active_jobs[job_from_task.key] = job_from_task
+    return job_from_task
+
+
+@pytest.fixture
+def deactivated_job(task, job_from_task, grpc_servicer) -> str:
+    job_from_task._set_status(JobStatus.Completed)
     grpc_servicer.active_jobs[job_from_task.key] = job_from_task
     return job_from_task
 
@@ -149,11 +161,11 @@ def grpc_stub_cls(grpc_channel):
 
 
 @pytest.fixture
-def aio_create_grpc_channel(request, grpc_addr, grpc_server):
+async def aio_create_grpc_channel(request, grpc_addr, grpc_server):
     return grpc.aio.insecure_channel(grpc_addr)
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 async def aio_grpc_channel(aio_create_grpc_channel):
     async with aio_create_grpc_channel as channel:
         yield channel

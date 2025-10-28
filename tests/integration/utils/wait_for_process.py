@@ -1,4 +1,4 @@
-from asyncio import sleep
+from anyio import sleep
 
 from .process_stats import ProcessStats
 
