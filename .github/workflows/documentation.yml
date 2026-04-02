@@ -22,7 +22,7 @@ jobs:
         run: uv sync --locked --all-extras --dev
       - name: Setup Pages
         id: pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - name: Sphinx build
         run: uv run sphinx-build --define html_baseurl="${{ steps.pages.outputs.base_url }}" docs _site/
       - name: Upload artifact
