@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Awaitable
-from typing import Any, Callable, Optional, TypeVar, Union
+from collections.abc import Awaitable, Callable
+from typing import Any, Optional, TypeVar, Union
 
 from typing_extensions import ParamSpec
 
