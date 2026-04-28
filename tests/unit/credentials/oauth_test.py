@@ -1,7 +1,7 @@
 import json
 import time
+from collections.abc import Callable
 from functools import partial
-from typing import Callable
 from unittest import mock
 from unittest.mock import MagicMock, PropertyMock
 from uuid import uuid4

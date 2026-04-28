@@ -1,6 +1,5 @@
 import logging
-from collections.abc import Awaitable
-from typing import Callable
+from collections.abc import Awaitable, Callable
 
 from pyzeebe.errors.pyzeebe_errors import BusinessError
 from pyzeebe.job.job import Job, JobController
