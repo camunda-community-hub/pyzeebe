@@ -30,7 +30,7 @@ documentation = "https://camunda-community-hub.github.io/pyzeebe/"
 
 [dependency-groups]
 dev = [
-    "pytest>=9,<9.1",
+    "pytest>=9,<9.2",
     "pytest-grpc>=0.8.0",
     "pytest-mock>=3.11.1",
     "pylint>=4.0.5,<4.1.0",
