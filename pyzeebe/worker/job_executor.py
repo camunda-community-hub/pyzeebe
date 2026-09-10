@@ -22,11 +22,14 @@ class JobExecutor:
         self.task_state = task_state
         self.stop_event = asyncio.Event()
         self.zeebe_adapter = zeebe_adapter
+        self.running_tasks: set[asyncio.Task] = set()
 
     async def execute(self) -> None:
         while self.should_execute():
             job = await self.get_next_job()
             task = asyncio.create_task(self.execute_one_job(job, JobController(job, self.zeebe_adapter)))
+            self.running_tasks.add(task)
+            task.add_done_callback(self.running_tasks.discard)
             task.add_done_callback(create_job_callback(self, job))
 
     async def get_next_job(self) -> Job:

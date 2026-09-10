@@ -38,6 +38,38 @@ class TestExecuteOneJob:
 
 
 @pytest.mark.anyio
+class TestExecute:
+    async def test_retains_strong_reference_to_running_tasks(
+        self, job_executor: JobExecutor, job_from_task: Job, task: Task
+    ):
+        started = asyncio.Event()
+        release = asyncio.Event()
+
+        async def slow_handler(job: Job, job_controller: JobController) -> None:
+            started.set()
+            await release.wait()
+
+        task.job_handler = slow_handler
+        await job_executor.jobs.put(job_from_task)
+
+        execute_task = asyncio.create_task(job_executor.execute())
+        try:
+            await started.wait()
+
+            assert len(job_executor.running_tasks) == 1
+            running = next(iter(job_executor.running_tasks))
+            assert not running.done()
+
+            release.set()
+            await running
+            assert len(job_executor.running_tasks) == 0
+        finally:
+            execute_task.cancel()
+            with pytest.raises(asyncio.CancelledError):
+                await execute_task
+
+
+@pytest.mark.anyio
 class TestGetNextJob:
     async def test_returns_expected_job(self, job_executor: JobExecutor, job_from_task: Job):
         await job_executor.jobs.put(job_from_task)
