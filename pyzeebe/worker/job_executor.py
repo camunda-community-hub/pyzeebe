@@ -22,7 +22,7 @@ class JobExecutor:
         self.task_state = task_state
         self.stop_event = asyncio.Event()
         self.zeebe_adapter = zeebe_adapter
-        self.running_tasks: set[asyncio.Task] = set()
+        self.running_tasks: set[asyncio.Task[None]] = set()
 
     async def execute(self) -> None:
         while self.should_execute():
